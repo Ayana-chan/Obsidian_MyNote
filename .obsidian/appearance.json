@@ -1,0 +1,10 @@
+{
+  "accentColor": "",
+  "monospaceFontFamily": "JetBrains Mono",
+  "cssTheme": "Minimal",
+  "translucency": false,
+  "theme": "obsidian",
+  "enabledCssSnippets": [
+    "mycss"
+  ]
+}
