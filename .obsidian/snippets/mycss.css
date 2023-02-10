@@ -12,35 +12,39 @@
 }
 
 /* 字体 */
-.HyperMD-header-1,
+.HyperMD-header.HyperMD-header-1.cm-line,
 .markdown-reading-view h1{
 	font-size:40px !important;
 	border-bottom:1px solid #4C4D4F;
 }
 
-.HyperMD-header-2,
+.HyperMD-header.HyperMD-header-2.cm-line,
 .markdown-reading-view h2{
 	font-size:27px !important;
 }
 
-.mod-cm6 .cm-editor .HyperMD-header-3,
+.HyperMD-header.HyperMD-header-3.cm-line,
 .markdown-reading-view h3{
 	font-size:25px !important;
 }
 
-.mod-cm6 .cm-editor .HyperMD-header-4,
+.HyperMD-header.HyperMD-header-4.cm-line,
 .markdown-reading-view h4{
 	font-size:23px !important;
 }
 
-.mod-cm6 .cm-editor .HyperMD-header-5,
+.HyperMD-header.HyperMD-header-5.cm-line,
 .markdown-reading-view h5{
 	font-size:21px !important;
 }
 
-.mod-cm6 .cm-editor .HyperMD-header-6,
+.HyperMD-header.HyperMD-header-6.cm-line,
 .markdown-reading-view h6{
 	font-size:20px !important;
+}
+
+.token.comment{
+	color:#6C6E72;
 }
 
 /* 首行缩进 */

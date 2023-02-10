@@ -6,5 +6,6 @@
   "theme": "obsidian",
   "enabledCssSnippets": [
     "mycss"
-  ]
+  ],
+  "textFontFamily": "iA Writer Quattro S,苹方"
 }
