@@ -5,5 +5,8 @@
     "landscape": false,
     "margin": "0",
     "downscalePercent": 100
-  }
+  },
+  "attachmentFolderPath": "./assets",
+  "useMarkdownLinks": true,
+  "newLinkFormat": "relative"
 }
