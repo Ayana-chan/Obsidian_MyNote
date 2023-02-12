@@ -43,6 +43,7 @@
 	font-size:20px !important;
 }
 
+.cm-hmd-codeblock.cm-comment,
 .token.comment{
 	color:#6C6E72;
 }
