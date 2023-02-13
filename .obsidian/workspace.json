@@ -26,7 +26,7 @@
               "type": "markdown",
               "state": {
                 "file": "Docker.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": false
               }
             }
@@ -176,7 +176,7 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "959ffaaea58792ac",
   "lastOpenFiles": [
     "Web/后端.md",
     "Docker.md",
