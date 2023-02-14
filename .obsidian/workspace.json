@@ -14,7 +14,7 @@
               "type": "markdown",
               "state": {
                 "file": "Web/后端.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": false
               }
             }
@@ -26,6 +26,18 @@
               "type": "markdown",
               "state": {
                 "file": "Docker.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "eb026f0aa05a2dba",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Linux.md",
                 "mode": "source",
                 "source": false
               }
@@ -176,10 +188,11 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "959ffaaea58792ac",
+  "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
-    "Web/后端.md",
+    "Linux.md",
     "Docker.md",
+    "Web/后端.md",
     "Temp.md"
   ]
 }

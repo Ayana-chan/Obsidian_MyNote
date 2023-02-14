@@ -8,5 +8,6 @@
   },
   "attachmentFolderPath": "./assets",
   "useMarkdownLinks": true,
-  "newLinkFormat": "relative"
+  "newLinkFormat": "relative",
+  "spellcheck": false
 }
