@@ -5,6 +5,19 @@ image（镜像）相当于“类”，container（容器）即为类实现的“
 想搜索镜像信息可以去官网：[Docker](https://hub.docker.com/)
 
 ![](assets/uTools_1676288415314.png)
+## 镜像原理
+
+- Docker镜像是由特殊的文件系统叠加而成。
+- 最底端是bootfs,并**使用宿主机的bootfs**（linux的各个发行版的bootfs基本相同，因此可直接利用。这也是为什么Docker依赖于Linux）。
+- 第二层是root文件系统rootfs,称为base image。
+- 然后再往上可以叠加其他的镜像文件。
+- 统一文件系统(Union File System)技术能够将不同的层整合成一个文件系统，为这些层提供了一个统一的视角,这样就隐藏了多层的存在，在用户的角度看来，只存在一个文件系统（对外暴露最顶端）。
+- 一个镜像可以放在另一个镜像的上面。位于下面的镜像称为父镜像，最底部的镜像成为基础镜像。
+- 当从一个镜像启动容器时，Docker会在最顶层加载一个读写文件系统作为容器。
+
+分层的目的是为了复用，一个镜像（或其组成部分）可以成为另一个镜像的依赖。
+
+![](assets/uTools_1676522015630.png)
 ## 数据卷
 ### 概念
 - 数据卷是宿主机中的一个目录或文件。
@@ -56,6 +69,8 @@ c3作为c1和c2的数据卷容器，会把自己的所有数据卷设置都传�
 - `--volumes-from xx`：令xx成为当前容器的数据卷容器。
 ## 具体部署
 ### 问题
+数据卷的宿主机路径都使用了`$PSW`，因此创建容器前一定要注意终端当前目录是什么！
+
 ping得通但连接不到时首先考虑端口开没开：
 
 ![Linux](Linux.md#开关端口)
@@ -65,12 +80,12 @@ ping得通但连接不到时首先考虑端口开没开：
 ![Linux](Linux.md#开启路由)
 ### MySQL
 #### 创建
-通过以下命令创建一个完善的mysql的container：
+当前目录为数据卷创建mysql：
 
 ```bash
 docker run -id \
+--name mysql \
 -p 3306:3306 \
---name=mysql \
 -v $PWD/conf:/etc/mysql/conf.d \
 -v $PWD/logs:/logs \
 -v $PWD/data:/var/1ib/mysql \
@@ -94,10 +109,77 @@ SELECT user,host FROM mysql.user;
 
 外部机连接时可能出现`Public Key Retrieval is not allowed`错误，可这样解决：[MySQL 8.0的Public Key Retrival错误，毫无规律可言怎么破？ - 知乎](https://zhuanlan.zhihu.com/p/371161553)
 
+### Tomcat
+使Tomcat以当前目录为webapp:
 
+```bash
+docker run -id \
+--name tomcat \
+-p 8080:8080 \
+-v $PWD:/usr/local/tomcat/webapps \
+tomcat
+```
 
+这样只要给当前目录里面放入web项目即可被访问。
 
+### Nginx
+提前准备好配置文件`$PWD/conf/nginx.conf`：
 
+```conf
+user nginx;
+worker_processes 1;
+
+error_log /var/log/nginx/error.log warn;
+pid /var/run/ndinx.pid;
+
+events{
+	worker_connections 1024;
+}
+
+http{
+	include /etc/nginx/mime.types;
+	default_type application/octet-stream;
+	
+	log_format main '$remote_addr - $remote_user [$time_local] "$request"'
+					'$status $body_bytes_sent "$http_referer"'
+					'"$http_user_agent" "$http_x_forwarded_for"';
+					
+	access_log /var/log/nginx/access.log main;
+
+	sendfile on;
+	#tcp_nopush on;
+	
+	keepalive_timeout 65;
+	
+	#gzip on;
+	
+	include /etc/nginx/conf.d/*.conf;
+}
+```
+
+创建容器：
+
+```bash
+docker run -id \
+--name=nginx \
+-p 80:80 \
+-v $PWD/conf/nginx.conf:/etc/nginx/nginx.conf \
+-v $PWD/logs:/var/log/nginx \
+-v $PWD/html:/usr/share/nginx/html \
+nginx:1.22
+```
+
+### Redis
+无需配置数据卷，直接创建容器：
+
+```bash
+docker run -id \
+--name redis \
+-p 6379:6379 \
+redis:7.0
+```
+
+# DockerFile
 
 
 
