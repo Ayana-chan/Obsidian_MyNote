@@ -80,7 +80,7 @@ ping得通但连接不到时首先考虑端口开没开：
 ![Linux](Linux.md#开启路由)
 ### MySQL
 #### 创建
-当前目录为数据卷创建mysql：
+以当前目录为数据卷创建mysql：
 
 ```bash
 docker run -id \
@@ -110,7 +110,7 @@ SELECT user,host FROM mysql.user;
 外部机连接时可能出现`Public Key Retrieval is not allowed`错误，可这样解决：[MySQL 8.0的Public Key Retrival错误，毫无规律可言怎么破？ - 知乎](https://zhuanlan.zhihu.com/p/371161553)
 
 ### Tomcat
-使Tomcat以当前目录为webapp:
+以当前目录为webapp创建Tomcat:
 
 ```bash
 docker run -id \
@@ -161,7 +161,7 @@ http{
 
 ```bash
 docker run -id \
---name=nginx \
+--name nginx \
 -p 80:80 \
 -v $PWD/conf/nginx.conf:/etc/nginx/nginx.conf \
 -v $PWD/logs:/var/log/nginx \
