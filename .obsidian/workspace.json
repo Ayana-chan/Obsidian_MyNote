@@ -13,18 +13,6 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Web/后端.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "959ffaaea58792ac",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
                 "file": "Docker.md",
                 "mode": "source",
                 "source": false
@@ -43,8 +31,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -188,13 +175,13 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "959ffaaea58792ac",
+  "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "Web/后端.md",
     "杂记.md",
     "Docker.md",
     "Linux.md",
     "Temp.md",
-    "Web/后端.md",
     "Web/前端.md"
   ]
 }
