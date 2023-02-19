@@ -272,23 +272,48 @@ redis-server /etc/redis/redis.conf
 ```
 
 ## Nacos
-准备配置文件`$PWD/init.d/custom.properties`：
+准备配置文件`$PWD/init.d/custom.properties`（未知作用）：
 
 ```properties
 management.endpoints.web.exposure.include=*
 ```
 
-创建容器（必须要用`--net=host`否则微服务无法正常访问）：
+从容器中的`/conf`中复制`application.properties`并放到`$PWD/conf/application.properties`，然后修改以设置数据库，从而可以持久化数据：
+
+```properties
+spring.datasource.platform=mysql
+spring.sql.init.platform=mysql
+nacos.cmdb.dumpTaskInterval=3600
+nacos.cmdb.eventTaskInterval=10
+nacos.cmdb.labelTaskInterval=300
+nacos.cmdb.loadDataAtStart=false
+db.num=${MYSQL_DATABASE_NUM:1}
+db.url.0=jdbc:mysql://192.168.177.114:3306/nacos_config?${MYSQL_SERVICE_DB_PARAM:characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false}
+db.user.0=root
+db.password.0=1234
+```
+
+从容器中的`/conf`复制sql，创建`nacos_config`数据库。
+
+创建容器然后创建容器。
+- 必须要开三个端口映射或者用`--net=host`否则微服务无法正常访问。
+- 只有使用了`--net=host`才能在`application.properties`里将sql的url设为localhost。
 
 ```bash
 docker run -id \
 --name nacos \
---net=host \
+-p 8848:8848 \
+-p 9848:9848 \
+-p 9849:9849 \
+-e JVM_XMS=256m \
+-e JVM_XMX=256m \
 -e MODE=standalone \
 -e PREFER_HOST_MODE=hostname \
 -v $PWD/init.d/custom.properties:/home/nacos/init.d/custom.properties \
 -v $PWD/logs:/home/nacos/logs \
---restart always  \
+-v $PWD/conf/application.properties:/home/nacos/conf/application.properties \
+--privileged=true \
+--restart always \
 nacos/nacos-server
 ```
 
