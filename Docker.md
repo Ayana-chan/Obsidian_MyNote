@@ -69,8 +69,9 @@ c3作为c1和c2的数据卷容器，会把自己的所有数据卷设置都传�
 `-it`：交互式容器。`-id`：守护式容器。
 #### 其他
 - `-v 宿主机目录:容器内目录`：设定数据卷。必须是绝对路径。若目录不存在则会自动创建。可以缺省宿主机目录与冒号，此时会自动指定宿主机的一个文件夹（在`/var/lib/docker`里面）参与数据卷。
-
 - `--volumes-from xx`：令xx成为当前容器的数据卷容器。
+- `-p`：端口映射。宿主机帮助转发。
+- `--net=host`：直接使用宿主机的对应端口（相当于运行在宿主机上）。并使`-p`失效。
 ### 开机自动启动
 ```bash
 sudo docker update ContainerName --restart always
@@ -87,8 +88,76 @@ docker save -o 压缩文件名称 镜像名称：版本号
 docker load -i 压缩文件名称
 ```
 
-## 具体部署
-### 问题
+# DockerFile
+备忘查询：[Dockerfile 备忘清单 & dockerfile cheatsheet & Quick Reference](http://bbs.laoleng.vip/reference/docs/dockerfile.html)
+
+## 部署SpringBoot项目
+dockerfile写法如下：
+
+```txt
+#定义父镜像
+FROM java:8
+
+#定义作者信息
+MAINTAINER ayana
+
+#将jar包添加到容器（app.jar是容器内的jar包名）
+ADD springboot_name.jar app.jar
+
+#定义容器启动执行的命令
+CMD java -jar app.jar
+```
+
+```bash
+#通过dockerfile构建镜像（不加版本就是latest，写成`镜像名称 .`）
+docker bulid -f dockerfile文件路径 -t 镜像名你:版本
+```
+
+# Docker Compose
+Docker Compose是一个编排多容器分布式部署的工具，提供命令集管理容器化应用的完整开发周期，包括服务构建，启动和停止。即使对于单个镜像，也能当成配置文件使用。使用步骤：
+1. 利用Dockerfile定义运行环境镜像
+2. 使用docker-compose,yml定义组成应用的各服务
+3. 运行docker-compose up启动应用
+
+`docker-compose.yml`:
+
+```yml
+version: '3'
+services:
+ nginx:
+  image: nginx
+  ports:
+   - 80:80
+  links:
+   - app
+  volumes:
+   - ./nginx/conf.d:/etc/nginx/conf.d
+ app:
+  image: springboot_hello
+  expose:
+   - "8080"
+```
+
+在yml所在目录输入如下命令即可管理容器：
+
+```bash
+#启动
+docker-compose -f standalone-derby.yaml up
+#关闭
+docker-compose -f standalone-derby.yaml stop
+#移除
+docker-compose -f standalone-derby.yaml rm
+#关闭并移除
+docker-compose -f standalone-derby.yaml down
+```
+
+开机自启动：
+```bash
+restart: always
+```
+
+# 具体部署
+## 问题
 数据卷的宿主机路径都使用了`$PSW`，因此创建容器前一定要注意终端当前目录是什么！
 
 ping得通但连接不到时首先考虑端口开没开：
@@ -98,8 +167,8 @@ ping得通但连接不到时首先考虑端口开没开：
 也可能是路由没开放导致Docker无法接触外网：
 
 ![Linux](Linux.md#开启路由)
-### MySQL
-#### 创建
+## MySQL
+### 创建
 以当前目录为数据卷创建mysql：
 
 ```bash
@@ -113,7 +182,7 @@ docker run -id \
 mysql:8.0.30
 ```
 
-#### 问题
+### 问题
 一些权限设置：
 
 ```sql
@@ -129,7 +198,7 @@ SELECT user,host FROM mysql.user;
 
 外部机连接时可能出现`Public Key Retrieval is not allowed`错误，可这样解决：[MySQL 8.0的Public Key Retrival错误，毫无规律可言怎么破？ - 知乎](https://zhuanlan.zhihu.com/p/371161553)
 
-### Tomcat
+## Tomcat
 以当前目录为webapp创建Tomcat:
 
 ```bash
@@ -142,7 +211,7 @@ tomcat
 
 这样只要给当前目录里面放入web项目即可被访问。
 
-### Nginx
+## Nginx
 提前准备好配置文件`$PWD/conf/nginx.conf`：
 
 ```conf
@@ -189,7 +258,7 @@ docker run -id \
 nginx:1.22
 ```
 
-### Redis
+## Redis
 `redis-server /etc/redis/redis.conf`就是以配置文件创建容器。
 
 ```bash
@@ -202,59 +271,50 @@ redis:7.0 \
 redis-server /etc/redis/redis.conf
 ```
 
-# DockerFile
-备忘查询：[Dockerfile 备忘清单 & dockerfile cheatsheet & Quick Reference](http://bbs.laoleng.vip/reference/docs/dockerfile.html)
+## Nacos
+准备配置文件`$PWD/init.d/custom.properties`：
 
-## 部署SpringBoot项目
-dockerfile写法如下：
-
-```txt
-#定义父镜像
-FROM java:8
-
-#定义作者信息
-MAINTAINER ayana
-
-#将jar包添加到容器（app.jar是容器内的jar包名）
-ADD springboot_name.jar app.jar
-
-#定义容器启动执行的命令
-CMD java -jar app.jar
+```properties
+management.endpoints.web.exposure.include=*
 ```
+
+创建容器（必须要用`--net=host`否则微服务无法正常访问）：
 
 ```bash
-#通过dockerfile构建镜像（不加版本就是latest，写成`镜像名称 .`）
-docker bulid -f dockerfile文件路径 -t 镜像名你:版本
+docker run -id \
+--name nacos \
+--net=host \
+-e MODE=standalone \
+-e PREFER_HOST_MODE=hostname \
+-v $PWD/init.d/custom.properties:/home/nacos/init.d/custom.properties \
+-v $PWD/logs:/home/nacos/logs \
+--restart always  \
+nacos/nacos-server
 ```
 
-# Docker Compose
-Docker Compose是一个编排多容器分布式部署的工具，提供命令集管理容器化应用的完整开发周期，包括服务构建，启动和停止。使用步骤：
-1. 利用Dockerfile定义运行环境镜像
-2. 使用docker-compose,yml定义组成应用的各服务
-3. 运行docker-compose up启动应用
 
-`docker-compose.yml`:
 
-```yml
-version: '3'
-services:
- nginx:
-  image: nginx
-  ports:
-   - 80:80
-  links:
-   - app
-  volumes:
-   - ./nginx/conf.d:/etc/nginx/conf.d
- app:
-  image: springboot_hello
-  expose:
-   - "8080"
-```
 
-在yml所在目录输入如下命令即可创建容器：
 
-```bash
-docker-compose up
-```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

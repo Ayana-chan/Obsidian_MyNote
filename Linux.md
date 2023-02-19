@@ -14,6 +14,9 @@ firewall-cmd --reload
 
 #关闭端口（关闭后需要要重启防火墙才生效）
 firewall-cmd --zone=public --remove-port=3338/tcp --permanent
+
+#关闭防火墙且重启也不会重新启动
+systemctl disable firewalld.service
 ```
 
 ## 开启路由
