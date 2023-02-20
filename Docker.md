@@ -288,23 +288,23 @@ nacos.cmdb.eventTaskInterval=10
 nacos.cmdb.labelTaskInterval=300
 nacos.cmdb.loadDataAtStart=false
 db.num=${MYSQL_DATABASE_NUM:1}
-db.url.0=jdbc:mysql://192.168.177.114:3306/nacos_config?${MYSQL_SERVICE_DB_PARAM:characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false}
+db.url.0=jdbc:mysql://192.168.177.114:3306/nacos_config?MYSQL_SERVICE_DB_PARAM:characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
 db.user.0=root
 db.password.0=1234
 ```
 
 从容器中的`/conf`复制sql，创建`nacos_config`数据库。
 
-创建容器然后创建容器。
+注意事项：
 - 必须要开三个端口映射或者用`--net=host`否则微服务无法正常访问。
 - 只有使用了`--net=host`才能在`application.properties`里将sql的url设为localhost。
+- 配置文件里面要设置一下allowPublicKeyRetrieval=true否则无法找到数据库。
+- mysql可能要设置时区，暂未知是否必要。
 
 ```bash
 docker run -id \
 --name nacos \
--p 8848:8848 \
--p 9848:9848 \
--p 9849:9849 \
+--net host \
 -e JVM_XMS=256m \
 -e JVM_XMX=256m \
 -e MODE=standalone \
@@ -315,9 +315,13 @@ docker run -id \
 --privileged=true \
 --restart always \
 nacos/nacos-server
+
+##-p 8848:8848 \
+##-p 9848:9848 \
+##-p 9849:9849 \
 ```
 
-
+更推荐使用Docker Compose创建该容器，这样就不需要修改`application.properties`了。
 
 
 
