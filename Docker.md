@@ -1,6 +1,6 @@
 # Docker基础
 ## 基本结构
-image（镜像）相当于“类”，container（容器）即为类实现的“对象”。仓库里存的都是镜像。tyftctctfftf
+image（镜像）相当于“类”，container（容器）即为类实现的“对象”。仓库里存的都是镜像。
 
 想搜索镜像信息可以去官网：[Docker](https://hub.docker.com/)
 
