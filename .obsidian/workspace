@@ -1,0 +1,127 @@
+{
+  "main": {
+    "id": "7a1261244294780d",
+    "type": "split",
+    "children": [
+      {
+        "id": "c91a74fd7a4abdd7",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "Docker.md",
+            "mode": "source"
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "a81baecadbe27059",
+    "type": "mobile-drawer",
+    "children": [
+      {
+        "id": "57b7f91f361ec181",
+        "type": "leaf",
+        "state": {
+          "type": "file-explorer",
+          "state": {}
+        }
+      },
+      {
+        "id": "cc3dbc7aa60a672b",
+        "type": "leaf",
+        "state": {
+          "type": "search",
+          "state": {
+            "query": "",
+            "matchingCase": false,
+            "explainSearch": false,
+            "collapseAll": false,
+            "extraContext": false,
+            "sortOrder": "alphabetical"
+          }
+        }
+      },
+      {
+        "id": "2f566bce23e17462",
+        "type": "leaf",
+        "state": {
+          "type": "tag",
+          "state": {
+            "sortOrder": "frequency",
+            "useHierarchy": true
+          }
+        }
+      },
+      {
+        "id": "9e27c2b5a8dd48d2",
+        "type": "leaf",
+        "state": {
+          "type": "starred",
+          "state": {}
+        }
+      }
+    ],
+    "currentTab": 0
+  },
+  "right": {
+    "id": "c576b72f879ec5eb",
+    "type": "mobile-drawer",
+    "children": [
+      {
+        "id": "c0f538a59db14b3b",
+        "type": "leaf",
+        "state": {
+          "type": "backlink",
+          "state": {
+            "file": "Docker.md",
+            "collapseAll": false,
+            "extraContext": false,
+            "sortOrder": "alphabetical",
+            "showSearch": false,
+            "searchQuery": "",
+            "backlinkCollapsed": true,
+            "unlinkedCollapsed": true
+          }
+        }
+      },
+      {
+        "id": "32acbb5625c8f473",
+        "type": "leaf",
+        "state": {
+          "type": "outgoing-link",
+          "state": {
+            "file": "Docker.md",
+            "linksCollapsed": false,
+            "unlinkedCollapsed": true
+          }
+        }
+      },
+      {
+        "id": "e360c1b2f7672348",
+        "type": "leaf",
+        "state": {
+          "type": "outline",
+          "state": {
+            "file": "Docker.md"
+          }
+        }
+      },
+      {
+        "id": "c553426cc64fbc38",
+        "type": "leaf",
+        "state": {
+          "type": "advanced-tables-toolbar",
+          "state": {}
+        }
+      }
+    ]
+  },
+  "active": "c91a74fd7a4abdd7",
+  "lastOpenFiles": [
+    "Docker.md",
+    "2023-02-22.md"
+  ]
+}

@@ -1,11 +1,9 @@
 {
-  "accentColor": "",
-  "monospaceFontFamily": "JetBrains Mono",
   "cssTheme": "Obsidian Nord",
   "translucency": false,
   "theme": "obsidian",
   "enabledCssSnippets": [
     "mycss"
   ],
-  "textFontFamily": "iA Writer Quattro S,苹方"
+  "baseFontSize": 16
 }
