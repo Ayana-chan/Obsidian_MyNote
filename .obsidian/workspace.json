@@ -8,36 +8,12 @@
         "type": "tabs",
         "children": [
           {
-            "id": "8a1898ba3983eebe",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Web/后端.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "1e9c9304b171fb9f",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Web/renren-fast.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
             "id": "8f2fe32f6c1f14a6",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Web/谷粒商城历险记.md",
+                "file": "Web后端/SpringCloud.md",
                 "mode": "source",
                 "source": false
               }
@@ -133,7 +109,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Web/后端.md"
+                "file": "Web后端/SpringCloud.md"
               }
             }
           },
@@ -143,7 +119,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Web/后端.md",
+                "file": "Web后端/SpringCloud.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -160,7 +136,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Web/后端.md",
+                "file": "Web后端/SpringCloud.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -202,9 +178,9 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "canvas:新建白板": false,
       "switcher:打开快速切换": false,
       "graph:查看关系图谱": false,
-      "canvas:Create new canvas": false,
       "daily-notes:打开/创建今天的日记": false,
       "templates:插入模板": false,
       "command-palette:打开命令面板": false,
@@ -213,12 +189,20 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
-    "Web/前端.md",
-    "Linux.md",
+    "Web前端/组件库.md",
+    "Web前端/杂项.md",
+    "Web后端/SpringBoot.md",
+    "Web后端/SpringCloud.md",
+    "Web后端/renren-fast.md",
+    "Web后端/Mybatis-Plus.md",
+    "Web后端/Maven.md",
+    "Web后端/Git.md",
+    "Web后端/谷粒商城历险记.md",
+    "Web后端/杂项.md",
     "Docker.md",
-    "Web/谷粒商城历险记.md",
-    "Web/renren-fast.md",
-    "Web/后端.md",
+    "Web前端",
+    "Web/未命名",
+    "Linux.md",
     "杂记.md",
     "Redis.md",
     "Temp.md"
