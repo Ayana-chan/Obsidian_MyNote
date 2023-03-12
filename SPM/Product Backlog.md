@@ -16,13 +16,13 @@
 | US304 | Administrator | give or withdraw the Staff identity of an account                                                                             | 3        | 1        | To do  | R01     |
 | US401 | Superusers    | give or withdraw the Administrator identity of an account                                                                     | 3        | 1        | To do  | R01     |
 | US201 | Staff         | add new <u>abstract material</u> with metadata, and some metadata are automatically obtained through ISBN                     | 4        | 8        | To do  | R02     |
-| US202 | Staff         | add new <u>copy(concrete material)</u> with concrete metadata, including call number and position                             | 4        | 4        | To do  | R02     |
+| US202 | Staff         | add new <u>material(copy / concrete material)</u> with concrete metadata, including call number and position                  | 4        | 4        | To do  | R02     |
 | US101 | Patron        | search for materials based on type, title, author, topic or other keywords                                                    | 6        | 5        | To do  | R02     |
 | US102 | Patron        | view all copies(concrete materials) of the selected abstract material                                                         | 6        | 3        | To do  | R02     |
 | US204 | Staff         | modify tags(catalog) in search page                                                                                           | 7        | 7        | To do  | R03     |
 | US203 | Staff         | modify metadata of materials and their copies                                                                                 | 8        | 4        | To do  | R03     |
-| US206 | Staff         | get all call number of copies of a certain abstract material when checking out a book                                         | 9        | 3        | To do  | R03     |
 | US205 | Staff         | check out and in materials with call number                                                                                   | 9        | 8        | To do  | R03     |
+| US206 | Staff         | get all call number of copies of a certain abstract material when checking out a book                                         | 9        | 3        | To do  | R03     |
 | US104 | Patron        | view my borrowing history and due dates                                                                                       | 10       | 3        | To do  | R04     |
 | US107 | Patron        | view how much late fees to be paid for every material borrowed                                                                | 11       | 4        | To do  | R04     |
 | US103 | Patron        | place a hold on a material so that I can receive an email notification when it's available and it won't be borrowed by others | 12       | 5        | To do  | R04     |
@@ -34,11 +34,14 @@
 | US106 | Patron        | receive an email reminding me to return the material when it is due                                                           | 18       | 6        | To do  | R05     |
 | US303 | Administrator | manage whether certain materials could be borrowed                                                                            | 19       | 2        | To do  | R05     |
 | US305 | Administrator | ban or delete an account of staff and patrons                                                                                 | 20       | 1        | To do  | R05     |
-| US301 | Administrator | view the visual data of library operation                                                                                     | 21       | 6        | To do  | R05     | 
+| US301 | Administrator | view the visual data of library operation                                                                                     | 21       | 6        | To do  | R05     |
 
 # Tips
 
->**abstract material** and its **copies(concrete material)**: For example, book<u>s</u> called "Software Engineering" are <u>a</u> **abstract material**, which is *abstract*. <u>A</u> book called "Software Engineering" that arrived yesterday is a **copy** or **concrete material**, which is *concrete* and own a <u>call number</u>.
+>Entries with the same priority are supposed to implement together.
+
+>**abstract material** and **material(copies / concrete material)**: 
+>Book<u>s</u> called "Software Engineering" are <u>a</u> **abstract material**, which is *abstract*. <u>A</u> book called "Software Engineering" that arrived yesterday is a **copy** or **concrete material**, which is *concrete* and own a <u>call number</u> and is called <u>**material**</u> defaultly.
 
 >If a material has any late fee, it can't be returned. Partons should pay online or pay to Staff who can clear late fees.  
 

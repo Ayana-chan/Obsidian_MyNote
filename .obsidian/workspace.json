@@ -26,7 +26,7 @@
               "type": "markdown",
               "state": {
                 "file": "SPM/Product Backlog.md",
-                "mode": "source",
+                "mode": "preview",
                 "source": false
               }
             }
@@ -104,7 +104,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -170,7 +170,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "SPM/Sprint Backlog.md"
+                "file": "SPM/User Story Mapping.md"
               }
             }
           },
@@ -180,7 +180,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "SPM/Sprint Backlog.md",
+                "file": "SPM/User Story Mapping.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -197,7 +197,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "SPM/Sprint Backlog.md",
+                "file": "SPM/User Story Mapping.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -250,11 +250,11 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
-    "SPM/Release Plan.md",
-    "SPM/User Story Mapping.md",
     "SPM/Sprint Backlog.md",
     "SPM/Product Backlog.md",
     "SPM/需求.md",
+    "SPM/Release Plan.md",
+    "SPM/User Story Mapping.md",
     "Docker.md",
     "SPM/User-Story Mapping.canvas",
     "Linux.md",

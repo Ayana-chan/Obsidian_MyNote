@@ -28,7 +28,7 @@
 ### Material management
 - Add new material
 	- Add new abstract material
-	- Add new copy(concrete material)
+	- Add new material(copy / concrete material)
 - Material message
 	- Search by keywords
 	- Browse search results
