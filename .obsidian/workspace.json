@@ -8,72 +8,24 @@
         "type": "tabs",
         "children": [
           {
-            "id": "d4c60673910205e4",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "SPM/需求.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "f92084d78efdecc9",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "SPM/Product Backlog.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "8fa02a200fe26b29",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "SPM/User Story Mapping.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "0c73abb84f5ef834",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "SPM/Sprint Backlog.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "4acc195a752545af",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "SPM/Release Plan.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
             "id": "8f2fe32f6c1f14a6",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
                 "file": "谷粒商城历险记.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "58148d418b816bdc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Web前端/组件库.md",
                 "mode": "source",
                 "source": false
               }
@@ -102,9 +54,21 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "d0e0a69762afe641",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Web后端/OSS.md",
+                "mode": "source",
+                "source": false
+              }
+            }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -170,7 +134,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "SPM/User Story Mapping.md"
+                "file": "Web前端/组件库.md"
               }
             }
           },
@@ -180,7 +144,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "SPM/User Story Mapping.md",
+                "file": "Web前端/组件库.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -197,7 +161,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "SPM/User Story Mapping.md",
+                "file": "Web前端/组件库.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -248,22 +212,29 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "58148d418b816bdc",
   "lastOpenFiles": [
+    "Web后端/OSS.md",
+    "Web前端/组件库.md",
+    "谷粒商城历险记.md",
+    "Web后端/assets/multiUpload.vue",
+    "assets/multiUpload.vue.md",
+    "Web后端/SpringBoot.md",
+    "Linux.md",
+    "Web后端/assets/Pasted image 20230313142743.png",
+    "Web后端/assets/Pasted image 20230313142728.png",
+    "Web后端/assets/O9$9AYMS2FLJH(D36`(JE%V 1.png",
+    "Web后端/assets/O9$9AYMS2FLJH(D36`(JE%V.png",
+    "SPM/Release Plan.md",
+    "SPM/需求.md",
     "SPM/Sprint Backlog.md",
     "SPM/Product Backlog.md",
-    "SPM/需求.md",
-    "SPM/Release Plan.md",
     "SPM/User Story Mapping.md",
     "Docker.md",
     "SPM/User-Story Mapping.canvas",
-    "Linux.md",
-    "谷粒商城历险记.md",
     "SPM",
     "Web后端/SpringCloud.md",
-    "Web前端/组件库.md",
     "Web前端/杂项.md",
-    "Web后端/SpringBoot.md",
     "Web后端/renren-fast.md",
     "Web后端/Mybatis-Plus.md",
     "Web后端/Maven.md",

@@ -83,3 +83,38 @@ mybatis-plus:
 		db-config:
 			id-type: uuid
 ```
+
+# 取缔继承依赖boot
+```xml
+<dependency>  
+    <groupId>org.springframework.boot</groupId>  
+    <artifactId>spring-boot-dependencies</artifactId>  
+    <version>2.6.3</version>  
+    <type>pom</type>  
+    <scope>import</scope>  
+</dependency>
+```
+
+出现了蜜汁bug，尚未找到原因：
+
+![](assets/Pasted%20image%2020230313142743.png)
+
+![](assets/Pasted%20image%2020230313142728.png)
+# 问题
+## JSON包冲突
+
+让test依赖排除一个包即可：
+
+```xml
+<dependency>  
+    <groupId>org.springframework.boot</groupId>  
+    <artifactId>spring-boot-starter-test</artifactId>  
+    <scope>test</scope>  
+    <exclusions>  
+        <exclusion>  
+            <groupId>com.vaadin.external.google</groupId>  
+            <artifactId>android-json</artifactId>  
+        </exclusion>  
+    </exclusions>  
+</dependency>
+```
