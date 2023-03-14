@@ -3,7 +3,7 @@
 ### Browse and reserve materials
 - Search and browse
 	- Modify search tag
-	- Search by keywords
+	- Search on type, title, author, topic or other keywords
 	- Browse search results
 	- Select a material
 - Detail
