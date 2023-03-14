@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "谷粒商城历险记.md",
+                "file": "NovelNook/Product Backlog.md",
                 "mode": "source",
                 "source": false
               }
@@ -67,8 +67,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -134,7 +133,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Web前端/组件库.md"
+                "file": "NovelNook/Product Backlog.md"
               }
             }
           },
@@ -144,7 +143,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Web前端/组件库.md",
+                "file": "NovelNook/Product Backlog.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -161,7 +160,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Web前端/组件库.md",
+                "file": "NovelNook/Product Backlog.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,27 +211,27 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "58148d418b816bdc",
+  "active": "11c372a1f8696678",
   "lastOpenFiles": [
-    "Web后端/OSS.md",
-    "Web前端/组件库.md",
     "谷粒商城历险记.md",
+    "NovelNook/Product Backlog.md",
+    "Linux.md",
+    "Web后端/OSS.md",
+    "Docker.md",
+    "Web前端/组件库.md",
     "Web后端/assets/multiUpload.vue",
     "assets/multiUpload.vue.md",
     "Web后端/SpringBoot.md",
-    "Linux.md",
     "Web后端/assets/Pasted image 20230313142743.png",
     "Web后端/assets/Pasted image 20230313142728.png",
     "Web后端/assets/O9$9AYMS2FLJH(D36`(JE%V 1.png",
     "Web后端/assets/O9$9AYMS2FLJH(D36`(JE%V.png",
-    "SPM/Release Plan.md",
-    "SPM/需求.md",
-    "SPM/Sprint Backlog.md",
-    "SPM/Product Backlog.md",
-    "SPM/User Story Mapping.md",
-    "Docker.md",
+    "NovelNook/Release Plan.md",
+    "NovelNook/需求.md",
+    "NovelNook/Sprint Backlog.md",
+    "NovelNook/User Story Mapping.md",
     "SPM/User-Story Mapping.canvas",
-    "SPM",
+    "NovelNook",
     "Web后端/SpringCloud.md",
     "Web前端/杂项.md",
     "Web后端/renren-fast.md",
