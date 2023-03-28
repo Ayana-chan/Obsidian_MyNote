@@ -20,53 +20,67 @@
             }
           },
           {
-            "id": "397c21123a9d82f2",
+            "id": "840b73df53fd45f9",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Web后端/杂项.md",
+                "file": "Linux.md",
                 "mode": "source",
                 "source": false
               }
             }
           },
           {
-            "id": "4714eb4237b3491f",
+            "id": "cbbe9d1c266e43b3",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Web后端/Mybatis-Plus.md",
+                "file": "MIT6.824/Lab1.md",
                 "mode": "source",
                 "source": false
               }
             }
           },
           {
-            "id": "c60b5540e05ee395",
+            "id": "e771fe0f2cb989d4",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "谷粒商城历险记.md",
+                "file": "MIT6.824/关键词.md",
                 "mode": "source",
                 "source": false
               }
             }
           },
           {
-            "id": "06ef4095fc9d7df8",
+            "id": "68dec86643652835",
             "type": "leaf",
             "state": {
-              "type": "kanban",
+              "type": "markdown",
               "state": {
-                "file": "TODO.md"
+                "file": "Golang.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "e03fb6150112436c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Web前端/Vite.md",
+                "mode": "source",
+                "source": false
               }
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -95,10 +109,10 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
-                "matchingCase": false,
+                "query": "tag:#配置",
+                "matchingCase": true,
                 "explainSearch": false,
-                "collapseAll": true,
+                "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical"
               }
@@ -132,7 +146,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "TODO.md"
+                "file": "MIT6.824/关键词.md"
               }
             }
           },
@@ -142,7 +156,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "TODO.md",
+                "file": "MIT6.824/关键词.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -159,7 +173,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "TODO.md",
+                "file": "MIT6.824/关键词.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,44 +226,49 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "MIT6.824/assets/uTools_1679996515140.png",
+    "Golang.md",
+    "MIT6.824/Lab1.md",
+    "MIT6.824/关键词.md",
+    "Web前端/Vite.md",
+    "TODO.md",
+    "Linux.md",
+    "assets/uTools_1679899925035.png",
+    "MIT6.824/assets/uTools_1679798365904.png",
+    "MIT6.824/assets/uTools_1679754326785.png",
+    "assets/uTools_1679218622329.png",
+    "assets/uTools_1679218248152.png",
+    "assets/uTools_1676689056862.png",
+    "assets/uTools_1676522015630.png",
+    "assets/uTools_1676352336031.png",
+    "assets/uTools_1676521620724.png",
+    "assets/uTools_1676350813096.png",
+    "assets/multiUpload.vue.md",
+    "NovelNook/Basic Documents.md",
+    "NovelNook/需求.md",
+    "Vim.md",
+    "MIT6.824/杂项.md",
+    "MIT6.824/assets",
+    "MIT6.824",
     "Web后端/Mybatis-Plus.md",
     "谷粒商城历险记.md",
-    "TODO.md",
     "Web前端/组件库.md",
     "Web后端/杂项.md",
     "Web后端/Java.md",
-    "Vim.md",
     "Web后端/SpringBoot.md",
     "Web前端/杂项.md",
-    "NovelNook/Basic Documents.md",
-    "assets/uTools_1679218622329.png",
-    "assets/uTools_1679218248152.png",
     "NovelNook/Product Backlog.md",
     "Web后端/Maven.md",
     "Git.md",
-    "Linux.md",
     "2023-03-18.md",
     "未命名.canvas",
     "Web后端/renren-fast.md",
     "Web后端/SpringCloud.md",
     "Web后端/OSS.md",
-    "NovelNook/User Story Mapping.md",
-    "NovelNook/Sprint Backlog.md",
-    "NovelNook/Release Plan.md",
-    "Docker.md",
-    "assets/uTools_1676288415314.png",
     "Web后端/assets/multiUpload.vue",
-    "assets/multiUpload.vue.md",
-    "Web后端/assets/Pasted image 20230313142743.png",
-    "Web后端/assets/Pasted image 20230313142728.png",
-    "Web后端/assets/O9$9AYMS2FLJH(D36`(JE%V 1.png",
-    "Web后端/assets/O9$9AYMS2FLJH(D36`(JE%V.png",
-    "NovelNook/需求.md",
     "SPM/User-Story Mapping.canvas",
     "NovelNook",
     "Web前端",
-    "Web/未命名",
-    "杂记.md",
-    "Redis.md"
+    "Web/未命名"
   ]
 }

@@ -4,9 +4,10 @@
 
 - u: undo，撤销（大小写混用容易出问题）
 - Ctrl-r: redo，重做
-- p: paste，粘贴
 - 
-- d: delete，删除
+- y: 复制（yy复制整行）
+- p: paste，粘贴
+- d: delete，删除（dd删除整行）
 - a: append，光标后编辑
 - i: insert，光标前编辑
 - r: replace，替换当前字符
