@@ -26,8 +26,9 @@ reduces can't start until the last map has finished
 
 没用channel！！！！！
 
+~~改成使用sync.Cond实现任务请求，每个请求失败时都会sleep一段时间再解锁，这样可以让全部worker都在同一个固定时间间隔队列上排队请求，而不是各自都高频遍历。~~
 
-
+最佳实现是使用双向链表（List）！
 
 
 
