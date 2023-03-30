@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824/关键词.md",
+                "file": "MIT6.824/课堂笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -92,7 +92,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -158,7 +158,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/关键词.md"
+                "file": "Golang.md"
               }
             }
           },
@@ -168,7 +168,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/关键词.md",
+                "file": "Golang.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -185,7 +185,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/关键词.md",
+                "file": "Golang.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -238,10 +238,11 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
-    "MIT6.824/assets/uTools_1680065941129.png",
     "MIT6.824/Lab1.md",
-    "MIT6.824/关键词.md",
+    "MIT6.824/美化Debug.md",
     "Golang.md",
+    "MIT6.824/课堂笔记.md",
+    "MIT6.824/assets/uTools_1680065941129.png",
     "Linux.md",
     "MIT6.824/temp.md",
     "NovelNook/Basic Documents.md",
@@ -256,7 +257,6 @@
     "assets/uTools_1676689056862.png",
     "assets/uTools_1676522015630.png",
     "assets/uTools_1676352336031.png",
-    "assets/uTools_1676521620724.png",
     "assets/multiUpload.vue.md",
     "NovelNook/需求.md",
     "Vim.md",

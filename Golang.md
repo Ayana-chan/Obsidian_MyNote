@@ -39,6 +39,12 @@ import的时候传入的是目录名；导入的对象的名字是它的package�
 
 # 基础
 
+## 将fmt输出到文本文件
+
+执行的shell命令后面加上`> output.log`即可将打印都输出到output.log里面。
+
+## 运行时添加环境变量
+如`VERBOSE=1 sh test-mr.sh` 就会在执行命令时让环境变量VERBOSE为1.
 ## var
 
 声明变量而不赋值的时候可以用。
@@ -78,7 +84,8 @@ person.valueShowName("abc")
 ## range
 
 `for`循环中，使用`range`遍历数组，会返回两个变量，分别是下标和值。可以使用`_`来缺省一个变量。
-## 匿名函数
+
+## 匿名函数/闭包
 可以在代码块内直接用`func`定义一个匿名函数（内部函数inner function）（闭包closure）：
 
 ```go
