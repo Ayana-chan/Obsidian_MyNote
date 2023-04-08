@@ -148,6 +148,8 @@ public interface CouponFeignService {
 
 这样，member模块里调用`couponFeignService.membercoupons()`即可获取coupon模块内`/coupon/coupon/member/list`对应的信息。
 
+## 注意事项
+返回类型一定要加无参构造函数，否则会一直返回null。
 # GateWay（网关）
 ```xml
 <dependency>  

@@ -121,6 +121,10 @@ if __name__ == "__main__":
 
 # dstest
 
+```bash
+dtest.py -n 1 -o dtlog -r 2A
+```
+
 ```python
 #!/usr/bin/env python3
 
