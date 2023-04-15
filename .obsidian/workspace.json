@@ -30,45 +30,9 @@
                 "source": false
               }
             }
-          },
-          {
-            "id": "68dec86643652835",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Golang.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "e03fb6150112436c",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Web后端/Mybatis-Plus.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "79f6975c0e2101cd",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "MIT6.824/temp.md",
-                "mode": "source",
-                "source": false
-              }
-            }
           }
         ],
-        "currentTab": 3
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -134,7 +98,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Web后端/Mybatis-Plus.md"
+                "file": "MIT6.824/Lab2.md"
               }
             }
           },
@@ -144,7 +108,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Web后端/Mybatis-Plus.md",
+                "file": "MIT6.824/Lab2.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -161,7 +125,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Web后端/Mybatis-Plus.md",
+                "file": "MIT6.824/Lab2.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,25 +176,33 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "422bfc790df9c338",
   "lastOpenFiles": [
-    "Web后端/SpringCloud.md",
-    "Web后端/Java.md",
-    "MIT6.824/课堂笔记.md",
-    "Web后端/杂项.md",
+    "Web后端/SpringBoot.md",
     "Web后端/Mybatis-Plus.md",
+    "RocketMQ.md",
     "NovelNook/Basic Documents.md",
+    "正则表达式.pdf",
+    "Linux.md",
+    "MIT6.824/temp.md",
+    "未命名",
+    "Web后端/Maven.md",
+    "Web后端/Java.md",
+    "Web后端/杂项.md",
+    "NovelNook/需求.md",
+    "谷粒商城历险记.md",
+    "Golang.md",
+    "Git.md",
+    "Web后端/SpringCloud.md",
+    "MIT6.824/课堂笔记.md",
     "MIT6.824/美化Debug.md",
     "Web前端/vue3.md",
     "Web前端/杂项.md",
     "杂记.md",
     "Web前端/css.md",
     "Web前端/组件库.md",
-    "谷粒商城历险记.md",
-    "Linux.md",
     "MIT6.824/Lab2.md",
     "Web前端/Vite.md",
-    "Golang.md",
     "MIT6.824/assets/Obsidian.lnk",
     "MIT6.824/assets/uTools_1680247505548.png",
     "MIT6.824/assets/uTools_1680242280464.png",
@@ -238,21 +210,14 @@
     "MIT6.824/assets/uTools_1680235452963.png",
     "MIT6.824/Lab1.md",
     "MIT6.824/assets/uTools_1680065941129.png",
-    "MIT6.824/temp.md",
     "MIT6.824/assets/uTools_1679996515140.png",
     "TODO.md",
     "assets/uTools_1679899925035.png",
     "MIT6.824/assets/uTools_1679798365904.png",
     "MIT6.824/assets/uTools_1679754326785.png",
     "assets/uTools_1679218622329.png",
-    "assets/multiUpload.vue.md",
-    "NovelNook/需求.md",
-    "Vim.md",
-    "MIT6.824/杂项.md",
     "MIT6.824/assets",
     "MIT6.824",
-    "Web后端/SpringBoot.md",
-    "NovelNook/Product Backlog.md",
     "未命名.canvas",
     "Web后端/assets/multiUpload.vue",
     "SPM/User-Story Mapping.canvas",

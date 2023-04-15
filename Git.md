@@ -11,3 +11,34 @@
 
 **/.gitignore
 ```
+
+## 获取新的分支信息
+
+```bash
+git remote update origin --prune
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
