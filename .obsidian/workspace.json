@@ -54,9 +54,21 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "6efd003882e36273",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Golang.md",
+                "mode": "source",
+                "source": false
+              }
+            }
           }
         ],
-        "currentTab": 1
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -122,7 +134,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/课堂笔记.md"
+                "file": "Golang.md"
               }
             }
           },
@@ -132,7 +144,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/课堂笔记.md",
+                "file": "Golang.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -149,7 +161,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/课堂笔记.md",
+                "file": "Golang.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -200,8 +212,10 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "09db2596c5110c6c",
+  "active": "6efd003882e36273",
   "lastOpenFiles": [
+    "MIT6.824/Lab2.md",
+    "MIT6.824/课堂笔记.md",
     "MIT6.824/assets/uTools_1681967002882.png",
     "MIT6.824/assets/uTools_1681966498234.png",
     "Web后端/SpringMVC.md",
@@ -209,7 +223,6 @@
     "Web后端/WebSocket.md",
     "Git.md",
     "Web后端/Java.md",
-    "MIT6.824/Lab2.md",
     "Web后端/Mybatis-Plus.md",
     "RocketMQ.md",
     "NovelNook/Basic Documents.md",
@@ -223,7 +236,6 @@
     "谷粒商城历险记.md",
     "Golang.md",
     "Web后端/SpringCloud.md",
-    "MIT6.824/课堂笔记.md",
     "MIT6.824/美化Debug.md",
     "Web前端/vue3.md",
     "Web前端/杂项.md",
@@ -240,7 +252,6 @@
     "MIT6.824/assets/uTools_1679996515140.png",
     "assets/uTools_1679899925035.png",
     "MIT6.824/assets/uTools_1679798365904.png",
-    "MIT6.824/assets/uTools_1679754326785.png",
     "MIT6.824/assets",
     "MIT6.824",
     "未命名.canvas",
