@@ -32,8 +32,131 @@ applyCh是慢速的，如果两次commit非常接近，又同时塞入applyCh，
 
 一个新leader当选时，即使没有新日志，它也会因为nextIndex为log的长度+1而可以通过preIndex和preTerm去检测follower日志是否和其完全相同，若不相同则马上开始发日志。
 
+commitIndex只有在加日志成功之后才能动，不然可能把非法的日志也给apply，或者表现为下标越界。
+
+---
+原理解：
+>AE在高并发测试中有可能错位到达导致最终日志长度小于commitIndex（短的AE先发出后到位）。现实中应该很难发生，但以防万一让apply时不得超过日志长度。但是，虽然错位的返回可以让matchIndex和nextIndex符合最后一次的AE，但commitIndex是禁止缩短的，这可能导致commit项丢失。
+
+情景：
+>Leader: 12345  
+>Follower: 12  
+>
+>Leader发送345，但网络延迟
+>Leader收到新日志67
+>Leader: 1234567  
+>
+>Leader发送34567,直接到达  
+>Follower:1234567  
+>
+>此时345再到达  
+>Follower: 1234567还是12345
 
 
+figure2中AppendEntries RPC的第三点：
+>If an existing entry conflicts with a new one (same indexbut different terms), delete the existing entry and all that follow it (§5.3)
+
+因此确实没冲突就别删，应该为1234567
+
+---
+
+leader发送heartBeat时如果没有原子性地检测state的话，如果发送前下台了，可能日志也会发生变化。看似没有副作用，但此时再用nextIndex去获取日志项的时候就可能发生下标越界。
+
+上述两条bug可能只有在lab3里面才能发现，因为lab2稍微加点压力就先爆超时了。
+
+---
+
+rpc报race，不知道什么原因：
+
+```go
+func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply) bool {  
+	ok := rf.peers[server].Call("Raft.AppendEntries", args, reply) //该行会报一个莫名其妙的race  
+	return ok  
+}
+```
+
+```bash
+==================
+WARNING: DATA RACE
+Read at 0x00c0006713e0 by goroutine 132:
+  encoding/gob.encInt()
+      /usr/local/go/src/reflect/value.go:983 +0x1df
+  encoding/gob.(*Encoder).encodeStruct()
+      /usr/local/go/src/encoding/gob/encode.go:328 +0x436
+  encoding/gob.encOpFor.func4()
+      /usr/local/go/src/encoding/gob/encode.go:581 +0xf0
+  encoding/gob.(*Encoder).encodeArray()
+      /usr/local/go/src/encoding/gob/encode.go:351 +0x26f
+  encoding/gob.encOpFor.func1()
+      /usr/local/go/src/encoding/gob/encode.go:551 +0x1a3
+  encoding/gob.(*Encoder).encodeStruct()
+      /usr/local/go/src/encoding/gob/encode.go:328 +0x436
+  encoding/gob.(*Encoder).encode()
+      /usr/local/go/src/encoding/gob/encode.go:701 +0x1fe
+  encoding/gob.(*Encoder).EncodeValue()
+      /usr/local/go/src/encoding/gob/encoder.go:251 +0x666
+  encoding/gob.(*Encoder).Encode()
+      /usr/local/go/src/encoding/gob/encoder.go:176 +0x5b
+  _/root/AAAAA/lab6.824/LabSoftware6.824/src/labgob.(*LabEncoder).Encode()
+      /root/AAAAA/lab6.824/LabSoftware6.824/src/labgob/labgob.go:34 +0x7b
+  _/root/AAAAA/lab6.824/LabSoftware6.824/src/labrpc.(*ClientEnd).Call()
+      /root/AAAAA/lab6.824/LabSoftware6.824/src/labrpc/labrpc.go:93 +0x1a4
+  _/root/AAAAA/lab6.824/LabSoftware6.824/src/raft.(*Raft).sendHeartBeats.func1()
+      /root/AAAAA/lab6.824/LabSoftware6.824/src/raft/raft.go:427 +0x6be
+
+Previous write at 0x00c0006713e0 by goroutine 186:
+  [failed to restore the stack]
+
+Goroutine 132 (running) created at:
+  _/root/AAAAA/lab6.824/LabSoftware6.824/src/raft.(*Raft).sendHeartBeats()
+      /root/AAAAA/lab6.824/LabSoftware6.824/src/raft/raft.go:443 +0x319
+
+Goroutine 186 (running) created at:
+  _/root/AAAAA/lab6.824/LabSoftware6.824/src/labrpc.(*Network).processReq()
+      /root/AAAAA/lab6.824/LabSoftware6.824/src/labrpc/labrpc.go:237 +0x174
+==================
+==================
+WARNING: DATA RACE
+Read at 0x00c0006713e8 by goroutine 132:
+  encoding/gob.encOpFor.func5()
+      /usr/local/go/src/reflect/value.go:1078 +0x218
+  encoding/gob.(*Encoder).encodeStruct()
+      /usr/local/go/src/encoding/gob/encode.go:328 +0x436
+  encoding/gob.encOpFor.func4()
+      /usr/local/go/src/encoding/gob/encode.go:581 +0xf0
+  encoding/gob.(*Encoder).encodeArray()
+      /usr/local/go/src/encoding/gob/encode.go:351 +0x26f
+  encoding/gob.encOpFor.func1()
+      /usr/local/go/src/encoding/gob/encode.go:551 +0x1a3
+  encoding/gob.(*Encoder).encodeStruct()
+      /usr/local/go/src/encoding/gob/encode.go:328 +0x436
+  encoding/gob.(*Encoder).encode()
+      /usr/local/go/src/encoding/gob/encode.go:701 +0x1fe
+  encoding/gob.(*Encoder).EncodeValue()
+      /usr/local/go/src/encoding/gob/encoder.go:251 +0x666
+  encoding/gob.(*Encoder).Encode()
+      /usr/local/go/src/encoding/gob/encoder.go:176 +0x5b
+  _/root/AAAAA/lab6.824/LabSoftware6.824/src/labgob.(*LabEncoder).Encode()
+      /root/AAAAA/lab6.824/LabSoftware6.824/src/labgob/labgob.go:34 +0x7b
+  _/root/AAAAA/lab6.824/LabSoftware6.824/src/labrpc.(*ClientEnd).Call()
+      /root/AAAAA/lab6.824/LabSoftware6.824/src/labrpc/labrpc.go:93 +0x1a4
+  _/root/AAAAA/lab6.824/LabSoftware6.824/src/raft.(*Raft).sendHeartBeats.func1()
+      /root/AAAAA/lab6.824/LabSoftware6.824/src/raft/raft.go:427 +0x6be
+
+Previous write at 0x00c0006713e8 by goroutine 186:
+  [failed to restore the stack]
+
+Goroutine 132 (running) created at:
+  _/root/AAAAA/lab6.824/LabSoftware6.824/src/raft.(*Raft).sendHeartBeats()
+      /root/AAAAA/lab6.824/LabSoftware6.824/src/raft/raft.go:443 +0x319
+
+Goroutine 186 (running) created at:
+  _/root/AAAAA/lab6.824/LabSoftware6.824/src/labrpc.(*Network).processReq()
+      /root/AAAAA/lab6.824/LabSoftware6.824/src/labrpc/labrpc.go:237 +0x174
+==================
+```
+
+---
 
 
 

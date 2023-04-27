@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824/课堂笔记.md",
+                "file": "NovelNook/需求.md",
                 "mode": "source",
                 "source": false
               }
@@ -44,18 +44,6 @@
             }
           },
           {
-            "id": "422bfc790df9c338",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "MIT6.824/Lab2.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
             "id": "6efd003882e36273",
             "type": "leaf",
             "state": {
@@ -66,9 +54,33 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "6ae9a90250ca1b51",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "MIT6.824/lab3.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "96ea57b1935221c8",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "MIT6.824/Lab2.md",
+                "mode": "source",
+                "source": false
+              }
+            }
           }
         ],
-        "currentTab": 3
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -212,16 +224,19 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "422bfc790df9c338",
+  "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "MIT6.824/lab3.md",
     "Web后端/SpringBoot.md",
     "Golang.md",
+    "NovelNook/需求.md",
     "MIT6.824/课堂笔记.md",
+    "Web后端/WebSocket.md",
+    "MIT6.824/Lab1.md",
     "MIT6.824/Lab2.md",
     "MIT6.824/assets/uTools_1681967002882.png",
     "MIT6.824/assets/uTools_1681966498234.png",
     "Web后端/SpringMVC.md",
-    "Web后端/WebSocket.md",
     "Git.md",
     "Web后端/Java.md",
     "Web后端/Mybatis-Plus.md",
@@ -233,7 +248,6 @@
     "未命名",
     "Web后端/Maven.md",
     "Web后端/杂项.md",
-    "NovelNook/需求.md",
     "谷粒商城历险记.md",
     "Web后端/SpringCloud.md",
     "MIT6.824/美化Debug.md",
@@ -242,7 +256,6 @@
     "杂记.md",
     "Web前端/css.md",
     "Web前端/组件库.md",
-    "Web前端/Vite.md",
     "MIT6.824/assets/Obsidian.lnk",
     "MIT6.824/assets/uTools_1680247505548.png",
     "MIT6.824/assets/uTools_1680242280464.png",
