@@ -73,7 +73,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824/Lab2.md",
+                "file": "MIT6.824/美化Debug.md",
                 "mode": "source",
                 "source": false
               }
@@ -146,7 +146,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/Lab2.md"
+                "file": "MIT6.824/美化Debug.md"
               }
             }
           },
@@ -156,7 +156,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/Lab2.md",
+                "file": "MIT6.824/美化Debug.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -173,7 +173,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/Lab2.md",
+                "file": "MIT6.824/美化Debug.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -224,16 +224,16 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "96ea57b1935221c8",
   "lastOpenFiles": [
-    "MIT6.824/lab3.md",
+    "MIT6.824/Lab2.md",
     "Web后端/SpringBoot.md",
+    "MIT6.824/lab3.md",
     "Golang.md",
     "NovelNook/需求.md",
     "MIT6.824/课堂笔记.md",
     "Web后端/WebSocket.md",
     "MIT6.824/Lab1.md",
-    "MIT6.824/Lab2.md",
     "MIT6.824/assets/uTools_1681967002882.png",
     "MIT6.824/assets/uTools_1681966498234.png",
     "Web后端/SpringMVC.md",

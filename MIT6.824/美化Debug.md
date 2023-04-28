@@ -122,7 +122,7 @@ if __name__ == "__main__":
 # dstest
 
 ```bash
-dtest.py -n 1 -o dtlog -r 2A
+dtest.py -n 32 -p 8 -r -o dtlog 2A
 ```
 
 ```python
