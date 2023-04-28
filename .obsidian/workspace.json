@@ -61,7 +61,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824/lab3.md",
+                "file": "MIT6.824/Lab2.md",
                 "mode": "source",
                 "source": false
               }
@@ -80,7 +80,7 @@
             }
           }
         ],
-        "currentTab": 5
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -146,7 +146,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/美化Debug.md"
+                "file": "MIT6.824/Lab2.md"
               }
             }
           },
@@ -156,7 +156,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/美化Debug.md",
+                "file": "MIT6.824/Lab2.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -173,7 +173,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/美化Debug.md",
+                "file": "MIT6.824/Lab2.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -224,12 +224,13 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "96ea57b1935221c8",
+  "active": "6ae9a90250ca1b51",
   "lastOpenFiles": [
-    "MIT6.824/Lab2.md",
-    "Web后端/SpringBoot.md",
     "MIT6.824/lab3.md",
     "Golang.md",
+    "MIT6.824/Lab2.md",
+    "MIT6.824/美化Debug.md",
+    "Web后端/SpringBoot.md",
     "NovelNook/需求.md",
     "MIT6.824/课堂笔记.md",
     "Web后端/WebSocket.md",
@@ -250,7 +251,6 @@
     "Web后端/杂项.md",
     "谷粒商城历险记.md",
     "Web后端/SpringCloud.md",
-    "MIT6.824/美化Debug.md",
     "Web前端/vue3.md",
     "Web前端/杂项.md",
     "杂记.md",

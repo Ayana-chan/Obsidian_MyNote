@@ -1,3 +1,5 @@
+## A
+
 - Put() replaces the value for a particular key in the database
 - Append(key, arg) appends arg to key's value
 - Get() fetches the current value for a key
@@ -19,8 +21,6 @@ You are allowed to add fields to the Raft ApplyMsg, and to add fields to Raft R
 
 It's OK to assume that a client will make only one call into a Clerk at a time.
 
-删除map的key后，value不一定真的释放了内存，因此需要手动关闭map中的channel，不过此时不需要上锁。
-
 带缓冲的channel可以防止在把applyCh的返回给分发的时候出现阻塞。
 
 发现applyCh的时候当场判断是否重复并执行，然后通知原请求即可。
@@ -31,6 +31,10 @@ It's OK to assume that a client will make only one call into a Clerk at a time.
 
 可能有这样的及其刁钻的情况：判断超时，但尚未获得锁以删掉channel，于是applyCh的东西也会被加入到这个channel当中。但此时完全可以判定其为超时，不会影响任何东西。此时**带缓存的channel**的作用就凸显出来了，applyCh加入时不会阻塞，加完后可以带着数据被gc。
 
+应当这样分解server的功能：
+1. 若为Leader，接受client的请求，并将其发给Raft。
+2. 所有服务器，监听applyCh，将新command应用于kv数据库。
+3. 所有服务器，接收到command后通知正在等待回应的client。
 
 
 

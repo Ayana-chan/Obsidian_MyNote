@@ -24,7 +24,7 @@ leader通过心跳来控制term一致，也会别的旧leader下台；另外，�
 要十分注意是否在发现高term时更新自己的term（无论任何身份）。这影响到是否有不必要的leader发送，以及是否能让选举正常进行（不更新的话，各个candidate和follower的任期可能会一直错开，导致一直重置选举）。
 ## B
 
-测试时不要开太多线程，超两秒未提交某一项就会不通过。不要让CPU压力爆满。
+测试时不要开太多线程，超两秒未提交某一项就会不通过。不要让CPU压力爆满（在lab3里面没有超时问题所以可以尽情上压力）。
 
 RPC网络完全不可信任，每次处理响应的时候都要看看是否state变化，日志是否被删改（比如比较AE的最后一个日志与当前日志的下标任期是否对得上）。
 
@@ -33,6 +33,8 @@ applyCh是慢速的，如果两次commit非常接近，又同时塞入applyCh，
 一个新leader当选时，即使没有新日志，它也会因为nextIndex为log的长度+1而可以通过preIndex和preTerm去检测follower日志是否和其完全相同，若不相同则马上开始发日志。
 
 commitIndex只有在加日志成功之后才能动，不然可能把非法的日志也给apply，或者表现为下标越界。
+
+#### 下面的bug可能只有在lab3里面才能发现，因为lab2稍微加点压力就先爆超时了。
 
 ---
 原理解：
@@ -61,8 +63,6 @@ figure2中AppendEntries RPC的第三点：
 ---
 
 leader发送heartBeat时如果没有原子性地检测state的话，如果发送前下台了，可能日志也会发生变化。看似没有副作用，但此时再用nextIndex去获取日志项的时候就可能发生下标越界。
-
-上述两条bug可能只有在lab3里面才能发现，因为lab2稍微加点压力就先爆超时了。
 
 ---
 
@@ -154,6 +154,15 @@ Goroutine 186 (running) created at:
   _/root/AAAAA/lab6.824/LabSoftware6.824/src/labrpc.(*Network).processReq()
       /root/AAAAA/lab6.824/LabSoftware6.824/src/labrpc/labrpc.go:237 +0x174
 ==================
+```
+
+原因似乎找到了：
+
+```go
+//这是浅拷贝，会引发race（“rpc编码”与“修改log”之间的读写race）
+args.Entries = rf.log[rf.nextIndex[s]:]  
+//使用append达成深拷贝，从而让args真正独立开来
+args.Entries = append(args.Entries, rf.log[rf.nextIndex[s]:]...)
 ```
 
 ---
