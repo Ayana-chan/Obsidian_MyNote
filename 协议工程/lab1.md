@@ -8,7 +8,7 @@
 由于一个接口可能使用多个协议需要多个地址，或者使用一个协议也要多个地址，于是一个`ifnet`就需要联结多个`ifaddr`，通过`if_addrlist`链表。
 
 `if_addrlist`示意：
-![](assets/uTools_1682925702107.png)
+![300](assets/uTools_1682952106885.png)
 
 ```c
 /*
@@ -128,7 +128,7 @@ struct ifnet {
 而协议地址又以`sockaddr`结构体存储。
 
 `if_addrlist`具体示意：
-![](assets/uTools_1682925760527.png)
+![300](assets/uTools_1682952074768.png)
 
 ```c
 struct ifaddr {
@@ -263,10 +263,11 @@ struct mbuf {
 ```
 
 两个`union`使得mbuf可以分为四种：
-![](assets/uTools_1682927729313.png)
+![](assets/uTools_1682951959714.png)
 
 二维mbuf链表图例：
-![](assets/uTools_1682928574206.png)
+![](assets/uTools_1682951924349.png)
+
 
 
 
