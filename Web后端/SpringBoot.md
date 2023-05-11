@@ -119,7 +119,11 @@ public R list(@RequestParam xxx, @PathVariable("catalogId") Long catalogId){
 ## 校验
 [表单校验 JSR303](Web后端/杂项.md#表单校验%20JSR303)
 
+# 拷贝对象
 
+```java
+BeanUtils.copyProperties(src, aim);
+```
 # 异常处理
 可以通过AOP来建立一个处理所有未处理异常的Advice。
 

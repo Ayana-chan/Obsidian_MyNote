@@ -42,7 +42,14 @@ session内的方法已经封装了发送。
 
 而接收信息只要在`@OnMessage`里面像Controller一样接受参数就行了。
 
+# 问题
 
+## 测试类报错
+[springboot整合websocket后运行测试类报错\_springboot websocket测试类报错-CSDN博客](https://blog.csdn.net/jack1watch/article/details/124825094)
+
+```java
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+```
 
 
 

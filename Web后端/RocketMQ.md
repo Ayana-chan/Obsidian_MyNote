@@ -86,7 +86,11 @@ pangliang/rocketmq-console-ng
 org.apache.rocketmq.remoting.exception.RemotingConnectException: connect to failed
 ```
 
+# 问题
 
+## 同一个Group的必须监听同一个Topic
+
+不然出现不可预测的bug，没有规律可言。
 
 
 
