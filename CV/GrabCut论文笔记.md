@@ -14,6 +14,34 @@ made two enhancements to the graph cuts mechanism:
 
 trimap: 三分图，分为前景Tf、背景Tb、未知灰色区域Tu
 
+# 后备知识
+
+## MLE 最大似然估计
+
+求取一种高斯分布，使得所有样本同时发生的概率最大。取log是为了好拆式子，但GMM的话由于log里面还有连加，拆不出来。
+
+## EM 期望最大算法
+
+一个一直用到的公式：
+
+$$p(x|θ)=\frac{p(x,z|θ)}{p(z|x,θ)}$$
+
+每次迭代，$θ^t$都可看做常量。
+
+- E-Step: 把$Q(θ,θ^t)$（argmax右边的式子）给列出来。
+- M-Step: 求解最大值和argmax
+
+## GMM 高斯混合模型
+
+若有一堆样本，我们猜测它是由两个高斯分布组成的，那么我们就需要猜测它属于哪个高斯分布。这个归属z就称作隐变量latent variable。
+
+样本x为观测数据observed variable。
+
+二者结合的(x,z)为完整数据complete data。
+
+而θ
+
+
 # 小记
 
 最小割问题等价于最大流问题。
@@ -22,7 +50,7 @@ trimap: 三分图，分为前景Tf、背景Tb、未知灰色区域Tu
 
 argmin: 代入指定的参数的所有可能值，返回所得的最小结果所代入的参数。
 
-![300](assets/uTools_1683951997207.png)
+![400](assets/uTools_1683973454372.png)
 
 - t-link: 与S、T相连的边的权值。
 - n-link: 图像中相邻像素之间的边的权值。
@@ -30,7 +58,7 @@ argmin: 代入指定的参数的所有可能值，返回所得的最小结果所
 
 - z: 图像数据
 - α: 对像素的判定结果
-- θ: 分布模型
+- θ: 分布模型，或者说参数
 
 E(α,θ,z) = U(α,θ,z) + V(α,z)
 
@@ -71,7 +99,11 @@ In order to deal with the GMM tractably, in the optimization framework, an addi
 
 ？ Note that for effificiency the optimal flflow, computed by Graph Cut, can be re-used during user edits.
 
+# 实现
 
+穷举边时，虽然每个点都有八个邻居，但每个点只要算四个方向，就能覆盖所有邻居连线。例如，右上、右、右下、下。
+
+可能要注意不把用户指定的前景背景给迭代更新了。
 
 
 

@@ -61,7 +61,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Golang.md",
+                "file": "CV/GrabCut论文笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -80,7 +80,7 @@
             }
           }
         ],
-        "currentTab": 5
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -154,7 +154,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "CV/OpenCV.md"
+                "file": "CV/GrabCut论文笔记.md"
               }
             }
           },
@@ -164,7 +164,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "CV/OpenCV.md",
+                "file": "CV/GrabCut论文笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -181,7 +181,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "CV/OpenCV.md",
+                "file": "CV/GrabCut论文笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -232,16 +232,17 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "2b45aa9a76fc8500",
   "lastOpenFiles": [
-    "CV/GrabCut论文笔记.md",
+    "CV/assets/uTools_1683973454372.png",
+    "Golang.md",
     "CV/OpenCV.md",
+    "CV/GrabCut论文笔记.md",
     "CV/assets/uTools_1683951997207.png",
     "CV/assets/uTools_1683950332223.png",
     "CV/assets",
     "Cpp.md",
     "CV",
-    "Golang.md",
     "协议工程/lab1.md",
     "Git.md",
     "Web后端/SpringBoot.md",
@@ -275,7 +276,6 @@
     "CMU15445",
     "MIT6.824/lab3.md",
     "NovelNook/需求.md",
-    "MIT6.824/Lab1.md",
     "正则表达式.pdf",
     "MIT6.824/assets/Obsidian.lnk",
     "MIT6.824/assets",
