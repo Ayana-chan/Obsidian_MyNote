@@ -228,8 +228,40 @@ int main()
 重载`operator<`即可重建该对象的排序规则。
 
 
+# CMake
 
+## CMakeList
 
+### 复杂目录项目构建
 
+`add_library`会将当前目录编译为库供其他项目使用，因此必须要自己就能编译通过，所以不太适合用来将一个项目的多个目录进行整合。
+
+利用`target_sources`，可以很方便地管理各子目录。
+
+父目录CMakeList示例：
+
+```cmake
+#建立项目，可以使用add_executable
+add_library(MyPro MainController.cpp)  
+#指定该项目的include目录为./include。只用include_directories会导致该项设置无法传递到子目录
+target_include_directories(MyPro PUBLIC include)   
+
+#添加各子目录。要写在创建项目的后面 
+add_subdirectory(ui)  
+add_subdirectory(util)
+```
+
+子目录CMakeList示例：
+
+```cmake
+#将子目录的cpp文件加载到项目中。
+#若父目录里面的add_subdirectory写在建立项目之后，则会报重复定义错误。也就是说target_sources里面的target（第一项）匹配不到的话会自己建立一个项目
+target_sources(
+	MyPro  
+    PUBLIC        
+	    a.cpp
+	    b.cpp
+)
+```
 
 
