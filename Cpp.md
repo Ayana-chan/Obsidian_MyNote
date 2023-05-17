@@ -155,6 +155,8 @@ std::make_unique<TrieNodeWithValue<T>>(children_, value_)
 
 [CPP11-右值引用 - 简书](https://www.jianshu.com/p/06b0b17c62bc)
 
+要把右值引用看成用于接住右值、给它续命的东西。
+
 ## 完美转发
 
 函数接收参数的时候，右值等可能会发生变化导致右值变左值等问题。使用`std::forward<T>(x)`可以保证其不发生改变。
@@ -227,6 +229,42 @@ int main()
 
 重载`operator<`即可重建该对象的排序规则。
 
+## 随机数
+
+```cpp
+#include <random>
+
+std::random_device rd;  
+auto gen = std::default_random_engine(rd());  
+std::uniform_int_distribution<int> dis(0,10);  
+  
+for (int i=0; i<10; ++i) {  
+    std::cout<<"rand: " << dis(gen) << " ";  
+}
+```
+
+# 计算时间间隔
+
+```cpp
+#include <chrono> 
+
+auto start = std::chrono::system_clock::now(); 
+//do something 
+auto end = std::chrono::system_clock::now(); 
+auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start); 
+std::cout << elapsed.count() <<"ms" << '\n';
+```
+
+
+# 问题与技巧
+
+## 两个类互相依赖
+
+类A里面需要B，类B里面需要A。可以在B.h里面别`include "A.h"`，而是前向声明 `class A`；A.h则正常地`include "B.h"`。
+
+## 其他
+
+>以下所有内容都可以放入头文件中，并且可以多次包含在不同的翻译单元中。   类类型（第9节），枚举类型（7.2），带有外部链接的内联函数（7.1.2），类模板（第14节），非静态函数模板（14.5.5）可以有多个定义，类模板的静态数据成员（14.5.1.3），类模板的成员函数（14.5.1.1），或者在程序中未指定某些模板参数（14.7,14.5.4）的模板特化，前提是每个模板定义出现在不同的翻译单元中，并且定义满足以下要求。 要求基本上归结为每个定义必须相同。请注意，如果您的枚举类型本身没有名称，那么该规则不会涵盖它。另一个翻译单元中的每个定义都定义了一个新的枚举类型，并且不会相互冲突。 将它们放入标题是一个好地方，如果它应该是公开的。将它们放在实现文件中是一个好地方，如果它应该是对该单个文件的私有。在后一种情况下，要么将它们放入未命名的命名空间，要么将它们命名为未命名（就像枚举示例中的情况一样），以便它不会与具有相同名称的另一个枚举冲突。
 
 # CMake
 
@@ -255,7 +293,7 @@ add_subdirectory(util)
 
 ```cmake
 #将子目录的cpp文件加载到项目中。
-#若父目录里面的add_subdirectory写在建立项目之后，则会报重复定义错误。也就是说target_sources里面的target（第一项）匹配不到的话会自己建立一个项目
+#若父目录里面的add_subdirectory写在建立项目之前，则会报重复定义错误。也就是说target_sources里面的target（第一项）匹配不到的话会自己建立一个项目
 target_sources(
 	MyPro  
     PUBLIC        

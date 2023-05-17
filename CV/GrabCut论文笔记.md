@@ -58,6 +58,7 @@ EM结论：
  p(k=2|x)=p(x|k=2)*p(k=2)/p(x)
  \end{aligned}$$
  要比大小的话，p(x)两式都有，可以忽略。
+ 这式子可以描述为：模型的权重\*模型中发生改样本的概率
 
 
 
@@ -143,6 +144,6 @@ In order to deal with the GMM tractably, in the optimization framework, an addi
 
 RGB三通道对应的mat.type为CV_8UC3。
 
+kmeans和GMM都可能会遇到没有任何样本的分量，此时无视各自操作、不修改参数即可。
 
-
-
+maxflow似乎是O(n^2)时间复杂度。
