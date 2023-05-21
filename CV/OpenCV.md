@@ -19,7 +19,13 @@ add_executable(test OpenCVTest.cpp)
 target_link_libraries(test ${OpenCV_LIBS})
 ```
 
+# 库与语法
 
+## waitKey
+
+阻塞直到收到键盘点击事件。
+
+参数可以指定阻塞最长时间，超出则关闭窗口。
 
 
 
