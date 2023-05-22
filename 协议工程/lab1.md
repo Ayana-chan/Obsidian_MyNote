@@ -1,5 +1,5 @@
 之所以大量使用链表，是为了方便插入删除。
-## ifnet
+# ifnet
 
 >if=interface
 
@@ -119,7 +119,7 @@ struct ifnet {
 #define	if_lastchange	if_data.ifi_lastchange
 ```
 
-## ifaddr
+# ifaddr
 
 存储地址信息。可以分成两部分结构：
 1. 存储自己的协议地址与目标的协议地址
@@ -146,7 +146,7 @@ struct ifaddr {
 };
 ```
 
-## sockaddr
+# sockaddr
 
 存储具体的地址信息。
 
@@ -207,7 +207,7 @@ struct sockaddr {
 #define	AF_MAX		26
 ```
 
-## mbuf
+# mbuf
 
 >memory buffer
 
