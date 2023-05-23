@@ -304,13 +304,14 @@ bad:
  * protocol deal with that.
  *
  * The srcrt parameter indicates whether the packet is being forwarded
- * via a source route.
+ * via a source route. 包含源路由时为1
  */
 void
 ip_forward(m, srcrt)
 	struct mbuf *m;
 	int srcrt;
 {
+	//register关键字用于请求编译器将该变量存于寄存器中
 	register struct ip *ip = mtod(m, struct ip *);
 	register struct sockaddr_in *sin;
 	register struct rtentry *rt;
@@ -325,11 +326,13 @@ ip_forward(m, srcrt)
 		printf("forward: src %x dst %x ttl %x\n", ip->ip_src,
 			ip->ip_dst, ip->ip_ttl);
 #endif
+	//丢弃某些种分组
 	if (m->m_flags & M_BCAST || in_canforward(ip->ip_dst) == 0) {
 		ipstat.ips_cantforward++;
 		m_freem(m);
 		return;
 	}
+	//减少TTL
 	HTONS(ip->ip_id);
 	if (ip->ip_ttl <= IPTTLDEC) {
 		icmp_error(m, ICMP_TIMXCEED, ICMP_TIMXCEED_INTRANS, dest, 0);
@@ -337,6 +340,7 @@ ip_forward(m, srcrt)
 	}
 	ip->ip_ttl -= IPTTLDEC;
 
+	//定位下一跳
 	sin = (struct sockaddr_in *)&ipforward_rt.ro_dst;
 	if ((rt = ipforward_rt.ro_rt) == 0 ||
 	    ip->ip_dst.s_addr != sin->sin_addr.s_addr) {
@@ -360,7 +364,10 @@ ip_forward(m, srcrt)
 	 * Save at most 64 bytes of the packet in case
 	 * we need to generate an ICMP message to the src.
 	 */
+	//保存前64字节来发ICMP差错报文
 	mcopy = m_copy(m, 0, imin((int)ip->ip_len, 64));
+
+/*--- 决定是否发送ICMP重定向报文 */
 
 #ifdef GATEWAY
 	ip_ifmatrix[rt->rt_ifp->if_index +
@@ -398,6 +405,9 @@ ip_forward(m, srcrt)
 		}
 	}
 
+/*---*/
+
+	//调用ip_output把分组转发到ipforward_rt指定的下一跳
 	error = ip_output(m, (struct mbuf *)0, &ipforward_rt, IP_FORWARDING
 #ifdef DIRECTED_BROADCAST
 			    | IP_ALLOWBROADCAST
@@ -410,6 +420,7 @@ ip_forward(m, srcrt)
 		if (type)
 			ipstat.ips_redirectsent++;
 		else {
+			//发送成功且不用重定向，则事情做完了，不需要mcopy这64字节
 			if (mcopy)
 				m_freem(mcopy);
 			return;
@@ -426,15 +437,15 @@ ip_forward(m, srcrt)
 		break;
 
 	case ENETUNREACH:		/* shouldn't happen, checked above */
-	case EHOSTUNREACH:
-	case ENETDOWN:
-	case EHOSTDOWN:
+	case EHOSTUNREACH: //找不到主机路由
+	case ENETDOWN: //路由对应的输出接口未运行
+	case EHOSTDOWN: //接口无法发给主机
 	default:
 		type = ICMP_UNREACH;
 		code = ICMP_UNREACH_HOST;
 		break;
 
-	case EMSGSIZE:
+	case EMSGSIZE: //对接口来说分组太大且禁止切片
 		type = ICMP_UNREACH;
 		code = ICMP_UNREACH_NEEDFRAG;
 		if (ipforward_rt.ro_rt)
@@ -442,7 +453,7 @@ ip_forward(m, srcrt)
 		ipstat.ips_cantfrag++;
 		break;
 
-	case ENOBUFS:
+	case ENOBUFS: //(no buffer)接口队列满或内核运存不足
 		type = ICMP_SOURCEQUENCH;
 		code = 0;
 		break;
@@ -453,6 +464,61 @@ ip_forward(m, srcrt)
 
 # ip output
 
+
+```c
+/*
+ * IP output.  The packet in mbuf chain m contains a skeletal IP
+ * header (with len, off, ttl, proto, tos, src, dst).
+ * The mbuf chain containing the packet will be freed.
+ * The mbuf opt, if present, will not be freed.
+ */
+int
+ip_output(m0, opt, ro, flags, imo)
+	struct mbuf *m0;
+	struct mbuf *opt;
+	struct route *ro;
+	int flags;
+	struct ip_moptions *imo;
+{
+	register struct ip *ip, *mhip;
+	register struct ifnet *ifp;
+	register struct mbuf *m = m0;
+	register int hlen = sizeof (struct ip);
+	int len, off, error = 0;
+	struct route iproute;
+	struct sockaddr_in *dst;
+	struct in_ifaddr *ia;
+
+#ifdef	DIAGNOSTIC
+	if ((m->m_flags & M_PKTHDR) == 0)
+		panic("ip_output no HDR");
+#endif
+
+	//构造IP首部
+	if (opt) {
+		m = ip_insertoptions(m, opt, &len);
+		hlen = len;
+	}
+	ip = mtod(m, struct ip *); //读取数据
+	/*
+	 * Fill in IP header.
+	 */
+	if ((flags & (IP_FORWARDING|IP_RAWOUTPUT)) == 0) {
+		ip->ip_v = IPVERSION;
+		ip->ip_off &= IP_DF;
+		ip->ip_id = htons(ip_id++); //序号自增
+		ip->ip_hl = hlen >> 2; //长度/4
+		ipstat.ips_localout++;
+	} else {
+		hlen = ip->ip_hl << 2;
+	}
+
+/*--- 路由选择*/
+	...
+
+/*--- 源地址选择和分片*/
+	...
+```
 
 # ip checksum
 
@@ -512,9 +578,10 @@ in_cksum(m, len)
 		/*
 		 * Force to even boundary.
 		 */
+		//奇数时，将多出来的字节保留，以让剩余字节组成字（16位、2字节）
 		if ((1 & (int) w) && (mlen > 0)) {
 			REDUCE;
-			sum <<= 8;
+			sum <<= 8; //左移8位
 			s_util.c[0] = *(u_char *)w;
 			w = (u_short *)((char *)w + 1);
 			mlen--;
@@ -524,6 +591,7 @@ in_cksum(m, len)
 		 * Unroll the loop to make overhead from
 		 * branches &c small.
 		 */
+		//分三个阶段把字加到和中
 		while ((mlen -= 32) >= 0) {
 			sum += w[0]; sum += w[1]; sum += w[2]; sum += w[3];
 			sum += w[4]; sum += w[5]; sum += w[6]; sum += w[7];
