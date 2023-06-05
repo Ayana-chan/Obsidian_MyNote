@@ -27,13 +27,14 @@ target_link_libraries(test ${OpenCV_LIBS})
 
 参数可以指定阻塞最长时间，超出则关闭窗口。
 
+## mat.ptr()
+Mat类型的ptr为其数据内容。
 
 
 
 
 
-
-
+## Sobel
 
 
 

@@ -12,7 +12,11 @@ boundary segment: a connected sequence of missing pixels on one of the four side
 
 local warping: 找最长的边界，计算一个接缝，将接缝与边界之间的像素往边界位移一格。由于形变发生在接缝附近，因此称为local。
 
-直线角度∈$[-\pi /2,\pi /2)$ ，被分为M=50等份，每个直线只能归于这50份的其中一份。
+每个直线都属于一个quad，可以表示为其四点插值。
+
+直线角度∈$[-\pi /2,\pi /2)$ ，被分为M=50等份，每个直线只能归于这50份的其中一份，且不会发生变化。每次迭代，$\theta _{m}$都取属于对应m的所有直线的偏转角的算数平均值。
+
+$\theta _{m}$是其所在quad的插值。
 
 
 
