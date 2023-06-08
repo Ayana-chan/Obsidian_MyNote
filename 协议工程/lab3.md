@@ -64,7 +64,7 @@ tcp_output(tp)
 	 * and flags that will be used.
 	 * If there is some data or critical controls (SYN, RST)
 	 * to send, then transmit; otherwise, investigate further.
-	 * 目前所有发送的序号都被确认，不需要等待对方的AKC时，为真
+	 * 目前所有发送的序号都被确认，不需要等待对方的ACK时，为真
 	 */
 	idle = (tp->snd_max == tp->snd_una);
 	if (idle && tp->t_idle >= tp->t_rxtcur)
@@ -610,7 +610,7 @@ out:
 ```
 # tcp input
 
-
+TODO
 
 # udp
 ```c
