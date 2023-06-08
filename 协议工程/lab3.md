@@ -265,7 +265,7 @@ again:
 	return (0);
 ```
 
-## send
+## send 1
 
 ```c
 send:
@@ -277,8 +277,9 @@ send:
 	 * link header, i.e.
 	 *	max_linkhdr + sizeof (struct tcpiphdr) + optlen <= MHLEN
 	 */
-	optlen = 0;
-	hdrlen = sizeof (struct tcpiphdr);
+	optlen = 0; //选项长度
+	hdrlen = sizeof (struct tcpiphdr); //头部长度
+	//如果有SYN
 	if (flags & TH_SYN) {
 		tp->snd_nxt = tp->iss;
 		if ((tp->t_flags & TF_NOOPT) == 0) {
@@ -308,6 +309,7 @@ send:
 	 * wants to use timestamps (TF_REQ_TSTMP is set) or both our side
 	 * and our peer have sent timestamps in our SYN's.
  	 */
+ 	//是否要时间戳
  	if ((tp->t_flags & (TF_REQ_TSTMP|TF_NOOPT)) == TF_REQ_TSTMP &&
  	     (flags & TH_RST) == 0 &&
  	    ((flags & (TH_SYN|TH_ACK)) == TH_SYN ||
@@ -321,12 +323,13 @@ send:
  		optlen += TCPOLEN_TSTAMP_APPA;
  	}
 
- 	hdrlen += optlen;
+ 	hdrlen += optlen; //头部长度加上选项长度
  
 	/*
 	 * Adjust data length if insertion of options will
 	 * bump the packet length beyond the t_maxseg length.
 	 */
+	 //若选项会导致长度大于MSS，则要发不止一次
 	 if (len > tp->t_maxseg - optlen) {
 		len = tp->t_maxseg - optlen;
 		sendalot = 1;
@@ -337,13 +340,18 @@ send:
  	if (max_linkhdr + hdrlen > MHLEN)
 		panic("tcphdr too big");
 #endif
+```
 
+## send 2
+
+```c
 	/*
 	 * Grab a header mbuf, attaching a copy of data to
 	 * be transmitted, and initialize the header from
 	 * the template for sends on this connection.
 	 */
 	if (len) {
+		//统计值
 		if (tp->t_force && len == 1)
 			tcpstat.tcps_sndprobe++;
 		else if (SEQ_LT(tp->snd_nxt, tp->snd_max)) {
@@ -370,13 +378,16 @@ send:
 			error = ENOBUFS;
 			goto out;
 		}
-		m->m_data += max_linkhdr;
-		m->m_len = hdrlen;
+		m->m_data += max_linkhdr; //给链路层
+		m->m_len = hdrlen; //mbuf设为头部长度
+		//判断长度
 		if (len <= MHLEN - hdrlen - max_linkhdr) {
+			//够小，直接塞
 			m_copydata(so->so_snd.sb_mb, off, (int) len,
 			    mtod(m, caddr_t) + hdrlen);
 			m->m_len += len;
 		} else {
+			//太长，新建mbuf
 			m->m_next = m_copy(so->so_snd.sb_mb, off, (int) len);
 			if (m->m_next == 0)
 				len = 0;
@@ -390,7 +401,8 @@ send:
 		 */
 		if (off + len == so->so_snd.sb_cc)
 			flags |= TH_PUSH;
-	} else {
+	} else { //纯ACK
+		//统计量
 		if (tp->t_flags & TF_ACKNOW)
 			tcpstat.tcps_sndacks++;
 		else if (flags & (TH_SYN|TH_FIN|TH_RST))
@@ -413,11 +425,14 @@ send:
 	if (tp->t_template == 0)
 		panic("tcp_output");
 	bcopy((caddr_t)tp->t_template, (caddr_t)ti, sizeof (struct tcpiphdr));
+```
 
+```c
 	/*
 	 * Fill in fields, remembering maximum advertised
 	 * window for use in delaying messages about window sizes.
 	 * If resending a FIN, be sure not to use a new sequence number.
+	 * FIN重传，让snd_nxt--
 	 */
 	if (flags & TH_FIN && tp->t_flags & TF_SENTFIN && 
 	    tp->snd_nxt == tp->snd_max)
@@ -436,10 +451,11 @@ send:
 	 * (retransmit and persist are mutually exclusive...)
 	 */
 	if (len || (flags & (TH_SYN|TH_FIN)) || tp->t_timer[TCPT_PERSIST])
-		ti->ti_seq = htonl(tp->snd_nxt);
+		ti->ti_seq = htonl(tp->snd_nxt); //填充发送序列号
 	else
-		ti->ti_seq = htonl(tp->snd_max);
-	ti->ti_ack = htonl(tp->rcv_nxt);
+		ti->ti_seq = htonl(tp->snd_max); //异常情况
+	ti->ti_ack = htonl(tp->rcv_nxt); //填充ACK序列号
+	//将选项填充进头
 	if (optlen) {
 		bcopy((caddr_t)opt, (caddr_t)(ti + 1), optlen);
 		ti->ti_off = (sizeof (struct tcphdr) + optlen) >> 2;
@@ -449,6 +465,7 @@ send:
 	 * Calculate receive window.  Don't shrink window,
 	 * but avoid silly window syndrome.
 	 */
+	//窗口设置
 	if (win < (long)(so->so_rcv.sb_hiwat / 4) && win < (long)tp->t_maxseg)
 		win = 0;
 	if (win > (long)TCP_MAXWIN << tp->rcv_scale)
@@ -541,7 +558,7 @@ send:
 	 * to handle ttl and tos; we could keep them in
 	 * the template, but need a way to checksum without them.
 	 */
-	m->m_pkthdr.len = hdrlen + len;
+	m->m_pkthdr.len = hdrlen + len; //调整mbuf的头部的长度项
 #ifdef TUBA
 	if (tp->t_tuba_pcb)
 		error = tuba_output(m, tp);
@@ -561,6 +578,7 @@ send:
     }
 	if (error) {
 out:
+		//分配mbuf失败
 		if (error == ENOBUFS) {
 			tcp_quench(tp->t_inpcb, 0);
 			return (0);
@@ -582,40 +600,14 @@ out:
 	 */
 	if (win > 0 && SEQ_GT(tp->rcv_nxt+win, tp->rcv_adv))
 		tp->rcv_adv = tp->rcv_nxt + win;
-	tp->last_ack_sent = tp->rcv_nxt;
+	tp->last_ack_sent = tp->rcv_nxt; //记录上次发送的ACK
 	tp->t_flags &= ~(TF_ACKNOW|TF_DELACK);
+	//如果还有数据要发送，则回到again再来一次
 	if (sendalot)
 		goto again;
 	return (0);
 }
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # tcp input
 
 
