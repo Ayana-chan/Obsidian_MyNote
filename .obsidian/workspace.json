@@ -214,8 +214,7 @@
               "state": {}
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -232,15 +231,17 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "17654b1ee7426ee4",
   "lastOpenFiles": [
+    "temp/assets/uTools_1686389566535.png",
+    "temp/assets/uTools_1686389282225.png",
+    "Web后端/SpringBoot.md",
     "temp/assets/Pasted image 20230609000925.png",
     "temp/assets/uTools_1686234296391.png",
     "协议工程/lab3.md",
     "协议工程/lab2.md",
     "协议工程/总和.md",
     "协议工程/lab1.md",
-    "Web后端/SpringBoot.md",
     "协议工程/assets/uTools_1686149903082.png",
     "协议工程/assets/uTools_1686128639630.png",
     "Docker.md",
@@ -270,10 +271,8 @@
     "third/设计模式",
     "协议工程/assets/uTools_1684686642446.png",
     "协议工程/assets/uTools_1684685911113.png",
-    "CV/assets/uTools_1683950332223.png",
     "NovelNook/需求.md",
     "OpenCV.md",
-    "CV/assets/uTools_1684042230955.png",
     "CV/assets",
     "Git.md",
     "Web后端/杂项.md",
