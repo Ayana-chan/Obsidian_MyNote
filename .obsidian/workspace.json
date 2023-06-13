@@ -37,42 +37,6 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "算法.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "f4d3c407934d6040",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "temp/软体笔记.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "26f0b90061f39d59",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "temp/算法课笔记.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "18242d1dc851c560",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
                 "file": "temp/软过笔记.md",
                 "mode": "source",
                 "source": false
@@ -85,14 +49,14 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "temp/软件体系结构.md",
+                "file": "temp/软体笔记.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -166,7 +130,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "temp/算法课笔记.md"
+                "file": "temp/软体笔记.md"
               }
             }
           },
@@ -176,7 +140,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "temp/算法课笔记.md",
+                "file": "temp/软体笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -193,7 +157,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "temp/算法课笔记.md",
+                "file": "temp/软体笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -244,17 +208,17 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "8d710b2bc075cec2",
   "lastOpenFiles": [
+    "temp/软过笔记.md",
+    "temp/软件体系结构.md",
     "temp/软体笔记.md",
     "算法.md",
-    "temp/算法课笔记.md",
     "Web后端/SpringBoot.md",
+    "temp/算法课笔记.md",
     "协议工程/lab3.md",
     "temp/assets/uTools_1686580243777.png",
-    "temp/软过笔记.md",
     "协议工程/总和.md",
-    "temp/软件体系结构.md",
     "temp/assets/uTools_1686504006475.png",
     "temp/assets/uTools_1686493988714.png",
     "temp/assets/uTools_1686493939490.png",
