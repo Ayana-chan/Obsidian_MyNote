@@ -56,7 +56,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -130,7 +130,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "temp/软体笔记.md"
+                "file": "temp/软过笔记.md"
               }
             }
           },
@@ -140,7 +140,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "temp/软体笔记.md",
+                "file": "temp/软过笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -157,7 +157,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "temp/软体笔记.md",
+                "file": "temp/软过笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -208,11 +208,13 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "8d710b2bc075cec2",
+  "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "temp/软体笔记.md",
+    "temp/assets/uTools_1686665364275.png",
+    "temp/assets/uTools_1686665248177.png",
     "temp/软过笔记.md",
     "temp/软件体系结构.md",
-    "temp/软体笔记.md",
     "算法.md",
     "Web后端/SpringBoot.md",
     "temp/算法课笔记.md",
@@ -227,10 +229,8 @@
     "temp/assets/uTools_1686389566535.png",
     "temp/assets/uTools_1686389282225.png",
     "temp/assets/Pasted image 20230609000925.png",
-    "temp/assets/uTools_1686234296391.png",
     "协议工程/lab2.md",
     "协议工程/lab1.md",
-    "协议工程/assets/uTools_1686149903082.png",
     "Docker.md",
     "CV/OpenCV.md",
     "temp/分布式cache基本文档.md",
@@ -255,7 +255,6 @@
     "CV/assets",
     "Git.md",
     "Web后端/杂项.md",
-    "Web后端/RocketMQ.md",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
