@@ -25,19 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "temp/分布式cache基本文档.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "d66cbc1e91ba0d63",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "temp/软过笔记.md",
+                "file": "legacy/分布式cache基本文档.md",
                 "mode": "source",
                 "source": false
               }
@@ -49,14 +37,14 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "temp/软体笔记.md",
+                "file": "legacy/分布式cache基本文档.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -130,7 +118,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "temp/分布式cache基本文档.md"
+                "file": "legacy/分布式cache基本文档.md"
               }
             }
           },
@@ -140,7 +128,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "temp/分布式cache基本文档.md",
+                "file": "legacy/分布式cache基本文档.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -157,7 +145,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "temp/分布式cache基本文档.md",
+                "file": "legacy/分布式cache基本文档.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -210,35 +198,37 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "temp",
+    "协议工程/lab2.md",
+    "legacy",
+    "协议工程/lab1.md",
+    "legacy/软体笔记.md",
+    "Web后端/SpringBoot.md",
     "协议工程/lab3.md",
-    "temp/软体笔记.md",
-    "temp/软过笔记.md",
-    "temp/assets/Pasted image 20230615015745.png",
+    "legacy/软过笔记.md",
+    "legacy/assets/Pasted image 20230615015745.png",
     "assets/![](assets/uTools_1686765437511.png.md",
     "assets/![](assets",
-    "temp/assets/uTools_1686765437511.png",
-    "temp/assets/WBS3.jpg",
-    "temp/assets/F_6LY(`]K{CPL206_MEWZ_W.png",
-    "Web后端/SpringBoot.md",
-    "temp/assets/uTools_1686665364275.png",
-    "temp/assets/uTools_1686665248177.png",
+    "legacy/assets/uTools_1686765437511.png",
+    "legacy/assets/WBS3.jpg",
+    "legacy/assets/F_6LY(`]K{CPL206_MEWZ_W.png",
+    "legacy/assets/uTools_1686665364275.png",
+    "legacy/assets/uTools_1686665248177.png",
     "temp/软件体系结构.md",
     "算法.md",
-    "temp/算法课笔记.md",
-    "temp/assets/uTools_1686580243777.png",
+    "legacy/算法课笔记.md",
+    "legacy/assets/uTools_1686580243777.png",
     "协议工程/总和.md",
     "temp/assets/uTools_1686504006475.png",
-    "temp/assets/uTools_1686493988714.png",
-    "temp/assets/uTools_1686493939490.png",
+    "legacy/assets/uTools_1686493988714.png",
+    "legacy/assets/uTools_1686493939490.png",
     "分布式知识.md",
-    "协议工程/lab2.md",
-    "协议工程/lab1.md",
     "Docker.md",
     "CV/OpenCV.md",
-    "temp/分布式cache基本文档.md",
+    "legacy/分布式cache基本文档.md",
     "CV/OpenGL (FreeGlut).md",
-    "temp/assets",
-    "temp",
+    "legacy/assets",
+    "legacy",
     "Web后端/WebSocket.md",
     "CV/Rectangling Panoramic Images 论文笔记.md",
     "Golang.md",
@@ -251,7 +241,6 @@
     "third/设计模式/设计模式-day04.pdf",
     "third/设计模式/设计模式-day03.pdf",
     "third/设计模式/1.六大设计原则与单例模式.pdf",
-    "third/设计模式",
     "NovelNook/需求.md",
     "OpenCV.md",
     "Git.md",
