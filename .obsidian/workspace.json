@@ -13,19 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Web后端/SpringBoot.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "09db2596c5110c6c",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "legacy/分布式cache基本文档.md",
+                "file": "Docker.md",
                 "mode": "source",
                 "source": false
               }
@@ -37,7 +25,31 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "legacy/分布式cache基本文档.md",
+                "file": "协议工程/lab1.md",
+                "mode": "preview",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "417908cd7e14a3de",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "协议工程/lab2.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "e0fdb5ca35b0bc8c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "协议工程/lab3.md",
                 "mode": "source",
                 "source": false
               }
@@ -118,7 +130,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "legacy/分布式cache基本文档.md"
+                "file": "协议工程/lab2.md"
               }
             }
           },
@@ -128,7 +140,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "legacy/分布式cache基本文档.md",
+                "file": "协议工程/lab2.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -145,7 +157,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "legacy/分布式cache基本文档.md",
+                "file": "协议工程/lab2.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -183,7 +195,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 350.5
+    "width": 353.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -198,13 +210,18 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
-    "temp",
-    "协议工程/lab2.md",
-    "legacy",
     "协议工程/lab1.md",
-    "legacy/软体笔记.md",
-    "Web后端/SpringBoot.md",
     "协议工程/lab3.md",
+    "协议工程/lab2.md",
+    "Docker.md",
+    "CV/GrabCut论文笔记.md",
+    "CV/OpenCV.md",
+    "CV/OpenGL (FreeGlut).md",
+    "Web后端/SpringBoot.md",
+    "legacy/分布式cache基本文档.md",
+    "temp",
+    "legacy",
+    "legacy/软体笔记.md",
     "legacy/软过笔记.md",
     "legacy/assets/Pasted image 20230615015745.png",
     "assets/![](assets/uTools_1686765437511.png.md",
@@ -223,16 +240,11 @@
     "legacy/assets/uTools_1686493988714.png",
     "legacy/assets/uTools_1686493939490.png",
     "分布式知识.md",
-    "Docker.md",
-    "CV/OpenCV.md",
-    "legacy/分布式cache基本文档.md",
-    "CV/OpenGL (FreeGlut).md",
     "legacy/assets",
     "legacy",
     "Web后端/WebSocket.md",
     "CV/Rectangling Panoramic Images 论文笔记.md",
     "Golang.md",
-    "CV/GrabCut论文笔记.md",
     "Cpp.md",
     "Linux.md",
     "third/设计模式/2.剩余四大创建型模式.pdf",
@@ -240,7 +252,6 @@
     "third/设计模式/设计模式-day05.pdf",
     "third/设计模式/设计模式-day04.pdf",
     "third/设计模式/设计模式-day03.pdf",
-    "third/设计模式/1.六大设计原则与单例模式.pdf",
     "NovelNook/需求.md",
     "OpenCV.md",
     "Git.md",

@@ -243,6 +243,7 @@ struct m_ext {
 	u_int	ext_size;		/* size of buffer, for ext_free */
 };
 
+//总大小固定128 Byte
 struct mbuf {
 	struct	m_hdr m_hdr;
 	union {
@@ -260,9 +261,16 @@ struct mbuf {
 		char	M_databuf[MLEN];		/* !M_PKTHDR, !M_EXT */
 	} M_dat;
 };
+
+/* mbuf flags */
+//0是无头无簇默认
+#define	M_EXT		0x0001	/* has associated external storage */
+#define	M_PKTHDR	0x0002	/* start of record */
+#define	M_EOR		0x0004	/* end of record */
+
 ```
 
-两个`union`使得mbuf可以分为四种：
+两个`union`使得mbuf可以分为四种（109~207字节的数据使用两个普通mbuf来存储）：
 ![](assets/uTools_1682951959714.png)
 
 二维mbuf链表图例：

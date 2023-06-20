@@ -1,4 +1,4 @@
-# tcp
+ # tcp
 
 > u_char 8bit， u_short 16bit， u_long 32bit 
 
@@ -17,6 +17,7 @@ struct tcphdr {
 	tcp_seq	th_ack;			/* acknowledgement number */
 #if BYTE_ORDER == LITTLE_ENDIAN 
 	u_char	th_x2:4,		/* (unused) */
+		//数据偏移量，表示数据的起始位置，最大为15，因此头部最长为60字节
 		th_off:4;		/* data offset */
 #endif
 #if BYTE_ORDER == BIG_ENDIAN 
@@ -159,7 +160,7 @@ again:
 > 糊涂窗口综合征（SWS）：接收处理过慢或发送端本身一直发小包，导致这一个连接互相之间一直发小包，而小包里面大部分都是协议头部，导致大比例的资源都被浪费在传输协议头部上
 
 ```c
-	//win变量第二部分：表示本地接收缓存中可用空间大小，即向对方通知的接收窗口大小
+	//win变量第二部分：表示自己接下来的接收窗口大小，之后向对方通知
 	win = sbspace(&so->so_rcv);
 
 	/*
@@ -673,6 +674,7 @@ tcp_input(m, iphlen)
 	 * Check that TCP offset makes sense,
 	 * pull out TCP options and adjust length.		XXX
 	 */
+	//数据偏移量，乘4后为头部长度
 	off = ti->ti_off << 2;
 	if (off < sizeof (struct tcphdr) || off > tlen) {
 		tcpstat.tcps_rcvbadoff++;
@@ -1767,6 +1769,9 @@ drop:
 ```
 
 # udp
+
+UDP是没有选项的。
+
 ```c
 /*
  * Udp protocol header.

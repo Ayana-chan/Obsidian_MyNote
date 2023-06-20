@@ -35,7 +35,7 @@ struct ip {
 		ip_hl:4;		/* header length */
 #endif
 	u_char	ip_tos;			/* type of service */
-	//max = 2^8-1 = 32767 Byte
+	//max = (2^16)/2-1 = 32767 Byte
 	short	ip_len;			/* total length */
 	u_short	ip_id;			/* identification */
 	short	ip_off;			/* fragment offset field */
@@ -51,6 +51,8 @@ struct ip {
 
 
 # ip input 
+
+是一个软中断处理器
 ## ipintr
 
 ```c
