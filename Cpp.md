@@ -22,6 +22,9 @@
 
 类中不能存在不知道大小的成员。前向声明并不能提供某个类的大小，但可以取它的指针，因为指针的大小是固定的。
 
+## STL
+
+STL默认以vector为容器、以`operator<`为比较方式。
 # 库与语法
 
 ## 空指针
@@ -226,7 +229,6 @@ int main()
 }
 
 ```
-
 ## sort函数
 
 默认从小到大。
@@ -242,12 +244,119 @@ int cmp(const int &a, const int &b) {
 	} 
 	return false; 
 }
-sort(arr, arr+arr.size(), cmp);
+sort(arr, arr+len, cmp);
 ```
+
 
 ## stable_sort函数（稳定排序）
 
 和sort函数用法一样，但是稳定。
+
+## less greater 比较类
+
+在头文件`functional`中。
+
+如int的比较类就是`greater<int>`，表示取大（`>`）。将其对象传入sort就是从大到小排序：
+```cpp
+sort(arr, arr+len, greater<int>());
+```
+
+## priority_queue 优先级队列
+
+就是个堆。
+
+优先级：排前面（上面）的优先级高。在sort中排在后面的，在priority_queue中就排在前面，也就是优先级高。
+
+默认为大顶堆。
+
+在头文件`queue`中。
+
+```cpp
+//大顶堆（降序）
+priority_queue<int> big_heap;
+priority_queue<int,vector<int>,less<int>> big_heap2;
+
+//小顶堆（升序）
+priority_queue<int,vector<int>,greater<int>> small_heap;
+```
+
+| 方法      | 功能                             |
+| --------- | -------------------------------- |
+| push()    | 在优先级队列末尾插入新元素并调整 |
+| emplace() | 在优先级队列末尾构造新元素并调整 |
+| pop()     | 删除优先级最高的元素             |
+| top()     | 获取优先级最高的元素             |
+| size()    | 获取优先级队列的大小             |
+| empty()   | 验证队列是否为空                 |
+|   swap()        | 交换两个优先级队列的内容                                 |
+
+## 字符串
+### String
+
+| 方法      | 功能                                                                                                                 |
+| --------- | -------------------------------------------------------------------------------------------------------------------- |
+| Operators | 可以用 == ， >， <， >=， <=， and !=比较字符串。 可以用 + 或者 += 操作符连接两个字符串， 并且可以用[]获取特定的字符 |
+| append()  | 在字符串的末尾添加文本（就是+=）                                                                                     |
+| compare() | 比较两个字符串                                                                                                       |
+| empty()   | 如果字符串为空，返回真                                                                                               |
+| erase()   | 删除字符                                                                                                             |
+| insert()  | 插入字符，也可以插入另一个字符串的子串                                                                               |
+| length()  | 返回字符串的长度                                                                                                     |
+| replace() | 替换字符                                                                                                             |
+| size()    | 返回字符串中字符的数量（结果等价于length）                                                                           |
+| substr()  | 返回某个子字符串                                                                                                     |
+| swap()    | 交换两个字符串的内容                                                                                                 |
+|  c_str()         |      返回字符数组（const char\*）                                                                                                                |
+
+```cpp
+//erase
+string s("1234567890123456789012345");//总共25个字符
+cout << s << endl;
+cout << s.erase(10, 6) << endl;//从下标第10的字符开始删除，一共删除6个。
+cout << s.erase(10) << endl;//删除下标为10的字符及之后的 ==保留下标小于10的字符
+cout << s.erase();//清空字符串
+```
+
+```cpp
+//转成字符数组
+char c[20];
+string s="1234";
+strcpy(c,s.c_str());
+```
+
+### C风格字符串操作
+
+都是对char数组的操作（参数为char*）。
+
+- strcpy(p, p1) 复制字符串 
+- strncpy(p, p1, n) 复制指定长度字符串 
+- strcat(p, p1) 附加字符串 
+- strncat(p, p1, n) 附加指定长度字符串 
+- strlen(p) 取字符串长度 
+- strcmp(p, p1) 比较字符串 
+- strcasecmp(p, p1)忽略大小写比较字符串 
+- strncmp(p, p1, n) 比较指定长度字符串 
+- strchr(p, c) 在字符串中查找指定字符 
+- strrchr(p, c) 在字符串中反向查找 
+- strstr(p, p1) 查找字符串 
+- strpbrk(p, p1) 以目标字符串的所有字符作为集合，在当前字符串查找该集合的任一元素 
+- strspn(p, p1) 以目标字符串的所有字符作为集合，在当前字符串查找不属于该集合的任一元素的偏移 
+- strcspn(p, p1) 以目标字符串的所有字符作为集合，在当前字符串查找属于该集合的任一元素的偏移
+
+### char字符检查
+
+- isalpha() 检查是否为字母字符 
+- isupper() 检查是否为大写字母字符 
+- islower() 检查是否为小写字母字符 
+- isdigit() 检查是否为数字 
+- isxdigit() 检查是否为十六进制数字表示的有效字符 
+- isspace() 检查是否为空格类型字符 
+- iscntrl() 检查是否为控制字符 
+- ispunct() 检查是否为标点符号 
+- isalnum() 检查是否为字母和数字 
+- isprint() 检查是否是可打印字符 
+- isgraph() 检查是否是图形字符，等效于 isalnum() | ispunct()
+
 ## 随机数
 
 ```cpp
