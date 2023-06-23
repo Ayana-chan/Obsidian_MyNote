@@ -318,10 +318,13 @@ cout << s.erase();//清空字符串
 ```
 
 ```cpp
-//转成字符数组
+//String转字符数组
 char c[20];
 string s="1234";
 strcpy(c,s.c_str());
+
+//数组字符转String
+s=c;
 ```
 
 ### C风格字符串操作
@@ -344,6 +347,8 @@ strcpy(c,s.c_str());
 - strcspn(p, p1) 以目标字符串的所有字符作为集合，在当前字符串查找属于该集合的任一元素的偏移
 
 ### char字符检查
+
+参数都为char。
 
 - isalpha() 检查是否为字母字符 
 - isupper() 检查是否为大写字母字符 
