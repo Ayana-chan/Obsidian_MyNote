@@ -25,8 +25,8 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "协议工程/lab1.md",
-                "mode": "preview",
+                "file": "算法.md",
+                "mode": "source",
                 "source": false
               }
             }
@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "协议工程/lab2.md",
+                "file": "Cpp.md",
                 "mode": "source",
                 "source": false
               }
@@ -130,7 +130,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "协议工程/lab2.md"
+                "file": "Cpp.md"
               }
             }
           },
@@ -140,7 +140,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "协议工程/lab2.md",
+                "file": "Cpp.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -157,7 +157,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "协议工程/lab2.md",
+                "file": "Cpp.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -195,7 +195,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 353.5
+    "width": 368.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -210,10 +210,13 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
-    "协议工程/lab1.md",
-    "协议工程/lab3.md",
+    "算法.md",
+    "Cpp.md",
     "协议工程/lab2.md",
+    "legacy/算法课笔记.md",
+    "协议工程/lab1.md",
     "Docker.md",
+    "协议工程/lab3.md",
     "CV/GrabCut论文笔记.md",
     "CV/OpenCV.md",
     "CV/OpenGL (FreeGlut).md",
@@ -232,8 +235,6 @@
     "legacy/assets/uTools_1686665364275.png",
     "legacy/assets/uTools_1686665248177.png",
     "temp/软件体系结构.md",
-    "算法.md",
-    "legacy/算法课笔记.md",
     "legacy/assets/uTools_1686580243777.png",
     "协议工程/总和.md",
     "temp/assets/uTools_1686504006475.png",
@@ -245,7 +246,6 @@
     "Web后端/WebSocket.md",
     "CV/Rectangling Panoramic Images 论文笔记.md",
     "Golang.md",
-    "Cpp.md",
     "Linux.md",
     "third/设计模式/2.剩余四大创建型模式.pdf",
     "third/设计模式/设计模式-day06.pdf",
