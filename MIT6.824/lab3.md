@@ -36,7 +36,7 @@ It's OK to assume that a client will make only one call into a Clerk at a time.
 2. 所有服务器，监听applyCh，将新command应用于kv数据库。
 3. 所有服务器，接收到command后通知正在等待回应的client。
 
-
+读操作若被不同服务器执行两次，期间有一个写操作插队的话，可能导致两个读的结果不同；但它们都对应同一个请求，因此会随机返回其中一个。这不会破坏要求，依然满足线性一致性。
 
 
 
