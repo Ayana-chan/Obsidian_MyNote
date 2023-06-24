@@ -3,6 +3,7 @@
 
 [C++11中关键字 - 知乎](https://zhuanlan.zhihu.com/p/157523014)
 
+[C++模板元编程详细教程（之三）\_c++模板元编程实战\_borehole打洞哥的博客-CSDN博客](https://blog.csdn.net/fl2011sx/article/details/128314495)
 # 规范与注意事项
 
 ## 类
@@ -376,7 +377,54 @@ for (int i=0; i<10; ++i) {
 }
 ```
 
+## 模板
 
+模板代码本身什么都不能做，它需要被使用后知道要生成哪些实例。并且所有实例都自带inline，不会重复定义。
+
+（在预编译之后）声明和实现必须在同一个文件里面。如果把声明放在头文件、把实现放在cpp文件，则另一个cpp文件只会include头文件而会忽视cpp文件，于是只能通过模板函数声明推导出函数声明语句，而不会推导实现语句，使得实例（如`f<int>()`)会找不到实现。
+### 函数模板
+#### 基本使用
+
+
+```cpp
+template <typename T> 
+void f(const T &t); 
+
+template <typename T> 
+void f(const T &t) {} // 当然，文件内部没有声明依赖关系的时候，声明和实现可以合并
+```
+
+#### 特化
+
+有时候对模板类型的操作不能通用，需要单独特殊处理，则可以用特化。
+
+```cpp
+#include <cstring>
+
+template <typename T>
+void add(T &t1, const T &t2) {
+  t1 += t2;
+}
+
+template <> // 模板特化也要用模板前缀，但由于已经特化了，所以参数为空
+void add<char *>(char *&t1, char *const &t2) { // 特化要指定模板参数，模板体中也要使用具体的类型
+  std::strcat(t1, t2);
+}
+
+void Demo() {
+  int a = 1, b = 3;
+  add(a, b); // add<int>是通过通用模板生成的，因此本质是a += b，符合预期
+
+  char c1[16] = "abc";
+  char c2[] = "123";
+
+  add(c1, c2); // add<char *>有定义特化，所以直接调用特化函数，因此本质是strcat(c1, c2)，符合预期
+}
+```
+
+#### 全特化
+
+确定了所有模板参数后即为全特化。全特化已经是个实例，因此要当成普通函数来对待。如果要和模板函数一起写在头文件的话，要手动加上inline。
 
 # 问题、技巧、解决方案
 
