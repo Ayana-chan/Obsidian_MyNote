@@ -275,6 +275,8 @@ sort(arr, arr+len, greater<int>());
 在头文件`queue`中。
 
 ```cpp
+priority_queue<类型,容器,cmp>
+
 //大顶堆（降序）
 priority_queue<int> big_heap;
 priority_queue<int,vector<int>,less<int>> big_heap2;
