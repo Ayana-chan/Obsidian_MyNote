@@ -332,6 +332,33 @@ strcpy(c,s.c_str());
 s=c;
 ```
 
+#### find()
+
+```cpp
+string s="this is buaa";
+	
+int sfy=s.find("is");
+cout<< sfy <<" ";
+cout<< s.find("is")<<" ";
+cout<<"\n";
+
+int sfn=s.find("isj");
+cout<< sfn <<" ";
+cout<< s.find("isj")<<" ";
+cout<<s.npos<<" "<<std::string::npos<<" ";
+cout<<(s.find("isj")==s.npos)<<" ";
+cout<<(s.find("isj")==-1)<<" ";
+cout<<"\n";
+```
+
+输出：
+```cpp
+1
+2 2
+-1 4294967295 4294967295 4294967295 1 1
+```
+
+找到了就返回起始下标值，找不到就返回`std::string::npos`，等于-1。
 ### C风格字符串操作
 
 都是对char数组的操作（参数为char*）。
