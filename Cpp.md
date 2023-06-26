@@ -394,6 +394,40 @@ cout<<"\n";
 - isprint() 检查是否是可打印字符 
 - isgraph() 检查是否是图形字符，等效于 isalnum() | ispunct()
 
+## iterator迭代器
+
+### distance()
+
+返回两个迭代器之间的元素个数，类似于两者之差。
+
+```cpp
+#include <iostream> // std::cout
+#include <iterator> // std::distance
+#include <list> // std::list
+using namespace std;
+
+int main() {
+	//创建一个空 list 容器
+	list<int> mylist;
+	//向空 list 容器中添加元素 0~9
+	for (int i = 0; i < 10; i++) {
+		mylist.push_back(i);
+	}
+	//指定 2 个双向迭代器，用于执行某个区间
+	list<int>::iterator first = mylist.begin();//指向元素 0
+	list<int>::iterator last = mylist.end();//指向元素 9 之后的位置
+	//获取 [first,last) 范围内包含元素的个数
+	cout << "distance() = " << distance(first, last);
+	return 0;
+}
+```
+
+输出：
+
+```txt
+distance() = 10
+```
+
 ## 随机数
 
 ```cpp
