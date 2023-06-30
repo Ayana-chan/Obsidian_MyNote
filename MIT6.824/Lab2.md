@@ -22,6 +22,8 @@ leader通过心跳来控制term一致，也会别的旧leader下台；另外，�
 发现需要选举时，就得标记当前无leader，这必须是原子操作。
 
 要十分注意是否在发现高term时更新自己的term（无论任何身份）。这影响到是否有不必要的leader发送，以及是否能让选举正常进行（不更新的话，各个candidate和follower的任期可能会一直错开，导致一直重置选举）。
+
+之所以votedFor为candidateId时再投一次给它，是因为RPC发失败了要重发。**似乎没写重发逻辑。**
 ## B
 
 测试时不要开太多线程，超两秒未提交某一项就会不通过。不要让CPU压力爆满（在lab3里面没有超时问题所以可以尽情上压力）。
@@ -167,6 +169,12 @@ args.Entries = append(args.Entries, rf.log[rf.nextIndex[s]:]...)
 
 ---
 
+# C
+
+持久化理由：
+- votedFor： 防止投票两次出现脑裂。
+- term：防止leader在网络隔离后，其他服务器由于宕机重启忘掉了term以至于投票出了小term的leader，致使原leader回归后起日志与其他服务器的冲突。
+- log： 把commit的都存储了，以确保其绝对存储了多数。
 
 
 
