@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Docker.md",
+                "file": "算法.md",
                 "mode": "source",
                 "source": false
               }
@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/Lab2.md"
+                "file": "MIT6.824/课堂笔记.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/Lab2.md",
+                "file": "MIT6.824/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/Lab2.md",
+                "file": "MIT6.824/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -222,23 +222,24 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
-    "MIT6.824/lab3.md",
-    "MIT6.824/Lab2.md",
-    "协议工程/lab3.md",
-    "Docker.md",
-    "Cpp.md",
+    "MIT6.824/assets/uTools_1688533537262.png",
+    "MIT6.824/assets/uTools_1688531771321.png",
     "算法.md",
+    "Docker.md",
+    "MIT6.824/课堂笔记.md",
+    "MIT6.824/Lab2.md",
+    "MIT6.824/lab3.md",
+    "协议工程/lab3.md",
+    "Cpp.md",
     "MIT6.824/assets/uTools_1687799538460.png",
     "MIT6.824/assets/uTools_1687798230689.png",
     "MIT6.824/assets/uTools_1687766385192.png",
     "MIT6.824/assets/uTools_1687764200698.png",
-    "MIT6.824/课堂笔记.md",
     "MIT6.824/assets/uTools_1687762889759.png",
     "MIT6.824/assets/uTools_1687684723177.png",
     "MIT6.824/assets/uTools_1687664569716.png",
     "MIT6.824/assets/uTools_1687664507467.png",
     "MIT6.824/assets/uTools_1687664446211.png",
-    "MIT6.824/assets/06466ABC.png",
     "协议工程/lab2.md",
     "legacy/算法课笔记.md",
     "协议工程/lab1.md",
