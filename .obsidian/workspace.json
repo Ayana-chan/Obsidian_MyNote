@@ -206,8 +206,10 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "e0fdb5ca35b0bc8c",
   "lastOpenFiles": [
+    "Cpp.md",
+    "TODO.md",
     "Temp.md",
     "MIT6.824/课堂笔记.md",
     "算法.md",
@@ -226,7 +228,6 @@
     "Docker.md",
     "MIT6.824/lab3.md",
     "协议工程/lab3.md",
-    "Cpp.md",
     "MIT6.824/assets/uTools_1687799538460.png",
     "协议工程/lab2.md",
     "legacy/算法课笔记.md",

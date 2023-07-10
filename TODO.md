@@ -11,7 +11,9 @@ kanban-plugin: basic
 - [ ] csapp book
 - [ ] 日本語
 - [ ] 食髓知味 DECREASE
+- [ ] 重归くそお宅
 - [ ] 没病走两步
+- [ ] Zizekism & Maoism
 
 
 ## 备忘录
