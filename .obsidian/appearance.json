@@ -5,8 +5,5 @@
   "enabledCssSnippets": [
     "mycss"
   ],
-  "baseFontSize": 16,
-  "accentColor": "",
-  "monospaceFontFamily": "JetBrains Mono",
-  "textFontFamily": "iA Writer Quattro S,苹方"
+  "baseFontSize": 16
 }
