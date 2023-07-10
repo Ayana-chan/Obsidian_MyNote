@@ -4,12 +4,14 @@ kanban-plugin: basic
 
 ---
 
-## 学习计划
+## 暑假计划
 
-- [ ] 正则表达式书写
-- [ ] 使用Swagger
-- [ ] vim
-- [ ] 前端路由
+- [ ] 6.824 course
+- [ ] 6.824 lab
+- [ ] csapp book
+- [ ] 日本語
+- [ ] 食髓知味 DECREASE
+- [ ] 没病走两步
 
 
 ## 备忘录
