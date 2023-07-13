@@ -55,8 +55,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -130,7 +129,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Cpp.md"
+                "file": "算法.md"
               }
             }
           },
@@ -140,7 +139,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Cpp.md",
+                "file": "算法.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -157,7 +156,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Cpp.md",
+                "file": "算法.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -208,10 +207,10 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "e771fe0f2cb989d4",
   "lastOpenFiles": [
-    "算法.md",
     "Cpp.md",
+    "算法.md",
     "assets/uTools_1689130271556.png",
     "assets/uTools_1689130262939.png",
     "assets/uTools_1689129891643.png",
