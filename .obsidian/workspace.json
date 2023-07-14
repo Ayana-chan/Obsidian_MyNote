@@ -49,13 +49,14 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "OS.md",
+                "file": "数学/线性代数.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
-        ]
+        ],
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -129,7 +130,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "算法.md"
+                "file": "数学/线性代数.md"
               }
             }
           },
@@ -139,7 +140,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "算法.md",
+                "file": "数学/线性代数.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -156,7 +157,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "算法.md",
+                "file": "数学/线性代数.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -207,11 +208,22 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "44bb510b8715c8b5",
   "lastOpenFiles": [
+    "Web前端/JS.md",
+    "数学/线性代数.md",
+    "数学",
+    "Web前端/assets/uTools_1689331900673.png",
+    "Web前端/assets",
+    "Web前端/杂项.md",
+    "Web前端/组件库.md",
+    "Web前端/Vite.md",
+    "Web前端/vue3.md",
+    "Web前端/css.md",
+    "OS.md",
+    "算法.md",
     "assets/uTools_1689263800478.png",
     "Cpp.md",
-    "算法.md",
     "assets/uTools_1689130271556.png",
     "assets/uTools_1689130262939.png",
     "assets/uTools_1689129891643.png",
@@ -223,10 +235,7 @@
     "MIT6.824/assets/uTools_1688889654272.png",
     "MIT6.824/assets/uTools_1688889327227.png",
     "MIT6.824/assets/uTools_1688885982823.png",
-    "MIT6.824/assets/uTools_1688883902659.png",
-    "OS.md",
     "Linux.md",
-    "assets/03355886.png",
     "MIT6.824/Lab2.md",
     "Docker.md",
     "MIT6.824/lab3.md",
@@ -241,20 +250,12 @@
     "legacy/分布式cache基本文档.md",
     "temp",
     "legacy",
-    "legacy/软体笔记.md",
-    "legacy/软过笔记.md",
-    "assets/![](assets/uTools_1686765437511.png.md",
     "assets/![](assets",
-    "temp/软件体系结构.md",
-    "协议工程/总和.md",
-    "分布式知识.md",
     "legacy/assets",
     "legacy",
     "third/设计模式/2.剩余四大创建型模式.pdf",
     "third/设计模式/设计模式-day06.pdf",
     "third/设计模式/设计模式-day05.pdf",
-    "third/设计模式/设计模式-day04.pdf",
-    "third/设计模式/设计模式-day03.pdf",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
