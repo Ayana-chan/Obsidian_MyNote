@@ -42,11 +42,23 @@ STL默认以vector为容器、以`operator<`为比较方式。
 
 同一个类的两个不同对象是可以互相访问private成员的。因为访问级别是编译时概念而非运行时。对象a和b都为Class Cls，它们都能知道Cls下有私有成员x，则a里面就可以访问b.x。
 
-## 重写 virtual
+## 向上兼容
+
+可以用基类指针或引用指向派生类对象，如`Base *b = new Derived;`或`Derived d; Base &b = d;`。
+
+注意，不能用`Base b = Derived();`，这会导致对象切割，本质还是在存Base。
+
+若`Base *b = new Derived;`，则`*b`（对指针解引用）返回的是Base类型，似乎会发生对象切割。
+
+[对象切割](Cpp.md#对象切割（object%20slicing）)
+
+## 重写 & virtual
 
 虚函数可以被重写。被重写的虚函数自动成为虚函数，但一般最好手动加virtual。
 
-使用了virtual之后程序将根据**对象类型**而不是引用或指针的类型来选择方法版本，或者说会挑选该方法的**可获取的最“后代”的**版本；否则直接根据**指针类型**去判断要调用哪个函数。这是**运行时多态**。
+使用了virtual之后程序将根据**对象类型**而不是引用或指针的类型来选择方法版本，或者说会挑选该方法的**可获取的最“后代”的**版本，即**动态联编**；否则直接根据**指针类型**去判断要调用哪个函数，即**静态联编**。
+
+这是**运行时多态**。
 
 ```cpp
 class Base {
@@ -68,9 +80,24 @@ b->vfunc(); // Outputs "Derived::vfunc" 由对象类型决定
 
 析构函数一般也要设为虚函数，因为若类被继承，则新的成员变量很可能需要特殊的析构函数去管理；有虚析构函数后，任意派生类都会先执行最子类的析构函数，然后自动执行父类的析构函数。
 
+构造函数不设为虚函数，因为派生类不继承基类的构造函数，而是隐式调用默认构造函数或显示调用某个构造函数。
+
+纯虚函数：
+
+```cpp
+virtual T func(args) = 0;
+```
+
+虚函数处理原理：给每个对象添加一个隐藏成员。隐藏成员中保存了一个指向函数地址数组的指针。这种数组称为虚函数表（virtual function table，vtbl）。虚函数表中存储了为类对象进行声明的虚函数的地址。例如，基类对象包含一个指针，该指针指向基类中所有虚函数的地址表。派生类对象将包含一个指向另一个属于自己的vtbl的指针。如果派生类提供了虚函数的新定义，该虚函数表将保存新函数的地址；如果派生类没有重新定义虚函数，该vtbl将保存函数原始版本的地址。如果派生类定义了新的虚函数，则该函数的地址也将被添加到vtbl中。
+
+![500](assets/uTools_1689420178949.png)
+
+
 ## 重载
 
-同名方法不同参数列表，即可根据参数在编译期自动选择哪个方法。这是**编译时多态**。
+同名方法不同参数列表，即可根据参数在编译期自动选择哪个方法。
+
+这是**编译时多态**。
 
 ```cpp
 // Function overload #1
@@ -97,7 +124,7 @@ int main() {
 }
 ```
 
-如果是基类指针指向派生类对象，那么也只是根据指针类型去匹配函数：
+如果是基类指针指向派生类对象，那么也只是**根据指针类型去匹配函数**：
 
 ```cpp
 class Base {
@@ -129,6 +156,8 @@ int main() {
 
 把子类对象赋值给父类对象（形如`Father f = Son();`）时，会把子的多余成员变量给切割掉。
 
+会调用移动操作。
+
 ```cpp
 class Father {
 public:
@@ -150,9 +179,13 @@ int main() {
 }
 ```
 
-## 父类转子类 dynamic_cast
+## 根据对象类型分派
 
-`dynamic_cast<D*>(B)`在B能转成D时返回转换后的指针，否则返回nullptr。
+基类指针指向派生类对象时，我们有可能要根据派生类的真正类型来判断要调用什么方法，或想要调用派生类有而基类没有的方法。
+
+### dynamic_cast
+
+可以实现**指针安全转换**。`dynamic_cast<D*>(B)`在B能转成D时返回转换后的指针，否则返回nullptr。
 
 转换前后的指针指向同一个对象。
 
@@ -166,6 +199,70 @@ if (d1 != nullptr) {
     if (d2 != nullptr) {
         // bp points to an object of type Derived2
     }
+}
+```
+
+### 利用virtual性质
+
+若`Base *b=new Derived1();`且Base中有virtual函数func、Derived1中重写了func，则`b->func()`会调用Derived1的函数。利用这个性质，可以在Derived::func中反馈“这个指针b指向的是Derived1类而不是Derived2或者Base”。
+
+**单分派（single dispatch）、双分派（double dispatch）**：传入一个（两个）参数，根据参数的运行时类型确定该使用哪个方法处理它们。
+
+双分派例子：父类Shape，有三个子类Circle、Square、Triangle。要求定义一个函数intersect(Shape* s1, Shape* s2)，使得输入两个子类对象之后，能判断两个对象是否属于同一个类。
+
+#### 解法1
+
+令Shape包含：
+
+```cpp
+virtual bool intersect_sec(Shape* const s) = 0;
+virtual bool judgeIntersect(Circle& s) = 0;
+virtual bool judgeIntersect(Square& s) = 0;
+virtual bool judgeIntersect(Triangle& s) = 0;
+```
+
+子类将实现它们。每个judgeIntersect函数都在参数类型与自己类型一样时返回true，否则返回false。比如`Square::judgeIntersect(Square& s)`恒返回true，其他两个返回false。
+
+intersect函数先调用`s1->intersect_sec(s2)`，这样就调用了s1内的intersect_sec，也就相当于知道了s1的类型。而每个子类里面的intersect_sec函数都是这样实现的：
+
+```cpp
+bool intersect_sec(Shape* const s){
+	return s->judgeIntersect(*this);
+}
+```
+
+`*this`将s1自己以确切的类型传给s2，使用s2的judgeIntersect很快就判断出是否是同类型了。
+
+#### 解法2
+
+先化为两个单分派问题，获取人为规定的类型标识，然后进行判断即可。
+
+```cpp
+enum ShapeType { CIRCLE, SQUARE, TRIANGLE };
+
+class Shape {
+public:
+    virtual ~Shape() {}
+    virtual ShapeType getType() const = 0; // Pure virtual function
+};
+
+class Circle : public Shape {
+public:
+    ShapeType getType() const override { return CIRCLE; }
+};
+
+class Square : public Shape {
+public:
+    ShapeType getType() const override { return SQUARE; }
+};
+
+class Triangle : public Shape {
+public:
+    ShapeType getType() const override { return TRIANGLE; }
+};
+
+bool intersect(const Shape* s1, const Shape* s2) {
+    return s1->getType() == s2->getType();
 }
 ```
 
@@ -299,7 +396,14 @@ Student S2 = 23; // 隐式构造
 
 特殊成员函数若未被定义，则会由编译器自动生成。
 
-`Obj o2=o1`调用**拷贝构造函数**，而`Obj o2; o2=o1`调用**拷贝赋值运算符**。移动同理。虽然两个都是等号，却不走同一条路。
+>注意，xx构造函数都叫构造函数，都不能为virtual！
+
+- `Obj o2=o1`调用**拷贝构造函数**
+- `Obj o2; o2=o1`调用**拷贝赋值运算符**
+- `Obj o2=Obj()`调用**移动构造函数**（传入的是右值）
+- `Obj o2=move(o1)`调用**移动构造函数**
+- `Obj o2; o2=move(o1)`调用**移动赋值运算符**
+
 
 移动相关：
 - 只有一个类没有显示定义**拷贝构造函数、赋值运算符以及析构函数**，且类的**每个非静态成员都可以移动**时，编译器才会生成默认的**移动构造函数或者移动赋值运算符**。这是为了防止生成的移动不是开发人员想要的（因为开发人员选择自己管理复制和释放），或存在有问题的移动。
