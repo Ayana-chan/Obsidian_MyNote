@@ -28,7 +28,7 @@
 
 STL默认以vector为容器、以`operator<`为比较方式。
 
-# OO
+# 面向对象
 
 ## 三大特征
 
@@ -41,6 +41,204 @@ STL默认以vector为容器、以`operator<`为比较方式。
 ## 访问级别
 
 同一个类的两个不同对象是可以互相访问private成员的。因为访问级别是编译时概念而非运行时。对象a和b都为Class Cls，它们都能知道Cls下有私有成员x，则a里面就可以访问b.x。
+
+## 重写 virtual
+
+虚函数可以被重写。被重写的虚函数自动成为虚函数，但一般最好手动加virtual。
+
+使用了virtual之后程序将根据**对象类型**而不是引用或指针的类型来选择方法版本，或者说会挑选该方法的**可获取的最“后代”的**版本；否则直接根据**指针类型**去判断要调用哪个函数。这是**运行时多态**。
+
+```cpp
+class Base {
+public:
+    void func() { cout << "Base::func\n"; }
+    virtual void vfunc() { cout << "Base::vfunc\n"; }
+};
+
+class Derived : public Base {
+public:
+    void func() { cout << "Derived::func\n"; }
+    void vfunc() override { cout << "Derived::vfunc\n"; }
+};
+
+Base* b = new Derived;
+b->func();  // Outputs "Base::func" 由指针类型决定
+b->vfunc(); // Outputs "Derived::vfunc" 由对象类型决定
+```
+
+析构函数一般也要设为虚函数，因为若类被继承，则新的成员变量很可能需要特殊的析构函数去管理；有虚析构函数后，任意派生类都会先执行最子类的析构函数，然后自动执行父类的析构函数。
+
+## 重载
+
+同名方法不同参数列表，即可根据参数在编译期自动选择哪个方法。这是**编译时多态**。
+
+```cpp
+// Function overload #1
+void display(int num) {
+    std::cout << "Displaying int: " << num << std::endl;
+}
+
+// Function overload #2
+void display(double num) {
+    std::cout << "Displaying double: " << num << std::endl;
+}
+
+// Function overload #3
+void display(char const *str) {
+    std::cout << "Displaying string: " << str << std::endl;
+}
+
+int main() {
+    display(5); // Calls function overload #1
+    display(5.5); // Calls function overload #2
+    display("Hello"); // Calls function overload #3
+
+    return 0;
+}
+```
+
+如果是基类指针指向派生类对象，那么也只是根据指针类型去匹配函数：
+
+```cpp
+class Base {
+public:
+    void func() { cout << "Base::func\n"; }
+};
+
+class Derived : public Base {
+public:
+    void func() { cout << "Derived::func\n"; }
+};
+
+void callFunc(Base* b) {
+    b->func();
+}
+
+void callFunc(Derived* d) {
+    d->func();
+}
+
+int main() {
+    Base* b = new Derived;
+    callFunc(b);  // Outputs "Base::func"
+    return 0;
+}
+```
+
+## 对象切割（object slicing）
+
+把子类对象赋值给父类对象（形如`Father f = Son();`）时，会把子的多余成员变量给切割掉。
+
+```cpp
+class Father {
+public:
+    int a;
+};
+
+class Son : public Father {
+public:
+    int b;
+};
+
+int main() {
+    Son s;
+    s.a = 1;
+    s.b = 2;
+
+    Father f = s;
+    // f now only has 'a', 'b' is sliced off
+}
+```
+
+## 父类转子类 dynamic_cast
+
+`dynamic_cast<D*>(B)`在B能转成D时返回转换后的指针，否则返回nullptr。
+
+转换前后的指针指向同一个对象。
+
+```cpp
+Base *bp = /* ... */;
+Derived1 *d1 = dynamic_cast<Derived1*>(bp);
+if (d1 != nullptr) {
+    // bp points to an object of type Derived1
+} else {
+    Derived2 *d2 = dynamic_cast<Derived2*>(bp);
+    if (d2 != nullptr) {
+        // bp points to an object of type Derived2
+    }
+}
+```
+
+## 类间互相依赖问题
+
+首先明确，两个文件是不能互相include的，编译也是有执行顺序的（只有类内部才有类似拉链回填的机制）。
+
+#### 成员变量类型相互依赖
+
+两个类的其中一个成员变量的类型为对方。编译时只能先编译其中一个类，此时它就不知道另一个类，导致编译失败。
+
+使用前向声明可以解决一部分问题，因为声明是廉价的，声明之后就可以得知存在另一个类，即使不知道它有什么内容。
+
+但是，一个类编译完成时，其大小是确定的。但是此时不知道另一个类的内容，也就不知道另一个类的大小，使得总大小不确定。将类型换成指针即可，因为指针虽然可以指向各种不同类型，但其本身的大小是固定的（如64bit）。
+
+
+```cpp
+class ClassB; // Forward declaration
+
+class ClassA {
+    private:
+        ClassB* classBInstance; // Use pointer instead of object
+};
+
+class ClassB {
+    private:
+        ClassA* classAInstance; // Use pointer instead of object
+};
+```
+
+#### 静态变量类型相互依赖
+
+**警告：这个疑似没什么用**
+
+两个类各有一个静态成员变量的类型为对方。由于static是必须立刻初始化的，因此我们无法做到真正初始化它们。
+
+可以都初始化为nullptr，并在第一次访问时真正初始化。
+
+```cpp
+class ClassB; // Forward declaration
+
+class ClassA {
+    private:
+        static ClassB* classBInstance;
+    public:
+        static ClassB* getClassBInstance();
+};
+
+class ClassB {
+    private:
+        static ClassA* classAInstance;
+    public:
+        static ClassA* getClassAInstance();
+};
+
+// Implementations
+ClassB* ClassA::classBInstance = nullptr;
+ClassA* ClassB::classAInstance = nullptr;
+
+ClassB* ClassA::getClassBInstance() {
+    if (classBInstance == nullptr) {
+        classBInstance = new ClassB();
+    }
+    return classBInstance;
+}
+
+ClassA* ClassB::getClassAInstance() {
+    if (classAInstance == nullptr) {
+        classAInstance = new ClassA();
+    }
+    return classAInstance;
+}
+```
 
 
 
