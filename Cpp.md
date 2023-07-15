@@ -8,6 +8,12 @@
 [C++模板元编程详细教程（之三）\_c++模板元编程实战\_borehole打洞哥的博客-CSDN博客](https://blog.csdn.net/fl2011sx/article/details/128314495)
 # 规范与注意事项
 
+## 通用头文件
+
+```cpp
+#include<bits/stdc++.h>
+```
+
 ## 类
 
 成员首先按public, protected, private的顺序分块。
@@ -28,6 +34,16 @@
 ## STL
 
 STL默认以vector为容器、以`operator<`为比较方式。
+
+# OO
+
+三大要素：
+1. **封装（Encapsulation）**：封装隐藏对象的属性，并且外界只能通过对外提供的接口进行访问。
+2. **继承（Inheritance）**：子类可以复用父类的成员和方法，并且可以在现有代码的基础上进行功能扩展。
+3. **多态（Polymorphism）**：
+	1. 编译时多态：同名函数有不同的参数列表，则能够在编译时识别出调用的是哪个函数。处理函数**重载**。
+	2. 运行时多态：运行时，根据传入的对象的类型决定调用哪个类的某个函数。这个函数是虚函数，被子类重写，函数名、参数列表完全一样。处理函数**重写**。
+
 # 库与语法
 
 ## 空指针
@@ -57,6 +73,162 @@ Student S2 = 23; // 隐式构造
 ```
 
 而在构造函数前加上`explicit`即可禁用该构造函数的隐式构造。
+
+## 左右值、引用、赋值等
+
+[c++ move函数到底是什么意思？ - 知乎](https://www.zhihu.com/question/64205844/answer/2401017464)
+### 引用
+
+- 左值引用，使用T&，只能绑定左值
+- 右值引用，使用T&&，只能绑定右值
+- 常量左值，使用const T&,既可以绑定左值，又可以绑定右值，但是不能对其进行修改
+- 具名右值引用，编译器会认为是个左值
+
+[CPP11-右值引用 - 简书](https://www.jianshu.com/p/06b0b17c62bc)
+
+要把右值引用看成用于接住右值、给它续命的东西。
+
+>右值引用可否理解为“以右值的角度去引用”？`Obj &&o2=move(o1);`之后，o2并不会在最后触发析构。
+
+### 特殊成员函数
+
+- 默认构造函数 `Obj()`
+- 析构函数 `~Obj()`
+- 拷贝构造函数 `Obj(const Obj&)`
+- 拷贝赋值运算符 `Obj& operator=(const Obj&)`
+- 移动构造函数 `Obj(Obj&&)`
+- 移动赋值运算符 `Obj& operator=(Obj&&)`
+
+特殊成员函数若未被定义，则会由编译器自动生成。
+
+`Obj o2=o1`调用拷贝构造函数，而`Obj o2; o2=o1`调用拷贝赋值运算符。
+
+移动相关：
+- 只有一个类没有显示定义**拷贝构造函数、赋值运算符以及析构函数**，且类的**每个非静态成员都可以移动**时，编译器才会生成默认的**移动构造函数或者移动赋值运算符**。这是为了防止生成的移动不是开发人员想要的（因为开发人员选择自己管理复制和释放），或存在有问题的移动。
+- 如果类中没有提供移动构造函数和移动赋值运算符，且编译器不会生成默认的，那么我们在代码中通过std::move()调用的移动构造或者移动赋值的行为将**被转换为调用拷贝构造或者赋值运算符**。
+- 拷贝构造函数和拷贝赋值运算符的生成是**独立**的，若只实现了其中一个，则编译器也**会**自动生成另一个。
+
+拷贝相关：
+- 如果显式声明了**移动构造函数或移动赋值运算符**，则**拷贝构造函数和拷贝赋值运算符**将被 **隐式删除**。
+- 移动构造函数和移动赋值运算符的生成是**不独立**的，若只实现了其中一个，则编译器**不会**自动生成另一个。
+
+
+
+
+
+
+### 啥都有的对象示例
+
+```cpp
+class BigObj { 
+public: 
+	// Constructor
+	explicit BigObj(size_t length) : length_(length), data_(new int[length]) { } 
+	// Destructor. 
+	~BigObj() { 
+		if (data_ != NULL) { 
+			delete[] data_; 
+			length_ = 0; 
+		} 
+	} 
+	
+	// 拷贝构造函数 
+	BigObj(const BigObj& other) : length_(other.length_), data(new int[other.length_]) { 
+		//直接复制数据
+		std::copy(other.mData, other.mData + mLength, mData); 
+	} 
+	
+	// 赋值运算符 
+	BigObj& operator=(const BigObj& other) { 
+		if (this != &other;) { 
+
+			//删去自己原有的数据
+			delete[] data_; 
+
+			//重建并复制数据
+			data_ = new int[length_]; 
+			length_ = other.length_; 
+			std::copy(other.data_, other.data_ + length_, data_); 
+		} 
+		return *this; 
+	} 
+	
+	// 移动构造函数 
+	BigObj(BigObj&& other) : data_(nullptr), length_(0) { 
+
+		//获取数据所有权
+		data_ = other.data_; 
+		length_ = other.length_; 
+
+		//剥夺对方的数据所有权
+		other.data_ = nullptr; 
+		other.length_ = 0; 
+	} 
+	
+	// 移动赋值运算符 
+	BigObj& operator=(BigObj&& other) { 
+		if (this != &other;) { 
+
+			//删去自己原有的数据
+			delete[] data_; 
+
+			//获取数据所有权
+			data_ = other.data_; 
+			length_ = other.length_; 
+
+			//剥夺对方的数据所有权
+			other.data_ = NULL; 
+			other.length_ = 0; 
+		} 
+		return *this; 
+	} 
+	
+private: 
+	size_t length_; 
+	int* data_; 
+};
+```
+
+std::copy
+
+#pragma optimize("", off)
+
+private
+
+The equals sign, =, in copy-initialization of a named variable is not related to the assignment operator. Assignment operator overloads have no effect on copy-initialization.
+
+### std::move
+
+>std::move is used to indicate that an object t may be "moved from", i.e. allowing the efficient transfer of resources from t to another object. In particular, std::move produces an xvalue expression that identifies its argument t. It is exactly equivalent to a static_cast to an rvalue reference type.
+
+- 如果传递的是左值，则推导为左值引用，然后由static_cast转换为右值引用
+- 如果传递的是右值，则推导为右值引用，然后static_cast转换为右值引用
+
+把一个左值转变成
+
+右值引用类型进行返回。将右值引用赋值给另一个变量（左值）时，会调用其移动构造函数，即以右值引用为参数的构造函数。
+
+move语义：将左值对应的内存的所有权进行转交，原对象在move后不可使用。这是move的目标，但move函数本身只是一个类型转换，具体逻辑要在移动构造函数中实现。
+
+因此，移动构造函数一般要做到：将原对象的数据移至自己的手下，并让原对象失去数据。
+
+**自定义的类不会自动带有真正的、完整的move语义**，编译器为其生成的移动构造函数只是可以调用其各个变量的移动构造函数。因此，对于自定义类来说，想实现移动语义必须实现非常具体的移动构造函数。
+
+移动构造函数在删除原对象对数据的所有权时，**要那些指针设为nullptr**。因为即使一个左值a被move到另一个左值b，a本身是不会被消除的，**在a的生命周期结束后会自动调用其析构函数**，从而可能触发野指针错误或者对一个数据进行多次析构（a和b都会调用析构函数）。
+
+
+
+注意，定义了拷贝构造函数后，拷贝赋值operator会被delete，导致`Obj o2(2); o2=move(o1);`会报错`use of deleted function 'Obj& Obj::operator=(const Obj&)' 。
+
+![](assets/QQ图片20230715141939.jpg)
+
+
+### 完美转发
+
+函数接收参数的时候，右值等可能会发生变化导致右值变左值等问题。使用`std::forward<T>(x)`可以保证其不发生改变。
+
+
+
 ## 模板
 ### using
 
@@ -93,6 +265,7 @@ func_t<int> xx_2;//模板别名（alias template）
 ```
 
 ### 函数模板的默认模板参数
+
 ```cpp
 template <typename T = int>
 void func() { 
@@ -124,9 +297,6 @@ int main(){
 }
 ```
 
-## std::move
-
-把一个左值强行变成右值以进行赋值，则相当于将左值对应的内存的所有权进行转交，原左值变成零值。
 
 ## 后置返回值类型
 [模板函数——后置返回值类型（trailing return type）\_模板函数返回\_HerofH\_的博客-CSDN博客](https://blog.csdn.net/qq_28114615/article/details/100553186)
@@ -158,16 +328,6 @@ std::make_unique<TrieNodeWithValue<T>>(children_, value_)
 传入参数时就指定使用引用输入（平时都是在接收的时候才决定是引用）。
 ## string_view
 对string的一个引用，不发生拷贝。
-
-## 右值相关
-
-[CPP11-右值引用 - 简书](https://www.jianshu.com/p/06b0b17c62bc)
-
-要把右值引用看成用于接住右值、给它续命的东西。
-
-## 完美转发
-
-函数接收参数的时候，右值等可能会发生变化导致右值变左值等问题。使用`std::forward<T>(x)`可以保证其不发生改变。
 
 ## 函数（谓词）
 ### 仿函数（闭包）

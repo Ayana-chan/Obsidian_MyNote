@@ -56,7 +56,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -130,7 +130,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "数学/线性代数.md"
+                "file": "Cpp.md"
               }
             }
           },
@@ -140,7 +140,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "数学/线性代数.md",
+                "file": "Cpp.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -157,7 +157,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "数学/线性代数.md",
+                "file": "Cpp.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -208,10 +208,13 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "44bb510b8715c8b5",
+  "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
-    "Web前端/JS.md",
+    "assets/QQ图片20230715141939.jpg",
+    "assets/_]87`)JGGAXQ0FJERVS9DZM 1.png",
+    "assets/_]87`)JGGAXQ0FJERVS9DZM.png",
     "数学/线性代数.md",
+    "Web前端/JS.md",
     "数学",
     "Web前端/assets/uTools_1689331900673.png",
     "Web前端/assets",
@@ -233,8 +236,6 @@
     "MIT6.824/课堂笔记.md",
     "MIT6.824/assets/uTools_1688892962537.png",
     "MIT6.824/assets/uTools_1688889654272.png",
-    "MIT6.824/assets/uTools_1688889327227.png",
-    "MIT6.824/assets/uTools_1688885982823.png",
     "Linux.md",
     "MIT6.824/Lab2.md",
     "Docker.md",
@@ -247,7 +248,6 @@
     "CV/OpenCV.md",
     "CV/OpenGL (FreeGlut).md",
     "Web后端/SpringBoot.md",
-    "legacy/分布式cache基本文档.md",
     "temp",
     "legacy",
     "assets/![](assets",
