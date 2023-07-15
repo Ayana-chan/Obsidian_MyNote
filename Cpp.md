@@ -37,12 +37,19 @@ STL默认以vector为容器、以`operator<`为比较方式。
 
 # OO
 
-三大要素：
+## 三大特征
+
 1. **封装（Encapsulation）**：封装隐藏对象的属性，并且外界只能通过对外提供的接口进行访问。
 2. **继承（Inheritance）**：子类可以复用父类的成员和方法，并且可以在现有代码的基础上进行功能扩展。
 3. **多态（Polymorphism）**：
 	1. 编译时多态：同名函数有不同的参数列表，则能够在编译时识别出调用的是哪个函数。处理函数**重载**。
 	2. 运行时多态：运行时，根据传入的对象的类型决定调用哪个类的某个函数。这个函数是虚函数，被子类重写，函数名、参数列表完全一样。处理函数**重写**。
+
+## 访问级别
+
+同一个类的两个不同对象是可以互相访问private成员的。因为访问级别是编译时概念而非运行时。对象a和b都为Class Cls，它们都能知道Cls下有私有成员x，则a里面就可以访问b.x。
+
+
 
 # 库与语法
 
@@ -74,9 +81,9 @@ Student S2 = 23; // 隐式构造
 
 而在构造函数前加上`explicit`即可禁用该构造函数的隐式构造。
 
-## 左右值、引用、赋值等
+## 数据机制
 
-[c++ move函数到底是什么意思？ - 知乎](https://www.zhihu.com/question/64205844/answer/2401017464)
+[【Modern C++】深入理解移动语义](https://mp.weixin.qq.com/s/GYn7g073itjFVg0OupWbVw)
 ### 引用
 
 - 左值引用，使用T&，只能绑定左值
@@ -101,23 +108,20 @@ Student S2 = 23; // 隐式构造
 
 特殊成员函数若未被定义，则会由编译器自动生成。
 
-`Obj o2=o1`调用拷贝构造函数，而`Obj o2; o2=o1`调用拷贝赋值运算符。
+`Obj o2=o1`调用**拷贝构造函数**，而`Obj o2; o2=o1`调用**拷贝赋值运算符**。移动同理。虽然两个都是等号，却不走同一条路。
 
 移动相关：
 - 只有一个类没有显示定义**拷贝构造函数、赋值运算符以及析构函数**，且类的**每个非静态成员都可以移动**时，编译器才会生成默认的**移动构造函数或者移动赋值运算符**。这是为了防止生成的移动不是开发人员想要的（因为开发人员选择自己管理复制和释放），或存在有问题的移动。
-- 如果类中没有提供移动构造函数和移动赋值运算符，且编译器不会生成默认的，那么我们在代码中通过std::move()调用的移动构造或者移动赋值的行为将**被转换为调用拷贝构造或者赋值运算符**。
+- 如果类中没有提供移动构造函数和移动赋值运算符，且编译器不会生成默认的，那么我们在代码中通过std::move()调用的移动构造或者移动赋值的行为将**被转换为调用拷贝构造或者赋值运算符**。因此对于不可移动的数据类型也可以像可移动的数据类型一样写代码，会自动变成复制操作。
 - 拷贝构造函数和拷贝赋值运算符的生成是**独立**的，若只实现了其中一个，则编译器也**会**自动生成另一个。
 
 拷贝相关：
 - 如果显式声明了**移动构造函数或移动赋值运算符**，则**拷贝构造函数和拷贝赋值运算符**将被 **隐式删除**。
-- 移动构造函数和移动赋值运算符的生成是**不独立**的，若只实现了其中一个，则编译器**不会**自动生成另一个。
+- 移动构造函数和移动赋值运算符的生成是**不独立**的，若只实现了其中一个，则编译器**不会**自动生成另一个。这是为了防止移动出现问题。
 
+基础数据类型都没有实现移动。
 
-
-
-
-
-### 啥都有的对象示例
+### 完整对象示例
 
 ```cpp
 class BigObj { 
@@ -189,13 +193,25 @@ private:
 };
 ```
 
-std::copy
+### std::copy
 
-#pragma optimize("", off)
+```cpp
+template<class InputIterator, class OutputIterator>
+  OutputIterator copy (InputIterator first, InputIterator last, OutputIterator result)
+{
+  while (first!=last) {
+    *result = *first;
+    ++result; ++first;
+  }
+  return result;
+}
+```
 
-private
+指定源的起点、终点，和目标的起点，即可将`[first,last)`处的数据进行逐个复制。调用的是拷贝赋值运算符。
 
-The equals sign, =, in copy-initialization of a named variable is not related to the assignment operator. Assignment operator overloads have no effect on copy-initialization.
+目标要有容纳这些被拷贝的数据项的空间。
+
+目标不应在`[first,last)`当中。
 
 ### std::move
 
@@ -204,31 +220,113 @@ The equals sign, =, in copy-initialization of a named variable is not
 - 如果传递的是左值，则推导为左值引用，然后由static_cast转换为右值引用
 - 如果传递的是右值，则推导为右值引用，然后static_cast转换为右值引用
 
-把一个左值转变成
+转换的过程不存在复制，也不存在数据剥夺，只是个单纯的数据转换。
 
-右值引用类型进行返回。将右值引用赋值给另一个变量（左值）时，会调用其移动构造函数，即以右值引用为参数的构造函数。
+若将move结果赋值给一个变量（左值），则会调用其移动操作。
 
-move语义：将左值对应的内存的所有权进行转交，原对象在move后不可使用。这是move的目标，但move函数本身只是一个类型转换，具体逻辑要在移动构造函数中实现。
+**move语义**：将左值对应的内存的所有权进行转交，原对象在move后不可使用。移动操作应当以move语义为目标。
 
-因此，移动构造函数一般要做到：将原对象的数据移至自己的手下，并让原对象失去数据。
+因此，移动操作一般要做到：将原对象的数据移至自己的手下，并让原对象失去数据。
 
-**自定义的类不会自动带有真正的、完整的move语义**，编译器为其生成的移动构造函数只是可以调用其各个变量的移动构造函数。因此，对于自定义类来说，想实现移动语义必须实现非常具体的移动构造函数。
+**自定义的类不会自动带有真正的、完整的move语义**，编译器自动生成的移动构造函数只是可以调用其各个成员变量的移动构造函数。因此，对于自定义类来说，想实现移动语义必须实现非常具体的移动构造函数。
 
 移动构造函数在删除原对象对数据的所有权时，**要那些指针设为nullptr**。因为即使一个左值a被move到另一个左值b，a本身是不会被消除的，**在a的生命周期结束后会自动调用其析构函数**，从而可能触发野指针错误或者对一个数据进行多次析构（a和b都会调用析构函数）。
-
-
-
-注意，定义了拷贝构造函数后，拷贝赋值operator会被delete，导致`Obj o2(2); o2=move(o1);`会报错`use of deleted function 'Obj& Obj::operator=(const Obj&)' 。
-
-![](assets/QQ图片20230715141939.jpg)
-
 
 ### 完美转发
 
 函数接收参数的时候，右值等可能会发生变化导致右值变左值等问题。使用`std::forward<T>(x)`可以保证其不发生改变。
 
 
+## ROV & NROV
 
+两个优化都自动将返回的目标左值作为隐式参数以引用的形式传入到函数中，以减少多余的构造、析构和拷贝。
+
+### RVO 返回值优化（Return Value Optimization）
+
+返回为临时对象时有效。
+
+```cpp
+T f() { 
+	return T(); 
+} 
+
+int main(){
+	T t=f();
+}
+```
+
+上面的代码若未优化，则`return T()`会进行一次构造，然后拷贝再析构。优化后`f()`等价于：
+
+```cpp
+void f(T &t){
+	t=T();
+	return;
+}
+```
+
+但是，如果是返回被命名的变量，也即函数内局部变量的话：
+
+```cpp
+Data process(int i) {
+    Data data;
+    data.mem_var = i;
+    return data;
+}
+
+int main() {
+    Data data;
+    data = process(5);
+}
+```
+
+则等价于：
+
+```cpp
+void process(Data &data,int i) {
+    Data d;
+    d.mem_var = i;
+    data=d; //data=Data(d);
+    return;
+}
+```
+
+还是有多余的构造、拷贝、析构。
+
+>从`c++17`开始，`copy elision`得到保证，强制使用RVO
+
+### NRVO 命名返回值优化（Named Return Value Optimization）
+
+若返回的变量是函数内的局部变量时（注意，不能是函数参数）有效。
+
+```cpp
+Data process(int i) {
+    Data data;
+    data.mem_var = i;
+    return data;
+}
+
+int main() {
+    Data data;
+    data = process(5);
+}
+```
+
+上面的代码若没有优化，则process内部也会构造一个对象，然后复制给外部的data变量，随后析构。
+
+优化后，process函数等价于：
+
+```cpp
+void process(Data& data,int i) {
+    data.mem_var = i;
+    return;
+}
+```
+
+NRVO无法优化的情况：
+- 返回类型具有非默认的析构函数。
+- 函数有多处return，且返回的变量不同。
+
+编译时添加选项`-fno-elide-constructors`可以关闭NRVO。
 ## 模板
 ### using
 
@@ -807,7 +905,9 @@ gcc test.o -o test.exe
 static可以理解成“只能自己用的全局变量”。因此多文件开发时尽量避免全局变量，尽量加上static。
 
 
-# 编译命令
+# 编译相关
+
+`#pragma optimize("", off)`可以关闭所有编译优化。把off改成on则恢复默认优化。
 
 - `-o xxx` 输出文件的名字 
 - `-std=c++11` 切换为cpp11标准
