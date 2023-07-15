@@ -30,6 +30,8 @@ STL默认以vector为容器、以`operator<`为比较方式。
 
 # 面向对象
 
+[第13章-cpp类继承\_cpp 继承\_itzyjr的博客-CSDN博客](https://blog.csdn.net/itzyjr/article/details/103424450)
+
 ## 三大特征
 
 1. **封装（Encapsulation）**：封装隐藏对象的属性，并且外界只能通过对外提供的接口进行访问。
@@ -38,10 +40,11 @@ STL默认以vector为容器、以`operator<`为比较方式。
 	1. 编译时多态：同名函数有不同的参数列表，则能够在编译时识别出调用的是哪个函数。处理函数**重载**。
 	2. 运行时多态：运行时，根据传入的对象的类型决定调用哪个类的某个函数。这个函数是虚函数，被子类重写，函数名、参数列表完全一样。处理函数**重写**。
 
-## 访问级别
+## 访问控制
 
 同一个类的两个不同对象是可以互相访问private成员的。因为访问级别是编译时概念而非运行时。对象a和b都为Class Cls，它们都能知道Cls下有私有成员x，则a里面就可以访问b.x。
 
+对于外部来说，protected的行为与private相似；但对于派生类来说，protected的行为与public相似。
 ## 向上兼容
 
 可以用基类指针或引用指向派生类对象，如`Base *b = new Derived;`或`Derived d; Base &b = d;`。
@@ -78,11 +81,19 @@ b->func();  // Outputs "Base::func" 由指针类型决定
 b->vfunc(); // Outputs "Derived::vfunc" 由对象类型决定
 ```
 
-纯虚函数：
+### 纯虚函数 & 抽象基类
 
 ```cpp
 virtual T func(args) = 0;
 ```
+
+当类声明中包含纯虚函数时，不能创建该类的对象。包含纯虚函数的类只用作基类。
+
+包含纯虚函数的类成为**抽象基类（abstract base class，ABC）**。ABC的一个目的是实现接口约定。
+
+`= 0`的作用仅仅是说明**可以在此类中不提供其实现**，但是依然是**可以进行实现**的。因此，一个拥有纯虚函数func的类作为一个不可实例化的基类，而其所有派生类的func代码完全一样时，不妨就在基类中实现它。
+
+### 重写注意点
 
 虚函数被重写时，会把所有名字一样的都给覆盖，即使参数列表和返回值不一样。若不一样，编译器可能发出警告，但不会编译失败。因此，如果基类有三个同名虚函数，则派生类最好要么都不重写，要么都重写。如下所示：
 
@@ -420,13 +431,18 @@ Student S2 = 23; // 隐式构造
 - 左值引用，使用T&，只能绑定左值
 - 右值引用，使用T&&，只能绑定右值
 - 常量左值，使用const T&,既可以绑定左值，又可以绑定右值，但是不能对其进行修改
-- 具名右值引用，编译器会认为是个左值
+- 具名右值引用，**编译器会认为是个左值**
 
 [CPP11-右值引用 - 简书](https://www.jianshu.com/p/06b0b17c62bc)
 
 要把右值引用看成用于接住右值、给它续命的东西。
 
->右值引用可否理解为“以右值的角度去引用”？`Obj &&o2=move(o1);`之后，o2并不会在最后触发析构。
+由于具名右值引用被视为左值，因此我们要把它转回右值引用时就需要再用move和forward。
+
+#### 引用折叠
+
+- X& &、X& &&、X&& &都折叠成X&。
+- X&& &&折叠为X&&。
 
 ### 特殊成员函数
 
@@ -441,11 +457,12 @@ Student S2 = 23; // 隐式构造
 
 >注意，xx构造函数都叫构造函数，都不能为virtual！
 
-- `Obj o2=o1`调用**拷贝构造函数**
-- `Obj o2; o2=o1`调用**拷贝赋值运算符**
-- `Obj o2=Obj()`调用**移动构造函数**（传入的是右值）
-- `Obj o2=move(o1)`调用**移动构造函数**
-- `Obj o2; o2=move(o1)`调用**移动赋值运算符**
+- `Obj o2=o1;`调用**拷贝构造函数**
+- `Obj o2; o2=o1;`调用**拷贝赋值运算符**
+- `Obj o2=move(o1);`调用**移动构造函数**
+- `Obj o2; o2=move(o1);`调用**移动赋值运算符**
+- `Obj o2=Obj();`调用**移动构造函数**（因为传的是右值）
+- `Obj &&o1; Obj o2=o1;`调用**拷贝构造函数**（因为具名右值引用被视为左值）
 
 
 移动相关：
@@ -553,12 +570,21 @@ template<class InputIterator, class OutputIterator>
 
 ### std::move
 
+```cpp
+//C++11 std::move的实现 
+template<typename T> 
+typename remove_reference<T>::type&& move(T&& param) { 
+	using ReturnType = typename remove_reference<T>::type&&; 
+	return static_cast<ReturnType>(param); 
+}
+```
+
 >std::move is used to indicate that an object t may be "moved from", i.e. allowing the efficient transfer of resources from t to another object. In particular, std::move produces an xvalue expression that identifies its argument t. It is exactly equivalent to a static_cast to an rvalue reference type.
 
 - 如果传递的是左值，则推导为左值引用，然后由static_cast转换为右值引用
 - 如果传递的是右值，则推导为右值引用，然后static_cast转换为右值引用
 
-转换的过程不存在复制，也不存在数据剥夺，只是个单纯的数据转换。
+转换的过程不存在复制，也不存在数据剥夺，在运行时什么都没做，只是个单纯的数据转换。
 
 若将move结果赋值给一个变量（左值），则会调用其移动操作。
 
@@ -570,10 +596,91 @@ template<class InputIterator, class OutputIterator>
 
 移动构造函数在删除原对象对数据的所有权时，**要那些指针设为nullptr**。因为即使一个左值a被move到另一个左值b，a本身是不会被消除的，**在a的生命周期结束后会自动调用其析构函数**，从而可能触发野指针错误或者对一个数据进行多次析构（a和b都会调用析构函数）。
 
-### 完美转发
+### forward 完美转发 
 
-函数接收参数的时候，右值等可能会发生变化导致右值变左值等问题。使用`std::forward<T>(x)`可以保证其不发生改变。
+能转发：
+```cpp
+[const] T &[&]
+即：
+const T &
+T &
+const T &&
+T &&
+```
 
+**万能引用**：由于引用折叠，模板函数参数为右值引用形式（T&&）时可以无害地接收左右值：
+
+```cpp
+template<typename T> 
+void f(T&&);
+
+int i = 42;
+f(i)
+```
+
+如果是其他模板的话T为int，但这里会例外地推断出T为int&，从而实例化f(T& &&)，即f(T&)。
+
+万能引用接收参数的时候，可能会出现右值变左值（具名右值引用）等问题。使用`std::forward<T>(x)`可以保证其不发生改变，左值回归左值，右值回归右值，从而正确地调用拷贝操作/移动操作。
+
+和move差不多，都在运行时没做任何改动，仅仅是转换。
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <utility>
+ 
+struct A {
+    A(int&& n) { std::cout << "rvalue overload, n=" << n << "\n"; }
+    A(int& n)  { std::cout << "lvalue overload, n=" << n << "\n"; }
+};
+ 
+class B {
+public:
+    template<class T1, class T2, class T3>
+    B(T1&& t1, T2&& t2, T3&& t3) :
+        a1_{std::forward<T1>(t1)},
+        a2_{std::forward<T2>(t2)},
+        a3_{std::forward<T3>(t3)}
+    {
+    }
+ 
+private:
+    A a1_, a2_, a3_;
+};
+ 
+template<class T, class U>
+std::unique_ptr<T> make_unique1(U&& u)
+{
+    return std::unique_ptr<T>(new T(std::forward<U>(u)));
+}
+ 
+template<class T, class... U>
+std::unique_ptr<T> make_unique2(U&&... u)
+{
+    return std::unique_ptr<T>(new T(std::forward<U>(u)...));
+}
+ 
+int main()
+{   
+    auto p1 = make_unique1<A>(2); // 右值
+    int i = 1;
+    auto p2 = make_unique1<A>(i); // 左值
+ 
+    std::cout << "B\n";
+    auto t = make_unique2<B>(2, i, 3);
+}
+```
+
+输出：
+
+```txt
+rvalue overload, n=2
+lvalue overload, n=1
+B
+rvalue overload, n=2
+lvalue overload, n=1
+rvalue overload, n=3
+```
 
 ## ROV & NROV
 
