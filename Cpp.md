@@ -7,13 +7,6 @@
 
 [C++模板元编程详细教程（之三）\_c++模板元编程实战\_borehole打洞哥的博客-CSDN博客](https://blog.csdn.net/fl2011sx/article/details/128314495)
 # 规范与注意事项
-
-## 通用头文件
-
-```cpp
-#include<bits/stdc++.h>
-```
-
 ## 类
 
 成员首先按public, protected, private的顺序分块。
@@ -786,6 +779,12 @@ void Demo() {
 确定了所有模板参数后即为全特化。全特化已经是个实例，因此要当成普通函数/类来对待。如果要和模板函数/类一起写在头文件的话，要提防重复定义，如手动加上inline。
 
 # 问题、技巧、解决方案
+
+## 通用头文件
+
+```cpp
+#include<bits/stdc++.h>
+```
 
 ## 两个类互相依赖
 
