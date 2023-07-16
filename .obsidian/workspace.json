@@ -55,8 +55,7 @@
               }
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -130,7 +129,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/课堂笔记.md"
+                "file": "算法.md"
               }
             }
           },
@@ -140,7 +139,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/课堂笔记.md",
+                "file": "算法.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -157,7 +156,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/课堂笔记.md",
+                "file": "算法.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -210,7 +209,9 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "Cpp.md",
     "算法.md",
+    "MIT6.824/课堂笔记.md",
     "assets/uTools_1689432530764.png",
     "assets/uTools_1689432203441.png",
     "assets/uTools_1689420178949.png",
@@ -229,12 +230,10 @@
     "Web前端/css.md",
     "OS.md",
     "assets/uTools_1689263800478.png",
-    "Cpp.md",
     "assets/uTools_1689130271556.png",
     "assets/uTools_1689130262939.png",
     "TODO.md",
     "Temp.md",
-    "MIT6.824/课堂笔记.md",
     "Linux.md",
     "MIT6.824/Lab2.md",
     "Docker.md",
