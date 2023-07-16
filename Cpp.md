@@ -53,6 +53,8 @@ STL默认以vector为容器、以`operator<`为比较方式。
 
 若`Base *b = new Derived;`，则`*b`（对指针解引用）返回的是Base类型，似乎会发生对象切割。
 
+可以把派生类指针赋值给基类指针。
+
 [对象切割](Cpp.md#对象切割（object%20slicing）)
 
 ## 重写 & virtual
@@ -209,8 +211,6 @@ int main() {
 ## 对象切割（object slicing）
 
 把子类对象赋值给父类对象（形如`Father f = Son();`）时，会把子的多余成员变量给切割掉。
-
-会调用移动操作。
 
 ```cpp
 class Father {
