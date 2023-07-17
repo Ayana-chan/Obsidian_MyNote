@@ -216,7 +216,7 @@ int main() {
 }
 ```
 
-## 根据对象类型分派
+## 确定运行时对象的类
 
 基类指针指向派生类对象时，我们有可能要根据派生类的真正类型来判断要调用什么方法，或想要调用派生类有而基类没有的方法。
 
@@ -813,74 +813,6 @@ NRVO无法优化的情况：
 - 函数有多处return，且返回的变量不同。
 
 编译时添加选项`-fno-elide-constructors`可以关闭NRVO。
-## 模板
-### using
-
-```cpp
-// 重定义unsigned int
-typedef unsigned int uint_t;
-using uint_t = unsigned int;
-// 重定义std::map
-typedef std::map<std::string, int> map_int_t;
-using map_int_t = std::map<std::string, int>;
-```
-
-```cpp
-template <typename Val> 
-using str_map_t = std::map<std::string, Val>; 
-// ... 
-str_map_t<int> map1;
-```
-
-```cpp
-/* C++98/03 */
-template <typename T>
-struct func_t
-{
-    typedef void (*type)(T, T);
-};
-// 使用 func_t 模板
-func_t<int>::type xx_1;
-/* C++11 */
-template <typename T>
-using func_t = void (*)(T, T);
-// 使用 func_t 模板
-func_t<int> xx_2;//模板别名（alias template）
-```
-
-### 函数模板的默认模板参数
-
-```cpp
-template <typename T = int>
-void func() { 
-	// ... 
-}
-```
-
-然后即可直接像函数一样调用，不需要指定类型（如果是类模板的话即使有默认模板参数也要在使用时传入类型）。
-
-```cpp
-int main() { 
-	func(); //T = int 
-	return 0; 
-}
-```
-
->没有必须写在参数表最后的限制。甚至于，根据实际场景中函数模板被调用的情形，编译器还可以自行推导出部分模板参数的类型。
-
-```cpp
-template <typename R = int, typename U>
-R func(U val){
-    return val;
-}
-int main(){
-    func(97);               // R=int, U=int
-    func<char>(97);         // R=char, U=int
-    func<double, int>(97);  // R=double, U=int
-    return 0;
-}
-```
-
 
 ## 后置返回值类型
 [模板函数——后置返回值类型（trailing return type）\_模板函数返回\_HerofH\_的博客-CSDN博客](https://blog.csdn.net/qq_28114615/article/details/100553186)
@@ -1241,6 +1173,74 @@ template <typename T>
 void f(const T &t) {} // 当然，文件内部没有声明依赖关系的时候，声明和实现可以合并
 ```
 
+### using
+
+```cpp
+// 重定义unsigned int
+typedef unsigned int uint_t;
+using uint_t = unsigned int;
+// 重定义std::map
+typedef std::map<std::string, int> map_int_t;
+using map_int_t = std::map<std::string, int>;
+```
+
+```cpp
+template <typename Val> 
+using str_map_t = std::map<std::string, Val>; 
+// ... 
+str_map_t<int> map1;
+```
+
+```cpp
+/* C++98/03 */
+template <typename T>
+struct func_t
+{
+    typedef void (*type)(T, T);
+};
+// 使用 func_t 模板
+func_t<int>::type xx_1;
+/* C++11 */
+template <typename T>
+using func_t = void (*)(T, T);
+// 使用 func_t 模板
+func_t<int> xx_2;//模板别名（alias template）
+```
+
+### 函数模板的默认模板参数
+
+```cpp
+template <typename T = int>
+void func() { 
+	// ... 
+}
+```
+
+然后即可直接像函数一样调用，不需要指定类型（如果是类模板的话即使有默认模板参数也要在使用时传入类型）。
+
+```cpp
+int main() { 
+	func(); //T = int 
+	return 0; 
+}
+```
+
+>没有必须写在参数表最后的限制。甚至于，根据实际场景中函数模板被调用的情形，编译器还可以自行推导出部分模板参数的类型。
+
+```cpp
+template <typename R = int, typename U>
+R func(U val){
+    return val;
+}
+int main(){
+    func(97);               // R=int, U=int
+    func<char>(97);         // R=char, U=int
+    func<double, int>(97);  // R=double, U=int
+    return 0;
+}
+```
+
+
 ### 特化
 
 有时候对模板类型的操作不能通用，需要单独特殊处理，则可以用特化。
@@ -1280,10 +1280,6 @@ void Demo() {
 ```cpp
 #include<bits/stdc++.h>
 ```
-
-## 两个类互相依赖
-
-类A里面需要B，类B里面需要A。可以在B.h里面别`include "A.h"`，而是前向声明 `class A`；A.h则正常地`include "B.h"`。
 
 ## 获取数组长度
 
