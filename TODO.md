@@ -18,7 +18,6 @@ kanban-plugin: basic
 
 ## 备忘录
 
-- [ ] AOP
 
 
 ***

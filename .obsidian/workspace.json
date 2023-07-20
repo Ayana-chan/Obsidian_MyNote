@@ -44,16 +44,6 @@
             }
           },
           {
-            "id": "44bb510b8715c8b5",
-            "type": "leaf",
-            "state": {
-              "type": "kanban",
-              "state": {
-                "file": "TODO.md"
-              }
-            }
-          },
-          {
             "id": "b573e7ad4b3919da",
             "type": "leaf",
             "state": {
@@ -66,7 +56,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -140,7 +130,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Cpp.md"
+                "file": "MIT6.824/课堂笔记.md"
               }
             }
           },
@@ -150,7 +140,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Cpp.md",
+                "file": "MIT6.824/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -167,7 +157,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Cpp.md",
+                "file": "MIT6.824/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -200,7 +190,8 @@
               "state": {}
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -217,22 +208,24 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "417908cd7e14a3de",
+  "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "MIT6.824/assets/uTools_1689844304377.png",
+    "MIT6.824/assets/uTools_1689843031590.png",
+    "TODO.md",
+    "MIT6.824/课堂笔记.md",
+    "算法.md",
     "assets/Pasted image 20230718134236.png",
     "assets/Pasted image 20230718134231.png",
     "Web前端/JS.md",
     "OS.md",
     "third/设计模式/2.剩余四大创建型模式.pdf",
-    "算法.md",
     "third/设计模式/1.六大设计原则与单例模式.pdf",
-    "TODO.md",
     "legacy/算法课笔记.md",
     "third/正则表达式.pdf",
     "Vim.md",
     "数学/线性代数.md",
     "Cpp.md",
-    "MIT6.824/课堂笔记.md",
     "assets/uTools_1689432530764.png",
     "assets/uTools_1689432203441.png",
     "assets/uTools_1689420178949.png",
@@ -247,8 +240,6 @@
     "Web前端/Vite.md",
     "Web前端/vue3.md",
     "Web前端/css.md",
-    "assets/uTools_1689263800478.png",
-    "assets/uTools_1689130271556.png",
     "Temp.md",
     "Linux.md",
     "MIT6.824/Lab2.md",
