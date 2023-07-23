@@ -10,10 +10,10 @@ kanban-plugin: basic
 - [ ] 6.824 lab
 - [ ] csapp book
 - [ ] 日本語
-- [ ] 食髓知味 DECREASE
-- [ ] 重归くそお宅
 - [ ] 没病走两步
 - [ ] Zizekism & Maoism
+- [ ] Linux
+- [ ] missing semester
 
 
 ## 备忘录
