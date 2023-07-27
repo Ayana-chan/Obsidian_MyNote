@@ -54,6 +54,16 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "41fc596abb04a1ac",
+            "type": "leaf",
+            "state": {
+              "type": "kanban",
+              "state": {
+                "file": "TODO.md"
+              }
+            }
           }
         ],
         "currentTab": 2
@@ -210,10 +220,13 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "TODO.md",
+    "日语/学习笔记.md",
+    "MIT6.824/课堂笔记.md",
+    "算法.md",
     "MIT6.824/assets/uTools_1690427941963.png",
     "MIT6.824/assets/uTools_1690360831151.png",
     "Cpp.md",
-    "算法.md",
     "MIT6.824/assets/uTools_1690301114574.png",
     "MIT6.824/assets/uTools_1690300474869.png",
     "MIT6.824/assets/uTools_1690298799053.png",
@@ -222,11 +235,7 @@
     "MIT6.824/assets/uTools_1690254554802.png",
     "MIT6.824/assets/uTools_1690251265502.png",
     "MIT6.824/assets/uTools_1690204481851.png",
-    "MIT6.824/assets/uTools_1690199125280.png",
-    "TODO.md",
-    "日语/学习笔记.md",
     "学习笔记.md",
-    "MIT6.824/课堂笔记.md",
     "日语",
     "Web前端/JS.md",
     "OS.md",
