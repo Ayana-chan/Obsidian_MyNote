@@ -2,6 +2,7 @@
 - Start(command) asks Raft to start the processing to append the command to the replicated log. Start() should return immediately, without waiting for the log appends to complete.
 - The service expects your implementation to send an ApplyMsg for each newly committed log entry to the applyCh channel argument to Make().
 
+一定要丢弃旧term的RPC响应！！！否则会让一些逻辑十分麻烦，甚至拖慢时间导致lab2C巨折磨！！！
 ## A 
 
 heartbeats: AppendEntries RPCs with no log entries

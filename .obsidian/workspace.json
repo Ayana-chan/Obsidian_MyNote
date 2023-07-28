@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824/lab3.md",
+                "file": "MIT6.824/Lab2.md",
                 "mode": "source",
                 "source": false
               }
@@ -66,7 +66,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -140,7 +140,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/lab3.md"
+                "file": "MIT6.824/课堂笔记.md"
               }
             }
           },
@@ -150,7 +150,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/lab3.md",
+                "file": "MIT6.824/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -167,7 +167,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/lab3.md",
+                "file": "MIT6.824/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -218,11 +218,11 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "b573e7ad4b3919da",
   "lastOpenFiles": [
     "MIT6.824/Lab2.md",
-    "MIT6.824/课堂笔记.md",
     "MIT6.824/lab3.md",
+    "MIT6.824/课堂笔记.md",
     "TODO.md",
     "日语/学习笔记.md",
     "MIT6.824/杂项.md",
