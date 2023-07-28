@@ -34,7 +34,9 @@ applyCh是慢速的，如果两次commit非常接近，又同时塞入applyCh，
 
 一个新leader当选时，即使没有新日志，它也会因为nextIndex为log的长度+1而可以通过preIndex和preTerm去检测follower日志是否和其完全相同，若不相同则马上开始发日志。
 
-commitIndex只有在加日志成功之后才能动，不然可能把非法的日志也给apply，或者表现为下标越界。
+**commit了的日志是不会被删的**，因此可以放心地去apply。
+
+apply任务必须是单线程的，使用channel进行保证，不然的话由于commitIndex是在apply任务前变的，可能导致乱序提交。
 
 #### 下面的bug可能只有在lab3里面才能发现，因为lab2稍微加点压力就先爆超时了。
 
@@ -175,7 +177,6 @@ args.Entries = append(args.Entries, rf.log[rf.nextIndex[s]:]...)
 - votedFor： 防止投票两次出现脑裂。
 - term：防止leader在网络隔离后，其他服务器由于宕机重启忘掉了term以至于投票出了小term的leader，致使原leader回归后起日志与其他服务器的冲突。
 - log： 把commit的都存储了，以确保其绝对存储了多数。
-
 
 
 

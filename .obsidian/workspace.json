@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "日语/学习笔记.md",
+                "file": "MIT6.824/lab3.md",
                 "mode": "source",
                 "source": false
               }
@@ -66,7 +66,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -140,7 +140,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/课堂笔记.md"
+                "file": "MIT6.824/lab3.md"
               }
             }
           },
@@ -150,7 +150,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/课堂笔记.md",
+                "file": "MIT6.824/lab3.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -167,7 +167,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/课堂笔记.md",
+                "file": "MIT6.824/lab3.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -220,9 +220,15 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "MIT6.824/Lab2.md",
+    "MIT6.824/课堂笔记.md",
+    "MIT6.824/lab3.md",
     "TODO.md",
     "日语/学习笔记.md",
-    "MIT6.824/课堂笔记.md",
+    "MIT6.824/杂项.md",
+    "MIT6.824/美化Debug.md",
+    "MIT6.824/Lab1.md",
+    "MIT6.824/temp.md",
     "算法.md",
     "MIT6.824/assets/uTools_1690427941963.png",
     "MIT6.824/assets/uTools_1690360831151.png",
@@ -254,13 +260,8 @@
     "Web前端/css.md",
     "Temp.md",
     "Linux.md",
-    "MIT6.824/Lab2.md",
     "Docker.md",
-    "MIT6.824/lab3.md",
     "协议工程/lab3.md",
-    "协议工程/lab2.md",
-    "协议工程/lab1.md",
-    "CV/GrabCut论文笔记.md",
     "temp",
     "legacy",
     "assets/![](assets",

@@ -38,15 +38,17 @@ It's OK to assume that a client will make only one call into a Clerk at a time.
 
 读操作若被不同服务器执行两次，期间有一个写操作插队的话，可能导致两个读的结果不同；但它们都对应同一个请求，因此会随机返回其中一个。这不会破坏要求，依然满足线性一致性。
 
+新leader当选后，老term的日志可能未提交，此时就需要手动给leader塞一个空log。但是，raft层直接加nil指令的log会导致lab2测试过不了（类型错误），因此让raft层当选leader后向kv层请求空日志，kv层收到后调用kv.rf.Start(nil)。
 
+## B
 
+You must revise your Raft code to operate while storing only the tail of the log. Raft should discard old log entries in a way that allows the Go garbage collector to free and re-use the memory; this requires that there be no reachable references (pointers) to the discarded log entries.
 
+You should compare maxraftstate to persister.RaftStateSize(). Whenever your key/value server detects that the Raft state size is approaching this threshold, it should save a snapshot, and tell the Raft library that it has snapshotted, so that Raft can discard old log entries.
 
+要保存Client的提交请求编号。
 
-
-
-
-
+维护logOffset，表示snapshot之后日志的偏移量（此时所有操作只可能访问偏移量之后的日志）。原代码中所有下标访问都为逻辑访问（即逻辑上无视snapshot压缩），但访问的时候下标都得减去logOffset。
 
 
 
