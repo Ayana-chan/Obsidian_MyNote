@@ -1,3 +1,7 @@
+
+lab3对心跳密度解禁，因此每次start时都可以心跳一次来及时发送请求，在网络情况较好的时候可以在很短时间内完成一次操作。
+
+各个RPC直接不能互相信任，一个可能可以连续到达很多次，另一个可能连续到不了很多次，看起来就像是有一个走后门了一样。
 ## A
 
 - Put() replaces the value for a particular key in the database
@@ -50,9 +54,31 @@ You should compare maxraftstate to persister.RaftStateSize(). Whenever your k
 
 维护logOffset，表示snapshot之后日志的偏移量（此时所有操作只可能访问偏移量之后的日志）。原代码中所有下标访问都为逻辑访问（即逻辑上无视snapshot压缩），但访问的时候下标都得减去logOffset。
 
+不要进行重复无意义甚至开倒车的snapshot操作。
 
+先解决下标越界问题，再解决数据丢失问题。
 
+永远注意，0不是“剩余日志”的一部分，而是快照的一部分。
 
+leader重启后从后往前扫，所以任何重复传committed日志的AE必然是老RPC，其上的日志再多也是可以安全丢弃的。（待论证）
+
+InstallSnapshot属于figure2的“RPC”范畴，因此也需要在发和收时都检测下台。
+
+InstallSnapshot的lastIncludeIndex如果不比commitIndex大则直接丢弃。
+
+kv层的apply拿到Snapshot后，如果它的lastIncludeIndex不大于lastappliedIndex则也丢掉。
+
+installSnapshot传给kv的之前，可能有比lastIncludeIndex还靠后的log插队地apply到kv层，直接Snapshot覆盖的话超过lastIncludeIndex的log就可能丢失，但丢弃Snapshot的话会少东西。因此kv的apply接收也要注意顺序。而在raft层，只有Snapshot带来的日志操作完成后，才有可能正常进行后面的日志操作；因此，在Snapshot到达的瞬间，commitIndex也不会超过Snapshot的lastIncludeIndex。
+
+上面这段没有真正使用，而是单纯在kv接收apply的时候强制要求`kv.lastAppliedIndex+1 == applyMsg.CommandIndex`有序。
+
+InstallSnapshot之后要改不少状态，如commitIndex、logOffset，如果有需要还要重置lastApplied。
+
+时刻检测leader是否还是leader，很多下标越界就是这样造成的。
+
+nextIndex如果根据响应到达的先后随意变化的话，可能导致其缩短到不超过logOffset，这样的nextIndex会引发各种问题。
+
+755
 
 
 

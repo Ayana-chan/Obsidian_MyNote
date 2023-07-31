@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824/Lab2.md",
+                "file": "MIT6.824/lab3.md",
                 "mode": "source",
                 "source": false
               }
@@ -59,9 +59,11 @@
             "id": "41fc596abb04a1ac",
             "type": "leaf",
             "state": {
-              "type": "kanban",
+              "type": "markdown",
               "state": {
-                "file": "TODO.md"
+                "file": "MIT6.824/杂项.md",
+                "mode": "source",
+                "source": false
               }
             }
           }
@@ -140,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/Lab2.md"
+                "file": "MIT6.824/lab3.md"
               }
             }
           },
@@ -150,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/Lab2.md",
+                "file": "MIT6.824/lab3.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -167,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/Lab2.md",
+                "file": "MIT6.824/lab3.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -220,13 +222,14 @@
   },
   "active": "e0fdb5ca35b0bc8c",
   "lastOpenFiles": [
-    "MIT6.824/lab3.md",
-    "MIT6.824/课堂笔记.md",
     "MIT6.824/Lab2.md",
-    "TODO.md",
-    "日语/学习笔记.md",
     "MIT6.824/杂项.md",
     "MIT6.824/美化Debug.md",
+    "Golang.md",
+    "TODO.md",
+    "MIT6.824/lab3.md",
+    "MIT6.824/课堂笔记.md",
+    "日语/学习笔记.md",
     "MIT6.824/Lab1.md",
     "MIT6.824/temp.md",
     "算法.md",
@@ -261,7 +264,6 @@
     "Temp.md",
     "Linux.md",
     "Docker.md",
-    "协议工程/lab3.md",
     "temp",
     "legacy",
     "assets/![](assets",
