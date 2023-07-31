@@ -78,7 +78,6 @@ InstallSnapshot之后要改不少状态，如commitIndex、logOffset，如果有
 
 nextIndex如果根据响应到达的先后随意变化的话，可能导致其缩短到不超过logOffset，这样的nextIndex会引发各种问题。
 
-755
 
 
 
