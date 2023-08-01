@@ -14,10 +14,13 @@ kanban-plugin: basic
 - [ ] docker file & compose
 - [ ] missing semester
 - [ ] Zizekism & Maoism
+- [ ] Cpp
 
 
 ## 备忘录
 
+- [ ] Cgroup
+- [ ] 给cpp笔记用标签标记是cpp11还是啥
 
 
 ***
