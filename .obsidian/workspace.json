@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Vim.md",
+                "file": "Shell.md",
                 "mode": "source",
                 "source": false
               }
@@ -140,7 +140,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Vim.md"
+                "file": "Shell.md"
               }
             }
           },
@@ -150,7 +150,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Vim.md",
+                "file": "Shell.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -167,7 +167,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Vim.md",
+                "file": "Shell.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -205,7 +205,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 367.5
+    "width": 365.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -220,10 +220,11 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
-    "Shell.md",
     "Linux.md",
-    "Cpp.md",
+    "Shell.md",
+    "Vim.md",
     "TODO.md",
+    "Cpp.md",
     "MIT6.824/课堂笔记.md",
     "MIT6.824/杂项.md",
     "MIT6.824/lab3.md",
@@ -252,7 +253,6 @@
     "third/设计模式/1.六大设计原则与单例模式.pdf",
     "legacy/算法课笔记.md",
     "third/正则表达式.pdf",
-    "Vim.md",
     "数学/线性代数.md",
     "数学",
     "Web前端/assets",

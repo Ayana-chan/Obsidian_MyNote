@@ -97,6 +97,164 @@ sudo echo 3 > brightness
 echo 3 | sudo tee brightness
 ```
 
+# 工作流管理与优化
+
+## 任务控制
+
+shell使用unix提供的**信号**机制来进行进程间通信。当一个进程接收到信号时，它会停止执行、处理该信号并基于信号传递的信息来改变其执行。信号是一种**软中断**。
+
+>`kill`命令本质是传信号
+
+用于**结束**进程的信号（看程序是否自觉）：
+- `Ctrl-C`会发送`SIGINT`信号
+- `Ctrl-\`会发送`SIGQUIT`信号
+- `kill -TERM <PID>`会发送`SIGTERM`信号
+
+`SIGKILL` 是一个特殊的信号，它**不能被进程捕获并且它会马上结束该进程**。不过这样做会有一些副作用，例如留下**孤儿进程**。
+
+`SIGSTOP`会让进程**暂停**。在终端中，键入 `Ctrl-Z` 会让shell发送`SIGTSTP`信号。`SIGTSTP`是 Terminal Stop 的缩写（即`terminal`版本的SIGSTOP）。
+
+`fg`和`bg`命令分别可以让暂停的任务前台继续和后台继续。
+
+如果想让当前在运行的**前台任务转后台**，则可以`Ctrl-Z`暂停让后进行`bg`。
+
+`jobs`可以列出当前终端会话中尚未完成的全部任务。会列出pid来引用任务，或者可以用`百分号＋job列出的任务编号`来引用任务，或者使用`$!`来引用上一个任务。
+
+命令中的`&`后缀可以让命令直接在后台运行，但其输出默认是标准输出。
+
+**关闭终端时**会发送`SIGHUP`信号来关闭后台进程。
+
+>注意，后台的进程仍然是您的终端进程的子进程，一旦您关闭终端（会发送另外一个信号`SIGHUP`），这些后台的进程也会终止。为了防止这种情况发生，您可以使用 [`nohup`](https://www.man7.org/linux/man-pages/man1/nohup.1.html) (一个用来忽略 `SIGHUP` 的封装) 来运行程序。针对已经运行的程序，可以使用`disown` 。除此之外，您可以使用终端多路复用器来实现
+
+```bash
+$ sleep 1000
+^Z
+[1]  + 18653 suspended  sleep 1000
+
+$ nohup sleep 2000 &
+[2] 18745
+appending output to nohup.out
+
+$ jobs
+[1]  + suspended  sleep 1000
+[2]  - running    nohup sleep 2000
+
+$ bg %1
+[1]  - 18653 continued  sleep 1000
+
+$ jobs
+[1]  - running    sleep 1000
+[2]  + running    nohup sleep 2000
+
+$ kill -STOP %1
+[1]  + 18653 suspended (signal)  sleep 1000
+
+$ jobs
+[1]  + suspended (signal)  sleep 1000
+[2]  - running    nohup sleep 2000
+
+$ kill -SIGHUP %1
+[1]  + 18653 hangup     sleep 1000
+
+$ jobs
+[2]  + running    nohup sleep 2000
+
+$ kill -SIGHUP %2
+
+$ jobs
+[2]  + running    nohup sleep 2000
+
+$ kill %2
+[2]  + 18745 terminated  nohup sleep 2000
+
+$ jobs
+```
+
+## 终端多路复用 tmux
+
+现在最流行的终端多路器是 [`tmux`](https://www.man7.org/linux/man-pages/man1/tmux.1.html)。`tmux` 是一个高度可定制的工具，您可以使用相关快捷键创建多个标签页并在它们间导航。
+
+- **会话** - 每个会话都是一个独立的工作区，其中包含一个或多个窗口
+    - `tmux` 开始一个新的会话
+    - `tmux new -s NAME` 以指定名称开始一个新的会话
+    - `tmux ls` 列出当前所有会话
+    - 在 `tmux` 中输入 `<C-b> d` ，将当前会话分离
+    - `tmux a` 重新连接最后一个会话。您也可以通过 `-t` 来指定具体的会话
+- **窗口** - 相当于编辑器或是浏览器中的标签页，从视觉上将一个会话分割为多个部分
+    - `<C-b> c` 创建一个新的窗口，使用 `<C-d>`关闭
+    - `<C-b> N` 跳转到第 _N_ 个窗口，注意每个窗口都是有编号的
+    - `<C-b> p` 切换到前一个窗口
+    - `<C-b> n` 切换到下一个窗口
+    - `<C-b> ,` 重命名当前窗口
+    - `<C-b> w` 列出当前所有窗口
+- **面板** - 像 vim 中的分屏一样，面板使我们可以在一个屏幕里显示多个 shell
+    - `<C-b> "` 水平分割
+    - `<C-b> %` 垂直分割
+    - `<C-b> <方向>` 切换到指定方向的面板，<方向> 指的是键盘上的方向键
+    - `<C-b> z` 切换当前面板的缩放
+    - `<C-b> [` 开始往回卷动屏幕。您可以按下空格键来开始选择，回车键复制选中的部分
+    - `<C-b> <空格>` 在不同的面板排布间切换
+
+扩展阅读： [这里](https://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/) 是一份 `tmux` 快速入门教程， [而这一篇](http://linuxcommand.org/lc3_adv_termmux.php) 文章则更加详细，它包含了 `screen` 命令。您也许想要掌握 [`screen`](https://www.man7.org/linux/man-pages/man1/screen.1.html) 命令，因为在大多数 UNIX 系统中都默认安装有该程序。
+
+
+## 别名 alias
+
+别名是对长命令的缩写，从而可以用简短的字符替代一长串的命令。
+
+```bash
+#alias_name="command_to_alias arg1 arg2" 是alias的唯一参数
+alias alias_name="command_to_alias arg1 arg2"
+```
+
+```bash
+# 创建常用命令的缩写
+alias ll="ls -lh"
+
+# 能够少输入很多
+alias gs="git status"
+alias gc="git commit"
+alias v="vim"
+
+# 手误打错命令也没关系
+alias sl=ls
+
+# 重新定义一些命令行的默认行为
+alias mv="mv -i"           # -i prompts before overwrite
+alias mkdir="mkdir -p"     # -p make parent dirs as needed
+alias df="df -h"           # -h prints human readable format
+
+# 别名可以组合使用
+alias la="ls -A"
+alias lla="la -l"
+
+# 在忽略某个别名
+\ls
+# 或者禁用别名
+unalias la
+
+# 获取别名的定义
+alias ll
+# 会打印 ll='ls -lh'
+```
+
+>在默认情况下 shell 并不会保存别名。为了让别名持续生效，需要将配置放进 shell 的启动文件里，像是`.bashrc` 或 `.zshrc`。
+
+## 配置文件（Dotfiles）
+
+
+很多程序的配置都是通过纯文本格式的被称作**点文件**的配置文件来完成的（它们的文件名以`.`开头）
+
+对于 `bash`来说，在大多数系统下，可以通过编辑`.bashrc`或`.bash_profile`来进行配置。
+
+>实际上，很多程序都要求您在 shell 的配置文件中包含一行类似 `export PATH="$PATH:/path/to/program/bin"` 的命令，这样才能确保这些程序能够被 shell 找到。
+
+[Linux 配置文件](Linux.md#配置文件)
+
+## 远端设备
+
+
+
 
 # shell脚本
 
@@ -258,6 +416,8 @@ grep是用于对输入文本进行匹配的通用工具。
 - `-v`: invert，反选，把不符合要求的给输出出来。
 - `-R`: recursive，会递归地查找。
 
+`命令 | grep 关键字`即可对命令的输出进行筛选。
+
 ripgrep (`rg`) 是一个替代品，例子如下：
 
 ```bash
@@ -289,11 +449,20 @@ history会显示出shell命令的历史记录。如果想搜索历史记录，�
  Fasd 基于 [_frecency_](https://developer.mozilla.org/en-US/docs/Mozilla/Tech/Places/Frecency_algorithm) 对文件和文件排序，也就是说它会同时针对频率（_frequency_）和时效（_recency_）进行排序。默认情况下，`fasd`使用命令 `z` 帮助我们快速切换到最常访问的目录。例如， 如果您经常访问`/home/user/files/cool_project` 目录，那么可以直接使用 `z cool` 跳转到该目录。对于 autojump，则使用`j cool`代替即可。
  还有一些更复杂的工具可以用来概览目录结构，例如 [`tree`](https://linux.die.net/man/1/tree), [`broot`](https://github.com/Canop/broot) 或更加完整的文件管理器，例如 [`nnn`](https://github.com/jarun/nnn) 或 [`ranger`](https://github.com/ranger/ranger)。
 
+## 流编辑器 sed
 
+sed是一种流编辑器，可以传简短的命令去修改文件内容，这在修改远程文件的时候比较好用。可以使用正则表达式匹配内容。
 
+```bash
+ssh myserver journalctl
+ | grep sshd
+ | grep "Disconnected from"
+ | sed -E 's/.*Disconnected from (invalid |authenticating )?user (.*) [^ ]+ port [0-9]+( \[preauth\])?$/\2/'
+```
 
+## 另一种编辑器 awk
 
-
+本质是变成语言，但很擅长编辑文本。可以替代grep和sed。
 
 
 
