@@ -251,10 +251,105 @@ alias ll
 
 [Linux 配置文件](Linux.md#配置文件)
 
-## 远端设备
+## 远端设备 ssh
 
+### 基础
 
+ssh=**Secure Shell** （安全shell）
 
+以用户名foo登录服务器bar.mit.edu：
+
+```bash
+ssh foo@bar.mit.edu
+```
+
+在`ssh foo@bar.mit.edu`后面直接加命令就可以直接执行命令。 `ssh foobar@server ls | grep PATTERN` 会在本地查询远端 `ls` 的输出； `ls | ssh foobar@server grep PATTERN` 会在远端对本地 `ls` 输出的结果进行查询。
+
+### 认证机制
+
+使用 [`ssh-keygen`](http://man7.org/linux/man-pages/man1/ssh-keygen.1.html) 命令可以生成一对密钥：
+
+```
+ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_ed25519
+```
+
+您可以为密钥设置密码，防止有人持有您的私钥并使用它访问您的服务器。您可以使用 [`ssh-agent`](https://www.man7.org/linux/man-pages/man1/ssh-agent.1.html) 或 [`gpg-agent`](https://linux.die.net/man/1/gpg-agent) ，这样就不需要每次都输入该密码了。
+
+`ssh` 会查询 `.ssh/authorized_keys` 来确认那些用户可以被允许登录。可以通过下面的命令将一个公钥拷贝到这里：
+
+```bash
+cat .ssh/id_ed25519 | ssh foobar@remote 'cat >> ~/.ssh/authorized_keys'
+```
+
+如果支持 `ssh-copy-id` 的话，可以使用下面这种更简单的解决方案：
+
+```bash
+ssh-copy-id -i .ssh/id_ed25519.pub foobar@remote
+```
+
+### 通过 SSH 复制文件
+
+使用 ssh 复制文件有很多方法：
+
+- `ssh+tee`, 最简单的方法是执行 `ssh` 命令，然后通过这样的方法利用标准输入实现 `cat localfile | ssh remote_server tee serverfile`。
+- [`scp`](https://www.man7.org/linux/man-pages/man1/scp.1.html) ：当需要拷贝大量的文件或目录时，使用`scp` 命令则更加方便，因为它可以方便的遍历相关路径。语法如下：`scp path/to/local_file emote_host:path/to/remote_file`。
+- [`rsync`](https://www.man7.org/linux/man-pages/man1/rsync.1.html) 对 `scp` 进行了改进，它可以检测本地和远端的文件以防止重复拷贝。它还可以提供一些诸如符号连接、权限管理等精心打磨的功能。甚至还可以基于 `--partial`标记实现断点续传。`rsync` 的语法和`scp`类似。
+
+### 端口转发
+
+分为本地端口转发和远程端口转发。
+
+常见的情景是使用本地端口转发，即远端设备上的服务监听一个端口，而您希望在本地设备上的一个端口建立连接并转发到远程端口上。例如，我们在远端服务器上运行Jupyter notebook并监听`8888`端口。 然后，建立从本地端口`9999`的转发，使用`ssh -L 9999:localhost:8888 foobar@remote_server`。这样只需要访问本地的`localhost:9999`即可。
+
+### ssh配置
+
+为参数创建一个别名是个好想法，我们可以这样做：
+
+```bash
+alias my_server="ssh -i ~/.id_ed25519 --port 2222 -L 9999:localhost:8888 foobar@remote_server
+```
+
+不过，更好的方法是使用 `~/.ssh/config`.
+
+```bash
+Host vm
+    User foobar
+    HostName 172.16.174.141
+    Port 2222
+    IdentityFile ~/.ssh/id_ed25519
+    LocalForward 9999 localhost:8888
+
+# 在配置文件中也可以使用通配符
+Host *.mit.edu
+    User foobaz
+```
+
+这么做的好处是，使用 `~/.ssh/config` 文件来创建别名，类似 `scp`、`rsync`和`mosh`的这些命令都可以读取这个配置并将设置转换为对应的命令行选项。
+
+注意，`~/.ssh/config` 文件也可以被当作配置文件，而且一般情况下也是可以被导入其他配置文件的。不过，如果您将其公开到互联网上，那么其他人都将会看到您的服务器地址、用户名、开放端口等等。这些信息可能会帮助到那些企图攻击您系统的黑客，所以请务必三思。
+
+服务器侧的配置通常放在 `/etc/ssh/sshd_config`。您可以在这里配置免密认证、修改 ssh 端口、开启 X11 转发等等。 您也可以为每个用户单独指定配置。
+
+### 杂项
+
+连接远程服务器的一个常见痛点是遇到由关机、休眠或网络环境变化导致的掉线。如果连接的延迟很高也很让人讨厌。[Mosh](https://mosh.org/)（即 mobile shell ）对 ssh 进行了改进，它允许连接漫游、间歇连接及智能本地回显。
+
+有时将一个远端文件夹挂载到本地会比较方便， [sshfs](https://github.com/libfuse/sshfs) 可以将远端服务器上的一个文件夹挂载到本地，然后您就可以使用本地的编辑器了。
+
+# 命令工具常见共同功能
+
+- 大部分工具支持 `--help` 或者类似的标志参数（flag）来显示它们的简略用法。
+- 会造成不可撤回操作的工具一般会提供“空运行”（dry run）标志参数，这样用户可以确认工具真实运行时会进行的操作。这些工具通常也会有“交互式”（interactive）标志参数，在执行每个不可撤回的操作前提示用户确认。
+- `--version` 或者 `-V` 标志参数可以让工具显示它的版本信息（对于提交软件问题报告非常重要）。
+- 基本所有的工具支持使用 `--verbose` 或者 `-v` 标志参数来输出详细的运行信息。多次使用这个标志参数，比如 `-vvv`，可以让工具输出更详细的信息（经常用于调试）。同样，很多工具支持 `--quiet` 标志参数来抑制除错误提示之外的其他输出。
+- 大多数工具中，使用 `-` 代替输入或者输出文件名意味着工具将从标准输入（standard input）获取所需内容，或者向标准输出（standard output）输出结果。
+- 会造成破坏性结果的工具一般默认进行非递归的操作，但是支持使用“递归”（recursive）标志函数（通常是 `-r`）。
+- 有的时候你可能需要向工具传入一个 _看上去_ 像标志参数的普通参数，比如：
+    - 使用 `rm` 删除一个叫 `-r` 的文件；
+    - 在通过一个程序运行另一个程序的时候（`ssh machine foo`），向内层的程序（`foo`）传递一个标志参数。
+    这时候你可以使用特殊参数 `--` 让某个程序 _停止处理_ `--` 后面出现的标志参数以及选项（以 `-` 开头的内容）：
+- `rm -- -r` 会让 `rm` 将 `-r` 当作文件名；
+- `ssh machine --for-ssh -- foo --for-foo` 的 `--` 会让 `ssh` 知道 `--for-foo` 不是 `ssh` 的标志参数。
 
 # shell脚本
 
@@ -464,6 +559,8 @@ ssh myserver journalctl
 
 本质是变成语言，但很擅长编辑文本。可以替代grep和sed。
 
+
+# 杂项
 
 
 

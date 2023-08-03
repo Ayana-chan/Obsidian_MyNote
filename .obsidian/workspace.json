@@ -32,24 +32,12 @@
             }
           },
           {
-            "id": "2c60371f06d707da",
+            "id": "7468f25875a5715b",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Linux.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "b75262c4843c9ef6",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Shell.md",
+                "file": "MIT6.824/lab4.md",
                 "mode": "source",
                 "source": false
               }
@@ -66,7 +54,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -140,7 +128,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Shell.md"
+                "file": "MIT6.824/lab4.md"
               }
             }
           },
@@ -150,7 +138,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Shell.md",
+                "file": "MIT6.824/lab4.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -167,7 +155,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Shell.md",
+                "file": "MIT6.824/lab4.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -220,10 +208,17 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "Vim.md",
+    "MIT6.824/lab4.md",
+    "Docker.md",
+    "杂记.md",
+    "密码学.md",
     "Linux.md",
     "Shell.md",
-    "Vim.md",
+    "Make.md",
+    "Git.md",
     "TODO.md",
+    "算法.md",
     "Cpp.md",
     "MIT6.824/课堂笔记.md",
     "MIT6.824/杂项.md",
@@ -234,7 +229,6 @@
     "日语/学习笔记.md",
     "MIT6.824/Lab1.md",
     "MIT6.824/temp.md",
-    "算法.md",
     "MIT6.824/assets/uTools_1690427941963.png",
     "MIT6.824/assets/uTools_1690360831151.png",
     "MIT6.824/assets/uTools_1690301114574.png",
@@ -256,12 +250,6 @@
     "数学/线性代数.md",
     "数学",
     "Web前端/assets",
-    "Web前端/杂项.md",
-    "Web前端/组件库.md",
-    "Web前端/Vite.md",
-    "Web前端/vue3.md",
-    "Web前端/css.md",
-    "Temp.md",
     "temp",
     "legacy",
     "assets/![](assets",

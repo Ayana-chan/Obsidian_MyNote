@@ -1,6 +1,24 @@
 
 # 基础知识
 
+## 主要路径意义
+
+[文件系统，层次结构标准（Filesystem, Hierarchy Standard）](https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard)
+
+- `/bin` - 基本命令二进制文件
+- `/sbin` - 基本的系统二进制文件，通常是root运行的
+- `/dev` - 设备文件，通常是硬件设备接口文件
+- `/etc` - 主机特定的系统配置文件
+- `/home` - 系统用户的主目录
+- `/lib` - 系统软件通用库
+- `/opt` - 可选的应用软件
+- `/sys` - 包含系统的信息和配置([第一堂课](https://missing-semester-cn.github.io/2020/course-shell/)介绍的)
+- `/tmp` - 临时文件( `/var/tmp` ) 通常重启时删除
+- `/usr/` - 只读的用户数据
+    - `/usr/bin` - 非必须的命令二进制文件
+    - `/usr/sbin` - 非必须的系统二进制文件，通常是由root运行的
+    - `/usr/local/bin` - 用户编译程序的二进制文件
+- `/var` -变量文件 像日志或缓存
 ## 权限
 
 - r: read查看
@@ -139,6 +157,31 @@ xxx | paste -sd+ | bc -l
 
 # 杂项
 
+## 日志
+
+对于 UNIX 系统来说，程序的日志通常存放在 `/var/log`。例如， [NGINX](https://www.nginx.com/) web 服务器就将其日志存放于`/var/log/nginx`。
+
+目前，系统开始使用 **system log**，您所有的日志都会保存在这里。大多数（但不是全部的）Linux 系统都会使用 `systemd`，这是一个系统守护进程，它会控制您系统中的很多东西，例如哪些服务应该启动并运行。`systemd` 会将日志以某种特殊格式存放于`/var/log/journal`，您可以使用 [`journalctl`](http://man7.org/linux/man-pages/man1/journalctl.1.html) 命令显示这些消息。
+
+类似地，在 macOS 系统中是 `/var/log/system.log`，但是有更多的工具会使用系统日志，它的内容可以使用 [`log show`](https://www.manpagez.com/man/1/log/) 显示。
+
+对于大多数的 UNIX 系统，您也可以使用[`dmesg`](http://man7.org/linux/man-pages/man1/dmesg.1.html) 命令来读取内核的日志。
+
+如果您希望将日志加入到系统日志中，您可以使用 [`logger`](http://man7.org/linux/man-pages/man1/logger.1.html) 这个 shell 程序。下面这个例子显示了如何使用 `logger`并且如何找到能够将其存入系统日志的条目。
+
+不仅如此，大多数的编程语言都支持向系统日志中写日志。
+
+```
+logger "Hello Logs"
+# On macOS
+log show --last 1m | grep Hello
+# On Linux
+journalctl --since "1m ago" | grep Hello
+```
+
+正如我们在数据整理那节课上看到的那样，日志的内容可以非常的多，我们需要对其进行处理和过滤才能得到我们想要的信息。
+
+如果您发现您需要对 `journalctl` 和 `log show` 的结果进行大量的过滤，那么此时可以考虑使用它们自带的选项对其结果先过滤一遍再输出。还有一些像 [`lnav`](http://lnav.org/) 这样的工具，它为日志文件提供了更好的展现和浏览方式。
 ## 配置文件
 
 一些工具也可以通过**点文件**进行配置：
@@ -190,6 +233,9 @@ if [ -f ~/.aliases ]; then
 fi
 ```
 
+## `source script.sh` 和 `./script.sh` 的区别
+
+这两种情况 `script.sh` 都会在bash会话中被读取和执行，不同点在于哪个会话执行这个命令。 对于 `source` 命令来说，命令是在当前的bash会话中执行的，因此当 `source` 执行完毕，对当前环境的任何更改（例如更改目录或是定义函数）都会留存在当前会话中。 单独运行 `./script.sh` 时，当前的bash会话将启动新的bash会话（实例），并在新实例中运行命令 `script.sh`。 因此，如果 `script.sh` 更改目录，新的bash会话（实例）会更改目录，但是一旦退出并将控制权返回给父bash会话，父会话仍然留在先前的位置（不会有目录的更改）。 同样，如果 `script.sh` 定义了要在终端中访问的函数，需要用 `source` 命令在当前bash会话中定义这个函数。否则，如果你运行 `./script.sh`，只有新的bash会话（进程）才能执行定义的函数，而当前的shell不能。
 ## 开关端口
 CentOS默认关闭端口，需要手动打开。
 
@@ -256,6 +302,59 @@ nameserver 114.114.114.114
 
 ## 环境变量
 每次用`source`配置环境变量之后，重新开机都会消失。那么，只需要在`~/.bashrc`里面写入`source`语句，则每次开始会话时都会调用该语句，也就自动配置好环境变量了。
+
+## 守护进程
+
+Linux 中的 `systemd`（the system daemon）是最常用的配置和运行守护进程的方法。运行 `systemctl status` 命令可以看到正在运行的所有守护进程。这里面有很多可能你没有见过，但是掌管了系统的核心部分的进程：管理网络、DNS解析、显示系统的图形界面等等。用户使用 `systemctl` 命令和 `systemd` 交互来`enable`（启用）、`disable`（禁用）、`start`（启动）、`stop`（停止）、`restart`（重启）、或者`status`（检查）配置好的守护进程及系统服务。
+
+`systemd` 提供了一个很方便的界面用于配置和启用新的守护进程或系统服务。下面的配置文件使用了守护进程来运行一个简单的 Python 程序。文件的内容非常直接所以我们不对它详细阐述。`systemd` 配置文件的详细指南可参见 [freedesktop.org](https://www.freedesktop.org/software/systemd/man/systemd.service.html)。
+
+```python
+# /etc/systemd/system/myapp.service
+[Unit]
+# 配置文件描述
+Description=My Custom App
+# 在网络服务启动后启动该进程
+After=network.target
+
+[Service]
+# 运行该进程的用户
+User=foo
+# 运行该进程的用户组
+Group=foo
+# 运行该进程的根目录
+WorkingDirectory=/home/foo/projects/mydaemon
+# 开始该进程的命令
+ExecStart=/usr/bin/local/python3.7 app.py
+# 在出现错误时重启该进程
+Restart=on-failure
+
+[Install]
+# 相当于Windows的开机启动。即使GUI没有启动，该进程也会加载并运行
+WantedBy=multi-user.target
+# 如果该进程仅需要在GUI活动时运行，这里应写作：
+# WantedBy=graphical.target
+# graphical.target在multi-user.target的基础上运行和GUI相关的服务
+```
+
+如果你只是想定期运行一些程序，可以直接使用 [`cron`](https://www.man7.org/linux/man-pages/man8/cron.8.html)。它是一个系统内置的，用来执行定期任务的守护进程。
+
+## FUSE（用户空间文件系统）
+
+[FUSE](https://en.wikipedia.org/wiki/Filesystem_in_Userspace)（用户空间文件系统）允许运行在用户空间上的程序实现文件系统调用，并将这些调用与内核接口联系起来。在实践中，这意味着用户可以在文件系统调用中实现任意功能。
+
+FUSE 可以用于实现如：一个将所有文件系统操作都使用 SSH 转发到远程主机，由远程主机处理后返回结果到本地计算机的虚拟文件系统。这个文件系统里的文件虽然存储在远程主机，对于本地计算机上的软件而言和存储在本地别无二致。`sshfs`就是一个实现了这种功能的 FUSE 文件系统。
+
+一些有趣的 FUSE 文件系统包括：
+
+- [sshfs](https://github.com/libfuse/sshfs)：使用 SSH 连接在本地打开远程主机上的文件
+- [rclone](https://rclone.org/commands/rclone_mount/)：将 Dropbox、Google Drive、Amazon S3、或者 Google Cloud Storage 一类的云存储服务挂载为本地文件系统
+- [gocryptfs](https://nuetzlich.net/gocryptfs/)：覆盖在加密文件上的文件系统。文件以加密形式保存在磁盘里，但该文件系统挂载后用户可以直接从挂载点访问文件的明文
+- [kbfs](https://keybase.io/docs/kbfs)：分布式端到端加密文件系统。在这个文件系统里有私密（private），共享（shared），以及公开（public）三种类型的文件夹
+- [borgbackup](https://borgbackup.readthedocs.io/en/stable/usage/mount.html)：方便用户浏览删除重复数据后的压缩加密备份
+
+
+
 
 # 问题
 
