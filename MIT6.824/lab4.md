@@ -39,6 +39,7 @@ The shardctrler should create a new configuration in which the shard is assigned
 
 不知道啥意思的一段话： The purpose of Move is to allow us to test your software. A Join or Leave following a Move will likely un-do the Move, since Join and Leave re-balance.
 
+move会破坏平衡，但会被join或leave给平衡回来。
 ## query
 
 The shardctrler replies with the configuration that has that configuration number.
@@ -65,15 +66,13 @@ go的map是引用，想复制的话就得重新make一个然后遍历复制。op
 
 shard数量**一般**比服务器数量大，但也有小的时候！！！此时有的gid分配不到任何任务！！！
 
-
-一种保证确定性的方法是，如果一个map是gid->shards，则我们可以把这个map的所有gid放进数组然后排序，之后对数组进行遍历，然后用遍历到的gid去访问map。
+一种保证确定性的方法是，如果一个map是gid->shards，则我们可以把这个map的所有gid放进数组然后排序，之后对数组进行遍历，然后用遍历到的gid去访问map。（似乎最后没用到）
 
 如果同时join多个group的话它们被分配到的shard不一定一样，如3,3,4加了仨服务器后是2,2,2,**2,1,1**
 
-todo：是不是之前也做过有序性？
+能直接算出平衡后的group的shard数量。
 
-
-
+最后的解决方法是，把所有gid按<u>主shard量</u>、<u>次gid号大小</u>来排序，这样就能保证确定性的同时，让其按shard数从大到小排序，大的把多余的shard拿出来放到池子的，小的从池子里面拿。
 
 
 
