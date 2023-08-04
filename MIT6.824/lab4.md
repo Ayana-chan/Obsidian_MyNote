@@ -61,12 +61,16 @@ There will usually be significantly more shards than groups (i.e., each group wi
 
 The code in your state machine that performs the shard rebalancing needs to be deterministic. In Go, map iteration order is [not deterministic](https://blog.golang.org/maps#TOC_7.). map遍历是无序的，可能导致若干个gid被一视同仁，导致相同的输出产生不同的结果，这不deterministic
 
-go的map是引用，想复制的话就得重新make一个然后遍历复制。
+go的map是引用，想复制的话就得重新make一个然后遍历复制。op里面是servers也是map，会产生**raft的persist时的encode**与**对servers的操作**冲突；但仔细分析发现，op里map的内容在raft层是只读的，因此apply的时候kv应当对map深拷贝。
+
+shard数量**一般**比服务器数量大，但也有小的时候！！！此时有的gid分配不到任何任务！！！
 
 
+一种保证确定性的方法是，如果一个map是gid->shards，则我们可以把这个map的所有gid放进数组然后排序，之后对数组进行遍历，然后用遍历到的gid去访问map。
 
+如果同时join多个group的话它们被分配到的shard不一定一样，如3,3,4加了仨服务器后是2,2,2,**2,1,1**
 
-
+todo：是不是之前也做过有序性？
 
 
 
