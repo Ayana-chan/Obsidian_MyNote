@@ -3,6 +3,8 @@
 - The service expects your implementation to send an ApplyMsg for each newly committed log entry to the applyCh channel argument to Make().
 
 一定要丢弃旧term的RPC响应！！！否则会让一些逻辑十分麻烦，甚至拖慢时间导致lab2C巨折磨！！！
+
+Make的时候确保全部变量初始化完了才开始计时，或者说变量赋值完了才能触发事件，否则在make数量（压力）很大的时候会导致没make完就开始选举，以至于报race。（这个race只在lab4B出现过）
 ## A 
 
 heartbeats: AppendEntries RPCs with no log entries
