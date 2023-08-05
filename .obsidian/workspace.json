@@ -56,7 +56,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -130,7 +130,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/Lab2.md"
+                "file": "MIT6.824/lab4.md"
               }
             }
           },
@@ -140,7 +140,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/Lab2.md",
+                "file": "MIT6.824/lab4.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -157,7 +157,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/Lab2.md",
+                "file": "MIT6.824/lab4.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -208,10 +208,10 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "b573e7ad4b3919da",
+  "active": "7468f25875a5715b",
   "lastOpenFiles": [
-    "MIT6.824/lab4.md",
     "MIT6.824/Lab2.md",
+    "MIT6.824/lab4.md",
     "TODO.md",
     "算法.md",
     "Vim.md",

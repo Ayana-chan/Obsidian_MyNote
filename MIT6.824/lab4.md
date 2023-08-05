@@ -78,7 +78,9 @@ shard数量**一般**比服务器数量大，但也有小的时候！！！此�
 
 config每次收到就去start一下。但不能只start一次，因为有概率所以服务器都在选举、不是leader，直接无效；或者一个leader受理了它、然后又因为各种原因弄丢了。但这样一直查询可能会产生很大的压力！
 
+start之间理论上是可以互相插队的，因此config在日志中可能是乱序的（纯理论）。
 
+为什么会收到比当前的config更老的config？可能是leader查到了新的config并更新了Follower的config，但Follower仍可能因为网络延迟收到过期的config。
 
 
 
