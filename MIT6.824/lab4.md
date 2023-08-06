@@ -82,9 +82,23 @@ start之间理论上是可以互相插队的，因此config在日志中可能是
 
 为什么会收到比当前的config更老的config？可能是leader查到了新的config并更新了Follower的config，但Follower仍可能因为网络延迟收到过期的config。
 
-发送方发现新config时，会让对应的key停止服务；发送方和接收方都发现新config后，则开始转移。因此config何时发现都是可以的。转移完毕后，接收方宣布开始接收此shard。转移过程中，shard是不会被读写的
+---
 
-每次都去要下一个config，要不到的话再开始每100ms查一次。一个接着一个按序处理reconfig。
+似乎可以保证一个分片只能归属于一个group，且不会有log丢失问题。
+
+>（已否决）只有发送方是主动的，接收方来者不拒。也许可以让接收方根本不等待？但这样的话有别人要一个shard自己又没有该怎么办？有可能一辈子都拿不到这个shard！
+
+如果把shard的内容都放进*添加shard*的log里面，则重启也没事了！
+
+如果有一个group要给自己发shard，自己宕机了，那么那个group就会一直等待；正常工作后，则会接收shard然后将其放入raft日志保证其不会丢失，之后将回复“pull完成”。因此，若一个group宕机，所有与之相关的group都会暂停更新config。由于一个分片只归属于一个group，因此不用担心不同config.Num的group同时发送同一个分片；且宕机会发生链式反应，把新config中想pull的group也给阻塞掉。
+
+每次都去要下一个config，要不到的话再开始每100ms查一次。**一个接着一个按序处理reconfig。**
+
+发送方发现新config时，会让对应的key停止服务，并开始转移。因此config何时发现都是可以的。转移完毕后，接收方宣布开始接收此shard。转移过程中，shard是不会被读写的。
+
+一个shard被归为gid 0时就不需要做迁移了。
+
+第一次join的时候，没有任何服务器会发送迁移，因此要查看上一次config是否为全0。
 
 >If a test fails, check for gob errors (e.g. "gob: type not registered for interface ..."). Go doesn't consider gob errors to be fatal, although they are fatal for the lab.
 
@@ -94,7 +108,7 @@ Think about how the shardkv client and server should deal with ErrWrongGroup. S
 
 After a server has moved to a new configuration, it is acceptable for it to continue to store shards that it no longer owns (though this would be regrettable in a real system). This may help simplify your server implementation. 一个shard接收迁移的时候就把原shard都给delete了再重新给上。
 
-You can send an entire map in an RPC request or reply, which may help keep the code for shard transfer simple. 感觉这样的话database还是保持一整块比较好？但这样的话就要先加锁、深拷贝了才能发送rpc。
+You can send an entire map in an RPC request or reply, which may help keep the code for shard transfer simple. 感觉这样的话database还是保持一整块比较好？但这样的话就要先加锁、深拷贝了才能发送rpc。不过每次config变化后拷贝一次数据库就行了，因为实际要发送的shard现在都不会变化。
 
 >During a configuration change, a pair of groups may need to move shards in both directions between them. If you see deadlock, this is a possible source.
 
@@ -102,18 +116,18 @@ You can send an entire map in an RPC request or reply, which may help keep the c
 
 对于发送方，迁移过程中如果config日志被Snapshot了，那么服务器宕机重启后，就不会再触发迁移。因此发送方的迁移任务要写在Snapshot里面。这里可能发送成功后难以保存完成状态，但重复发送已被config的num解决；因此，可能每次readSnapshot的时候都最好进行一次Snapshot中保存的发送任务。
 
-成功迁移后，将对应的shard设为gcing状态，再对其进行删除，删完后状态设为offline。并且不断检测处于gcing的shard，对其进行删除。这样，重启之后也能及时删除不属于自己的shard，并且不会在迁移完成之前删掉shard。
-
+Challenge1：成功迁移后，将对应的shard设为gcing状态，再对其进行删除，删完后状态设为offline。并且不断检测处于gcing的shard，对其进行删除。这样，重启之后也能及时删除不属于自己的shard，并且不会在迁移完成之前删掉shard。
 
 综上，或许不能直接用config里面的有无来判断是否接收一个请求，应当给每个shard赋予一个状态机：
-- 被删除的shard，从Online变成Pushing（似乎没实际用），迁移完成后变成GCing，删除完成后变成Offline。
-- 被添加的shard，从Offline变成Pulling（似乎没实际用），接收完成后变成Online。
+- 被删除的shard，从Online变成Pushing，迁移完成后变成GCing，删除完成后变成Offline。
+- 被添加的shard，从Offline变成Pulling，接收完成后变成Online。
 所有的shard都变成online或者offline后，config才算完成。
+
+发送时若发现config版本不如对方则取消操作、更新版本；然后如果发现自己拥有的shard归别人了，就再开始发送。接收应该是来者不拒。
 
 TestChallenge2Partial也因此自然得到满足。
 
-
-
+由于只有leader可以进行迁移，因此状态机的变化可能只有leader可以发现，因此状态转移需要用raft来同步。由于leader是可换的，因此状态的同步非常重要。
 
 
 
