@@ -92,7 +92,7 @@ start之间理论上是可以互相插队的，因此config在日志中可能是
 
 如果有一个group要给自己发shard，自己宕机了，那么那个group就会一直等待；正常工作后，则会接收shard然后将其放入raft日志保证其不会丢失，之后将回复“pull完成”。因此，若一个group宕机，所有与之相关的group都会暂停更新config。由于一个分片只归属于一个group，因此不用担心不同config.Num的group同时发送同一个分片；且宕机会发生链式反应，把新config中想pull的group也给阻塞掉。
 
-每次都去要下一个config，要不到的话再开始每100ms查一次。**一个接着一个按序处理reconfig。**
+每次都去要下一个config，要不到的话再开始每100ms查一次。**一个接着一个按序处理reconfig** ，处理完一个后再查新config。
 
 发送方发现新config时，会让对应的key停止服务，并开始转移。因此config何时发现都是可以的。转移完毕后，接收方宣布开始接收此shard。转移过程中，shard是不会被读写的。
 
@@ -112,8 +112,6 @@ You can send an entire map in an RPC request or reply, which may help keep the c
 
 >During a configuration change, a pair of groups may need to move shards in both directions between them. If you see deadlock, this is a possible source.
 
-也许迁移可以看成发送方对接收方的单向填入。接收方发现自己被剥夺shard后，仅仅是简单地停止接收对应请求；但也要等都接收完了才能进行下一个config。迁移的rpc中可能要附带config的num，来匹配config并防止重复发送。
-
 对于发送方，迁移过程中如果config日志被Snapshot了，那么服务器宕机重启后，就不会再触发迁移。因此发送方的迁移任务要写在Snapshot里面。这里可能发送成功后难以保存完成状态，但重复发送已被config的num解决；因此，可能每次readSnapshot的时候都最好进行一次Snapshot中保存的发送任务。
 
 Challenge1：成功迁移后，将对应的shard设为gcing状态，再对其进行删除，删完后状态设为offline。并且不断检测处于gcing的shard，对其进行删除。这样，重启之后也能及时删除不属于自己的shard，并且不会在迁移完成之前删掉shard。
@@ -121,7 +119,7 @@ Challenge1：成功迁移后，将对应的shard设为gcing状态，再对其进
 综上，或许不能直接用config里面的有无来判断是否接收一个请求，应当给每个shard赋予一个状态机：
 - 被删除的shard，从Online变成Pushing，迁移完成后变成GCing，删除完成后变成Offline。
 - 被添加的shard，从Offline变成Pulling，接收完成后变成Online。
-所有的shard都变成online或者offline后，config才算完成。
+所有的shard都变成online或者offline后，config才算完成。raft Start日志成功之后才能切换状态。start不成功则直接跳出、重新轮询各状态，然后接着触发操作。似乎应该把各状态的操作都分别封装成方法。
 
 发送时若发现config版本不如对方则取消操作、更新版本；然后如果发现自己拥有的shard归别人了，就再开始发送。接收应该是来者不拒。
 
