@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824/Lab2.md",
+                "file": "MIT6.824/Debug.md",
                 "mode": "source",
                 "source": false
               }
@@ -210,6 +210,7 @@
   },
   "active": "7468f25875a5715b",
   "lastOpenFiles": [
+    "MIT6.824/Debug.md",
     "MIT6.824/Lab2.md",
     "MIT6.824/lab4.md",
     "TODO.md",
@@ -226,7 +227,6 @@
     "MIT6.824/课堂笔记.md",
     "MIT6.824/杂项.md",
     "MIT6.824/lab3.md",
-    "MIT6.824/美化Debug.md",
     "Golang.md",
     "日语/学习笔记.md",
     "MIT6.824/Lab1.md",

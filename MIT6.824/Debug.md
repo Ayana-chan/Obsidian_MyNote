@@ -1,3 +1,10 @@
+
+
+```go
+go test -timeout 10s -race -run TestJoinLeave>log1
+```
+
+
 [MIT 6.824：美化Debug打印 - 知乎](https://zhuanlan.zhihu.com/p/598631543)
 
 # dslog

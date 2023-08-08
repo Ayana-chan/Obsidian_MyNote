@@ -137,3 +137,12 @@ TestChallenge2Partial也因此自然得到满足。
 - 用于安装shard，正在pull的shard收到迁移时添加，apply后安装shard。
 - 用于删除shard，push的shard完成迁移后添加，apply后删除正在gc态的shard。
 
+只有两种方式能确保start成功：
+1. 连续不断地start直到发生标志性变化
+2. 等待apply
+
+如果要让push成功之后不再重复发送，就不能保证发送完后百分百完成gc。或许有另一种消耗比较大的解决方法，让push可以重复发送，在gc原子操作完毕后停止。（这种方法消耗真的大吗？好像并没有大多少。只是要注意别发出gc后的数据，不然对方服务器重启后尚未接收到正常的installShard的log，就提前收到了非法的MigrateShard。另外，如果对方服务器成功后宕机，可能导致本地重启后无法gc，有点不合理）
+
+实际操作database时要极为谨慎，如果config和state中途变换，可能让正在操作中的database开始接收服务，导致race。
+
+
