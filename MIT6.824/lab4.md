@@ -96,6 +96,8 @@ start之间理论上是可以互相插队的，因此config在日志中可能是
 
 ==已完成：==重启的时候，可能会迅速的到来多个config！！！此过程中还会不断获取config，放在很靠后的日志末尾。可能要在读到新config但没完成之前的config的时候阻塞applyCh？不！由于config配置过程中会加log来标志进度，因此读到下一个config之前必然依靠log完成了当前config。
 
+这样又会引出一个问题：由于对config是否完成的检测独立于日志的apply，因此在上一个config被标记为完成前，下一个config可能就从日志中到来了。此时直接认为上一个config完成了，标记为offline或者online。**此时要做的唯一一件实事，就是进行gc**！！！
+
 ==已完成：==每次都去要下一个config，要不到的话再开始每100ms查一次。**一个接着一个按序处理reconfig** ，处理完一个后再查新config。
 
 只有leader在获取config塞入日志，然后所有服务器都会更新config、更新state并尝试继续处理。
@@ -116,14 +118,16 @@ You can send an entire map in an RPC request or reply, which may help keep the c
 
 >During a configuration change, a pair of groups may need to move shards in both directions between them. If you see deadlock, this is a possible source.
 
-对于发送方，迁移过程中如果config日志被Snapshot了，那么服务器宕机重启后，就不会再触发迁移。因此发送方的迁移任务要写在Snapshot里面。这里可能发送成功后难以保存完成状态，但重复发送已被config的num解决；因此，可能每次readSnapshot的时候都最好进行一次Snapshot中保存的发送任务。
+对于发送方，迁移过程中如果config日志被Snapshot了，那么服务器宕机重启后，就不会再触发迁移。因此发送方的迁移任务要有持久化的东西保存（state）。
 
 Challenge1：成功迁移后，将对应的shard设为gcing状态，再对其进行删除，删完后状态设为offline。并且不断检测处于gcing的shard，对其进行删除。这样，重启之后也能及时删除不属于自己的shard，并且不会在迁移完成之前删掉shard。
 
 综上，或许不能直接用config里面的有无来判断是否接收一个请求，应当给每个shard赋予一个状态机：
 - 被删除的shard，从Online变成Pushing，迁移完成后变成GCing，删除完成后变成Offline。
-- 被添加的shard，从Offline变成Pulling，接收完成后变成Installing，安装完成后变成Online。
-所有的shard都变成online或者offline后，config才算完成。raft Start日志成功之后才能切换状态。start不成功则直接跳出、重新轮询各状态，然后接着触发操作。似乎应该把各状态的操作都分别封装成方法。
+- 被添加的shard，从Offline变成Pulling，接收完成后变成Installing，安装完成后变成Online。（后来设计为接收时必须要求安装完成，因此跳过install状态）。
+所有的shard都变成online或者offline后，config才算完成。
+
+对于Follower来说，会直接从push变成offline，因为它的gc是被leader直接指示的。
 
 发送时若发现config版本不如对方则取消操作、更新版本；然后如果发现自己拥有的shard归别人了，就再开始发送。接收应该是来者不拒。
 
@@ -144,5 +148,60 @@ TestChallenge2Partial也因此自然得到满足。
 如果要让push成功之后不再重复发送，就不能保证发送完后百分百完成gc。或许有另一种消耗比较大的解决方法，让push可以重复发送，在gc原子操作完毕后停止。（这种方法消耗真的大吗？好像并没有大多少。只是要注意别发出gc后的数据，不然对方服务器重启后尚未接收到正常的installShard的log，就提前收到了非法的MigrateShard。另外，如果对方服务器成功后宕机，可能导致本地重启后无法gc，有点不合理）
 
 实际操作database时要极为谨慎，如果config和state中途变换，可能让正在操作中的database开始接收服务，导致race。
+
+- 如果一个服务器宕机很久一直更新config，其启动的时候收到请求发现和自己刚好对得上，放入日志后无阻碍地解决了；然后收到了新的（很旧的）config，并试图把这块shard push给别人，别人说你太老了，于是直接判定成功，那个请求也就丢失了。可以在client请求中添加configNum，**当服务器发现自己的config比client新时再继续受理**。这也不会影响效率或者不相关性，因为本来就要起码等对应的config跟上后才算合法的请求处理。
+- 如果一个client向一个group发起请求，超时了（但对方group依然commit了），此时发生了shard变换，client请求新group，这个新group已经包含了旧group的处理结果，但它不知道，所以重复应用了client的请求。解决方法是严格限制configNum，**即使服务器的configNum偏大也不能受理**。
+- 综上：只有configNum严格等同时，client请求才会被受理。
+
+请求时对config相关的检查也要在apply时重做一遍，因为谁也不知道start之前发生了什么事。
+
+由于client会不断更新configNum，因此如果client在上个config进行了一次操作，在下一个config还能再进行操作。TODO：如果迁移了requestId，那么是否还需要关注configNum？
+
+由于对所有group来说，requestId都是单调递增的，因此迁移的时候直接发送requestId、取大覆盖是没有任何问题的。
+
+gc删除map元素要这样写：
+```go
+var toDeleteKey []string  
+for k := range kv.database {  
+   if key2shard(k) == shard {  
+      toDeleteKey = append(toDeleteKey, k)  
+   }  
+}  
+for _, k := range toDeleteKey {  
+   delete(kv.database, k)  
+}
+```
+
+由于Follower不会去push，因此它不知道什么时候该gc。因此把gc写入日志是上策。
+
+压缩rpc数量可能导致Challenge的要求很难满足，感觉很麻烦，暂不考虑。
+
+
+{15 [102 101 101 101 101 102 102 100 100 100] 只改变0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
