@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Shell.md",
+                "file": "Cpp.md",
                 "mode": "source",
                 "source": false
               }
@@ -37,7 +37,19 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824/lab4.md",
+                "file": "杂记.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "081a52b87934f59b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Rust.md",
                 "mode": "source",
                 "source": false
               }
@@ -56,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -130,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/lab4.md"
+                "file": "Rust.md"
               }
             }
           },
@@ -140,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/lab4.md",
+                "file": "Rust.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -157,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/lab4.md",
+                "file": "Rust.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -190,8 +202,7 @@
               "state": {}
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -208,18 +219,19 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "7468f25875a5715b",
+  "active": "081a52b87934f59b",
   "lastOpenFiles": [
-    "MIT6.824/Debug.md",
-    "Shell.md",
+    "杂记.md",
+    "Rust.md",
     "Cpp.md",
+    "Shell.md",
     "MIT6.824/lab4.md",
+    "MIT6.824/Debug.md",
     "MIT6.824/Lab2.md",
     "TODO.md",
     "算法.md",
     "Vim.md",
     "Docker.md",
-    "杂记.md",
     "密码学.md",
     "Linux.md",
     "Make.md",
@@ -249,7 +261,6 @@
     "third/设计模式/1.六大设计原则与单例模式.pdf",
     "legacy/算法课笔记.md",
     "third/正则表达式.pdf",
-    "数学/线性代数.md",
     "数学",
     "Web前端/assets",
     "temp",
