@@ -202,7 +202,8 @@
               "state": {}
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -219,7 +220,7 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "081a52b87934f59b",
+  "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
     "杂记.md",
     "Rust.md",

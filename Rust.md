@@ -101,9 +101,11 @@ Rust提供了两个基本复合类型：元组Tuple和数组。
 
 #### 元组
 
+使用点-索引进行取值。
+
 ```rust
 let tp: (i32, i64, f64) = (45, 32, 6.7);  
-println!("tp: {},{},{}", tp.0, tp.1, tp.2);
+println!("tp: {},{},{}", tp.0, tp.1, tp.2); 
 ```
 
 可以使用解构赋值来拆分：
@@ -161,22 +163,102 @@ fn fun_name(x: i32,y: i32) -> i32 {
 
 ## Range类型
 
-`(1..4)`就是个Range类型，表示1,2,3,4。`(1..4).rev()`则翻转变成3,2,1。
+`(1..4)`就是个Range类型，表示1,2,3。`(1..4).rev()`则翻转变成3,2,1。而`(1..=4)`则包含4。
 
 可以被for循环遍历。
 ## for循环
 
 ```rust
 let arr = [11, 22, 33, 44, 55];  
+//使用迭代器
 for ele in arr.iter() {  
     println!("for1: {}", ele);  
 }
+//使用Range
 for index in 0..5 {  
     println!("for2: {}", arr[index]);  
 }
+//enumerate对迭代器进行包装，返回Tuple
+for (i,&ele) in arr.iter().enumerate(){  
+    println!("for3: {} {}", i, ele);  
+}
 ```
 
+## 结构体
 
+```rust
+//定义
+struct StructName{
+	variable_name: type,
+	...
+}
+```
+
+```rust
+//实例化
+//缺少字段会报错
+let object_name = StructName{
+	variable_name: value,
+	...
+};
+```
+
+整个struct要么都可变，要么都不可变。
+
+像js一样，字段值和给它赋值的变量名一样时可简写，如`v_name: v_name`可直接写成`v_name`。
+
+### struct更新语法
+
+如果S的两个实例s1和s2只有若干字段不同，则可以先给这几个字段赋值，然后加上`..s2`：
+
+```rust
+let person = Person {
+	name: String::from("Alice"),
+	age: 20,
+};
+let updated_person = Person {
+	name: String::from("Bob"),
+	..person
+};
+```
+
+### Tuple Struct
+
+类似于对Tuple的typedef。
+
+```rust
+struct Color(i32,i32,i32);
+let black = Color(0,0,0);
+```
+
+### Unit-Like Struct
+
+没有定义任何字段是struct，与`()`（空Tuple）（但愿类型）相似。想实现trait但不需要存储数据的时候会用到。
+
+### 完整地打印到输出
+
+使用`#[derive(Debug)]`派生宏，使得ST由Debug trait派生；打印时使用`{:?}`即可行内打印，使用`{:#?}`即可换行打印。
+
+```rust
+#[derive(Debug)]
+struct ST{
+	v1: i32,
+	v2: f64,
+}
+
+let st = ST{
+	v1: 1,
+	v2: 3.5,
+};
+println!("{:?}",st)
+println!("{:#?}",st)
+//输出：
+// ST { v1: 1, v2: 3.5 }  
+// ST {  
+//     v1: 1,  
+//     v2: 3.5,  
+// }
+```
 # 所有权
 
 对于某个值（在堆中），当拥有它的变量走出作用范围时，立刻会自动调用drop函数将此堆内存释放。
@@ -201,24 +283,20 @@ let s2=s1.clone(); //s1依旧可用，且堆内存也被拷贝了（深拷贝）
 
 ## 引用
 
-而引用此时有了新的解释：能获取值，但不转移所有权。把引用作为函数参数的行为叫做**借用**。有借有还。引用想可变也需要mut。
+```rust
+let ref = &v;
+```
+
+引用此时有了新的解释：能获取值，但不转移所有权。把引用作为函数参数的行为叫做**借用**。有借有还。引用想可变也需要mut。
 
 - **在同一个作用域内，对同一块数据最多只能有一个可变引用。** 以防范数据竞争。
-- **当存在可变引用时，不能有不可变引用。** 以保证不可变引用的语义一致性。
+- **当存在可变引用时，不能有不可变引用。** 以保证不可变引用的语义一致性。实际上，当存在不可变引用时，不能对数据发生更改，因为很多更改实际上是传了`&mut v`作为参数。
 
-引用的作用域是**声明->最后一次使用**。
+引用的作用域是**声明->最后一次使用**。因此，所有不可变引用不再使用后就马上可以进行修改。
 
 **悬空引用（Dangling Reference）**（可理解为野指针）**永远不会发生**，因为编译时，若引用未离开作用域（如被函数返回）但数据离开作用域的话就会报错。
 # 库与语法
 
-## String
-
-字符串字面值是硬编码的，访问快但本身不可变。字符串字面值转String类型要使用`String::from`。
-
-```rust
-let mut str = String::from("abc");
-str.push_str("def");
-```
 ## expect
 
 可能失败的方法会返回Result，是个枚举类，为`Ok(val)`或`Err(_)`，可以交由expect处理（`result.expect(msg)`）。若Result为Ok，则返回Result中存储的结果值val；否则，打印expect的参数msg并停止程序。
@@ -250,6 +328,38 @@ let guess: u32 = match str.trim().parse(){
 	}
 };
 ```
+
+## String
+
+字符串字面值是硬编码的，访问快但本身不可变。字符串字面值转String类型要使用`String::from`。
+
+```rust
+let mut str = String::from("abc");
+str.push_str("def");
+```
+
+## 切片 slice
+
+字符串切片是对字符串的一部分的引用。字符串切片类型记为`&str`。
+
+```rust
+let mut s = String::from("abcdef");  
+let s1=&s[2..4];  
+let s2=&s[2..=4];  
+println!("slice: {} {}",s1,s2);
+//输出：slice: cd cde
+//即Range包含的数字都会被提取
+//可以省略前置0或后置字符串长度。因此&str[..]即是对整个数组的切片
+```
+
+字符串的字面值被存在二进制程序中，因此其对应的变量就是个字符串切片，是个不可变引用。
+
+函数参数如果是String的话，最好使用`&str`类型，即强制要求传切片。这使得在传参为切片的时候可以直接调用，传参为String的时候则要求创建完整切片（非常简单）后传入，更加通用了。这也可以使得字符串传参没有任何的副作用。
+
+对`i32`字符串的切片类型为`&[i32]`。
+
+
+
 
 # 问题、技巧、解决方案
 
