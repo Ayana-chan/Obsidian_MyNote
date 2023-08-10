@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Cpp.md",
+                "file": "Shell.md",
                 "mode": "source",
                 "source": false
               }
@@ -211,6 +211,8 @@
   "active": "7468f25875a5715b",
   "lastOpenFiles": [
     "MIT6.824/Debug.md",
+    "Shell.md",
+    "Cpp.md",
     "MIT6.824/lab4.md",
     "MIT6.824/Lab2.md",
     "TODO.md",
@@ -220,10 +222,8 @@
     "杂记.md",
     "密码学.md",
     "Linux.md",
-    "Shell.md",
     "Make.md",
     "Git.md",
-    "Cpp.md",
     "MIT6.824/课堂笔记.md",
     "MIT6.824/杂项.md",
     "MIT6.824/lab3.md",

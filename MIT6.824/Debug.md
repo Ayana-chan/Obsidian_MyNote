@@ -236,7 +236,8 @@ def print_results(results: Dict[str, Dict[str, StatsMeter]], timing=False):
 
 
 def run_test(test: str, race: bool, timing: bool):
-    test_cmd = ["go", "test", f"-run={test}"]
+	## 这里硬编码了超时时间，可以看情况改
+    test_cmd = ["go", "test", "-timeout=6m", f"-run={test}"]
     if race:
         test_cmd.append("-race")
     if timing:

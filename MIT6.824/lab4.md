@@ -176,10 +176,9 @@ for _, k := range toDeleteKey {
 
 压缩rpc数量可能导致Challenge的要求很难满足，感觉很麻烦，暂不考虑。
 
+sendMigrateShard也要检测kill。
 
-{15 [102 101 101 101 101 102 102 100 100 100] 只改变0
-
-
+测试开8线程限时3分钟刚刚好。
 
 
 
