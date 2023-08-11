@@ -14,6 +14,32 @@ rustup component add rust-src --toolchain stable-x86_64-pc-windows-gnu
 
 `rustup doc`可以离线查看教程。
 
+换源，`...\.cargo\config`：
+
+```config
+[source.crates-io]
+# 替换成你偏好的镜像源
+replace-with = 'tuna'
+ 
+# 清华大学 5mb
+[source.tuna]
+registry = "https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git"
+ 
+# 中国科学技术大学 2mb
+[source.ustc]
+registry = "https://mirrors.ustc.edu.cn/crates.io-index"
+# 上海交通大学 2mb
+[source.sjtu]
+registry = "https://mirrors.sjtug.sjtu.edu.cn/git/crates.io-index"
+ 
+# rustcc社区 2mb
+[source.rustcc]
+registry = "https://crates.rustcc.cn/crates.io-index"
+# 字节跳动 10mb
+[source.rsproxy]
+registry = "https://rsproxy.cn/crates.io-index"
+```
+
 # 基础
 
 Rust是静态强类型的。
@@ -25,7 +51,7 @@ Rust是静态强类型的。
 - 不可变变量可以声明赋值分开，即赋值是不确定的，仅仅是无法二次赋值；
 - 而const常量必须进行一次初始化，且必须指定类型。
 
-use很像cpp的using namespace。有的crate是默认导入的，如std::io。
+use很像cpp的using namespace。有的crate是默认导入（prelude，预导入模块）的，如std::io。
 
 ```rust
 use std::io;  
@@ -235,30 +261,113 @@ let black = Color(0,0,0);
 
 没有定义任何字段是struct，与`()`（空Tuple）（但愿类型）相似。想实现trait但不需要存储数据的时候会用到。
 
-### 完整地打印到输出
 
-使用`#[derive(Debug)]`派生宏，使得ST由Debug trait派生；打印时使用`{:?}`即可行内打印，使用`{:#?}`即可换行打印。
+### 方法
 
 ```rust
-#[derive(Debug)]
-struct ST{
-	v1: i32,
-	v2: f64,
+struct Rectangle {
+    width: u32,
+    height: u32,
 }
 
-let st = ST{
-	v1: 1,
-	v2: 3.5,
-};
-println!("{:?}",st)
-println!("{:#?}",st)
-//输出：
-// ST { v1: 1, v2: 3.5 }  
-// ST {  
-//     v1: 1,  
-//     v2: 3.5,  
-// }
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
 ```
+
+方法的第一个参数总是self，非引用、不可变引用或可变引用都行。
+
+调用方法时，会自动给调用方法的对象加上`&`、`&mut`或`*`，以匹配方法中的self。
+
+>一个结构体的可以写多个impl块。
+
+### 关联函数
+
+如果定义的时候没有传入self，则称为关联方法。对象无法调用关联方法，只能使用`结构体名::关联函数名`的形式调用，类似于其他语言的静态函数。
+
+```rust
+struct Circle {
+    radius: f64,
+}
+
+impl Circle {
+    fn new(radius: f64) -> Circle {
+        Circle { radius }
+    }
+}
+```
+
+### 私有性
+
+给struct加上pub后，可以被上级模块访问到，但其内部的成员默认都是私有的。想让成员公有则必须在成员的前面也加上pub。
+
+## 枚举
+
+枚举的值种类叫做变体。枚举的访问使用`MyEnum::V1`。
+
+```rust
+enum Direction {
+    North,
+    South,
+    East,
+    West,
+}
+
+let direction = Direction::North;
+```
+
+变体可以携带数据，且各个变体能有不同的类型：
+
+```rust
+enum Message {
+    Quit,
+    ChangeColor(i32, i32, i32),
+    Move { x: i32, y: i32 },
+    Write(String),
+}
+
+let msg = Message::ChangeColor(0, 160, 255);
+```
+
+枚举也能和方法一样用impl定义方法。
+
+### 私有性
+
+给enum加上pub后，可以被上级模块访问到，且其内部的成员默认都为公共。
+
+
+## Option枚举
+
+是为了去除null而诞生的，表示该类型变量可空。不用`Option<T>`的都可以直接视为不可能空，可放心使用。
+
+在预导入模块中，`Option<T>`、`Some(T)`、`None`都是能直接用的。
+
+```rust
+//标准库中的定义
+enum Option<T>{
+	Some(T),
+	None, //表示变量为空
+}
+```
+
+`Option<T>`和`T`被视为两种类型，不能混用。若想把`Option<T>`当成`T`用，则需要先进行类型转换（相当于强制检测一次null）。
+
+```rust
+let num1: Option<i32> = None;
+let num2: Option<i32> = Some(5);
+```
+
+使用match对空进行判断：
+
+```rust
+match x {
+	None => println!("Empty"),
+	Some(i) => println!("{}",i),
+}
+```
+
 # 所有权
 
 对于某个值（在堆中），当拥有它的变量走出作用范围时，立刻会自动调用drop函数将此堆内存释放。
@@ -304,10 +413,13 @@ let ref = &v;
 
 匹配到符合的结果，执行其后的语句，且可以有返回值。分支称为arm。
 
+编译时要求必须处理所有情况。使用`_`通配符即可匹配剩余所有情况。
+
 ```rust
 match value{
 	v1 => {...} //arm
 	v2 => {...}
+	_ => {...}
 }
 ```
 
@@ -323,11 +435,54 @@ match guess.cmp(&secret_number){
 let guess: u32 = match str.trim().parse(){
 	OK(num)=>num*2,
 	Err(_)=>{
-		println!("You Wrong!")
+		println!("You Wrong!"),
 		println!("OOPS"),
 	}
 };
 ```
+
+对于枚举类型，可以在模式匹配的时候将其绑定的值赋值到变量中：
+
+```rust
+enum Message {
+    Quit,
+    ChangeColor(i32, i32, i32),
+    Move { x: i32, y: i32 },
+    Write(String),
+}
+
+fn process_message(msg: Message) {
+    match msg {
+        Message::Quit => {
+            println!("The Quit variant was passed in.");
+        }
+        Message::ChangeColor(r, g, b) => {
+            println!("Change the color to red {}, green {}, and blue {}", r, g, b);
+        }
+        Message::Move { x, y: new_y } => {
+            println!("Move in the x direction {} and in the y direction {}", x, new_y);
+        }
+        Message::Write(text) => {
+            println!("Text message: {}", text);
+        }
+    }
+}
+```
+
+### if let
+
+当要操作的情况只有一个，其他情况都要忽略时，就能用if let简化：
+
+```rust
+let v = 4;
+if let 3 = v { //单等号
+	println!("Find 3");
+} else {
+	println!("Default");
+}
+```
+
+和if的区别是，if let使用了match的模式匹配，可以提取绑定值。可以搭配else、else if使用。
 
 ## String
 
@@ -363,6 +518,31 @@ println!("slice: {} {}",s1,s2);
 
 # 问题、技巧、解决方案
 
+## 完整地打印到输出
+
+使用`#[derive(Debug)]`派生宏，使得ST由Debug trait派生；打印时使用`{:?}`即可行内打印，使用`{:#?}`即可换行打印。这样可以完整地打印结构体或枚举。
+
+```rust
+#[derive(Debug)]
+struct ST{
+	v1: i32,
+	v2: f64,
+}
+
+let st = ST{
+	v1: 1,
+	v2: 3.5,
+};
+println!("{:?}",st)
+println!("{:#?}",st)
+//输出：
+// ST { v1: 1, v2: 3.5 }  
+// ST {  
+//     v1: 1,  
+//     v2: 3.5,  
+// }
+```
+
 ## 生成随机数
 
 ```rust
@@ -372,6 +552,147 @@ let random_number: u32 = rng.gen_range(0,5); //生成[0,5)的随机数
 println!("random_num: {}", random_number);  
 ```
 
+# 模块系统
+
+按层级从高到低为：
+- Package: 包，项目级别。Cargo的特性，可以构建、测试、共享Crate。
+- Crate: 单元包，组件级别。一个模块树，可以生成library或可执行文件。
+- Module: 模块，功能级别。控制代码的组织、作用域、私有路径。
+- Path: 路径，为struct、function、module等项命名的方式。
+
+## Package
+
+Package包含：
+- 1个Crate.toml，描述了如何构建这些Crates。
+- 至多1个library Crate
+- 不限量的binary Crate
+
+在Crate.toml里的dependencies下可以添加外部包，以到`https://crates.io/`下载包。
+
+std标准库是一个自动导入的外部包。
+## Crate
+
+Crate将相关功能组合到一个作用域内用于共享，避免冲突。
+
+Crate类型：
+- library
+- binary
+
+Crate Root: 是个源代码文件，Cargo将它交给编译器，编译器由此开始构建Crate，组成Crate的根Module。
+
+Crate默认：
+- 在binary中，main.rs作为crate root。
+- 在library中，lib.rs作为crate root。
+- Crate名与Package名相同。
+
+## Module
+
+Module在一个Crate内将代码进行分组，增加可读性，同时控制项目（item）的私有性（private，public）。
+
+Module可以嵌套，包含子Module。
+
+使用mod关键字来定义模块：
+
+```rust
+mod outer {
+    pub mod inner {
+        pub fn inner_function() {
+            println!("This is an inner function!");
+        }
+    }
+}
+
+fn main() {
+    outer::inner::inner_function();
+}
+```
+
+私有边界（Privacy Boundary）：默认所有条目（包括子模块）都是私有的，在条目或子模块前面加pub后才能被其他模块发现。父不能访问子的私有条目，但子可以访问所有的父的条目；同级之间也可以随意访问。
+
+### 分文件存放模块
+
+假如有模块`outer`和`outer::inner`，则需要构建如下文件结构：
+
+```
+src/
+  main.rs
+  outer/
+    mod.rs
+    inner.rs
+```
+
+```rust
+//main.js
+mod outer; //会去找../outer.rs或者../outer/mod.rs
+
+fn main() {
+	outer::outer_function();
+    outer::inner::inner_function();
+}
+```
+
+```rust
+//outer/mod.rs
+pub mod inner; //会去找../inner.rs或者../inner/mod.rs
+
+pub fn outer_function() {
+    println!("This is an outer function!");
+}
+```
+
+```rust
+//outer/inner.rs
+pub fn inner_function() {
+    println!("This is an inner function!");
+}
+```
+## Path
+
+Path用于在模块系统中定位项（如结构体、函数、模块等）
+
+- 绝对路径: `use crate::module::SubModule::function;`
+- 相对路径: `use module::SubModule::function;`
+
+- 用`crate`表示根模块。
+- 用`self`表示自己。
+- 用`super`来表示父模块，功能类似于`../`。
+
+### use
+
+use将path导入到作用域内，但仍旧遵守私有规则，类似于cpp的using namespace。
+
+对于函数，一般引入到其模块为止，否则直接引入到函数的话容易看不清函数归属于哪个模块；
+但对于其他条目，则一般直接引入到条目本身，除非出现重名。
+
+使用as（`use xxx as yy`）可以指定别名。
+
+use过来的东西默认为私有的，无法被上级访问到。在use前面加pub即可让use的模块也能被上级使用。
+
+可以使用嵌套路径来导入多个前缀相同的路径：
+```rust
+mod outer {
+    pub mod inner {
+        pub fn function1() {
+            println!("This is function 1!");
+        }
+
+        pub fn function2() {
+            println!("This is function 2!");
+        }
+    }
+}
+
+// 使用嵌套路径来导入inner、function1和function2
+use outer::inner::{self, function1, function2};
+
+fn main() {
+	inner::function1();
+    function1();
+    function2();
+}
+```
+
+`*`是通配符，表示“所有”。
 # Cargo
 
 ## 基本命令
