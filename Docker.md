@@ -95,6 +95,17 @@ docker save -o 压缩文件名称 镜像名称：版本号
 docker load -i 压缩文件名称
 ```
 
+# Docker Desktop
+
+其实就是装了一个专门用于docker的wsl2虚拟机，然后提供好看的客户端界面。
+
+[使用软链接的方式把Docker Desktop数据迁移到其他盘](https://blog.csdn.net/qq_45602658/article/details/129416841)
+
+[换源](https://blog.csdn.net/sunyuhua_keyboard/article/details/131256771)
+
+如果出现“Docker Engine Stopped”，则可以在任务栏里面找到Docker Desktop的图标，右键、switch to Windows containers，然后Docker Desktop就会被关闭，再打开就正常了。
+
+安装之后，windows的cmd也能直接用docker命令了。
 # DockerFile
 备忘查询：[Dockerfile 备忘清单 & dockerfile cheatsheet & Quick Reference](http://bbs.laoleng.vip/reference/docs/dockerfile.html)
 

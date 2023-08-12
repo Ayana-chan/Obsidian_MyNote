@@ -129,8 +129,6 @@ Challenge1：成功迁移后，将对应的shard设为gcing状态，再对其进
 
 对于Follower来说，会直接从push变成offline，因为它的gc是被leader直接指示的。
 
-发送时若发现config版本不如对方则取消操作、更新版本；然后如果发现自己拥有的shard归别人了，就再开始发送。接收应该是来者不拒。
-
 TestChallenge2Partial也因此自然得到满足。
 
 由于只有leader可以进行迁移，因此状态机的变化可能只有leader可以发现，因此状态转移需要用raft来同步。由于leader是可换的，因此状态的同步非常重要。
@@ -150,14 +148,12 @@ TestChallenge2Partial也因此自然得到满足。
 实际操作database时要极为谨慎，如果config和state中途变换，可能让正在操作中的database开始接收服务，导致race。
 
 - 如果一个服务器宕机很久一直更新config，其启动的时候收到请求发现和自己刚好对得上，放入日志后无阻碍地解决了；然后收到了新的（很旧的）config，并试图把这块shard push给别人，别人说你太老了，于是直接判定成功，那个请求也就丢失了。可以在client请求中添加configNum，**当服务器发现自己的config比client新时再继续受理**。这也不会影响效率或者不相关性，因为本来就要起码等对应的config跟上后才算合法的请求处理。
-- 如果一个client向一个group发起请求，超时了（但对方group依然commit了），此时发生了shard变换，client请求新group，这个新group已经包含了旧group的处理结果，但它不知道，所以重复应用了client的请求。解决方法是严格限制configNum，**即使服务器的configNum偏大也不能受理**。
-- 综上：只有configNum严格等同时，client请求才会被受理。
+- **即使服务器的configNum偏大也不能受理**，无法保证不被删。
+- 综上：只有configNum严格等同时，client请求才会被受理。这样拥有完全合理的一致性，如同term。
 
 请求时对config相关的检查也要在apply时重做一遍，因为谁也不知道start之前发生了什么事。
 
-由于client会不断更新configNum，因此如果client在上个config进行了一次操作，在下一个config还能再进行操作。TODO：如果迁移了requestId，那么是否还需要关注configNum？
-
-由于对所有group来说，requestId都是单调递增的，因此迁移的时候直接发送requestId、取大覆盖是没有任何问题的。
+由于client会不断更新configNum，因此如果client在上个config进行了一次操作，在下一个config还能再进行操作。而由于对所有group来说，requestId都是单调递增的，因此迁移的时候直接发送requestId、取大覆盖是没有任何问题的。
 
 gc删除map元素要这样写：
 ```go
@@ -179,7 +175,6 @@ for _, k := range toDeleteKey {
 sendMigrateShard也要检测kill。
 
 测试开8线程限时3分钟刚刚好。
-
 
 
 

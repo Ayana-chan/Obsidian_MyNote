@@ -399,7 +399,7 @@ let ref = &v;
 引用此时有了新的解释：能获取值，但不转移所有权。把引用作为函数参数的行为叫做**借用**。有借有还。引用想可变也需要mut。
 
 - **在同一个作用域内，对同一块数据最多只能有一个可变引用。** 以防范数据竞争。
-- **当存在可变引用时，不能有不可变引用。** 以保证不可变引用的语义一致性。实际上，当存在不可变引用时，不能对数据发生更改，因为很多更改实际上是传了`&mut v`作为参数。
+- **当存在可变引用时，不能有不可变引用。** 以保证不可变引用的语义一致性。实际上，当存在不可变引用时，就能保证不能对数据发生更改，因为很多更改实际上是传了`&mut v`作为参数，即可变借用也会判为可变引用。
 
 引用的作用域是**声明->最后一次使用**。因此，所有不可变引用不再使用后就马上可以进行修改。
 
@@ -484,18 +484,9 @@ if let 3 = v { //单等号
 
 和if的区别是，if let使用了match的模式匹配，可以提取绑定值。可以搭配else、else if使用。
 
-## String
-
-字符串字面值是硬编码的，访问快但本身不可变。字符串字面值转String类型要使用`String::from`。
-
-```rust
-let mut str = String::from("abc");
-str.push_str("def");
-```
-
 ## 切片 slice
 
-字符串切片是对字符串的一部分的引用。字符串切片类型记为`&str`。
+切片是对数组型数据结构的一部分的引用，不具有所有权。字符串切片类型记为`&str`。
 
 ```rust
 let mut s = String::from("abcdef");  
@@ -507,11 +498,179 @@ println!("slice: {} {}",s1,s2);
 //可以省略前置0或后置字符串长度。因此&str[..]即是对整个数组的切片
 ```
 
-字符串的字面值被存在二进制程序中，因此其对应的变量就是个字符串切片，是个不可变引用。
-
-函数参数如果是String的话，最好使用`&str`类型，即强制要求传切片。这使得在传参为切片的时候可以直接调用，传参为String的时候则要求创建完整切片（非常简单）后传入，更加通用了。这也可以使得字符串传参没有任何的副作用。
-
 对`i32`字符串的切片类型为`&[i32]`。
+
+## 字符串
+
+String是Byte的集合，采用UTF-8编码，是在标准库中的。本质是对`Vec<u8>`的封装。
+
+字符串字面值（本质是字符串切片，不可变引用）是硬编码的，访问快但本身不可变。其对应的变量就是个字符串切片，是个不可变引用，类型为`&str`。`&str`转String类型要使用`String::from`。
+
+只有`&str`可以转`String`，反之不行。
+
+```rust
+let mut str = String::from("abc");
+str.push_str("def");
+```
+
+函数参数如果是字符串的话，最好使用`&str`类型来表示参数，即强制要求传切片。这使得在传参为切片的时候可以直接调用，传参为String的时候则要求创建完整切片（Rust会自动转换）后传入，更加通用了。这也可以使得字符串传参没有任何的副作用。
+
+使用`+`即可连接两个String。但`+`本质还是调用函数，因此如果`let s=s1+&s2`，会导致调用完毕后s2还能接着用，但s1的所有权被剥夺了。
+
+`formit!`用法类似于`println!`，可以用于字符串拼接：
+```rust
+let name = "Alice";
+let age = 30;
+let s = format!("{} is {} years old.", name, age);
+println!("{}", s);
+```
+
+**不支持索引访问字符**。因为UTF-8编码下**某些字符会占多个字节**，难以识别。因此直接调用len方法返回的是占用的字节数，也就不一定等于字符个数。
+
+- bytes方法: 将字符串看成纯粹的Byte数组，返回byte类型的迭代器。
+- chars方法: 将字符串看成标量值数组，返回char类型的迭代器。
+- 标准库中尚未提供按字符簇访问String的方法。
+
+字符串切片的时候，切片的索引是按byte来的。如果切片的索引不是char的边界（相当于把字符给分裂了），则会panic。
+## Vector
+
+```rust
+let v1: Vec<i32> = Vec::new();
+let v2 = vec![1,2,3];
+```
+
+```rust
+//泛型可以通过第一个插入值来自动推断
+let mut v = Vec::new();
+v.push(1); //自动推断出i32
+```
+
+可以使用索引和get两种方式访问值。但是索引如果越界，会直接报错；get会返回`Option<T>`，如果越界了会返回None：
+
+```rust
+let v = vec![1, 2, 3, 4, 5];
+
+match v.get(2) {
+    Some(value) => println!("The third element is {}", value),
+    None => println!("There is no third element."),
+}
+```
+
+遍历vector：
+
+```rust
+let mut v = vec![2,5,7];
+for i in &mut v {
+	*i += 50;
+}
+```
+
+使用附带数据的枚举可以实现用vector存储不同类型的数据。编译器推导出vector的泛型是枚举后，就相当于得知了它的有限个类型种类，也就可以生成对应的操作应对方案。
+
+```rust
+enum Data {
+    Integer(i32),
+    Float(f64),
+    Text(String),
+}
+
+fn main() {
+    let data = vec![
+        Data::Integer(10),
+        Data::Float(3.14),
+        Data::Text(String::from("Hello")),
+    ];
+
+    for item in &data {
+        match item {
+            Data::Integer(i) => println!("Integer: {}", i),
+            Data::Float(f) => println!("Float: {}", f),
+            Data::Text(t) => println!("Text: {}", t),
+        }
+    }
+}
+```
+
+## HashMap
+
+相当于unordered_map。
+
+不再预导入模块中，需要`use std::collections::HashMap`。
+
+可以使用collect来从形如(k,v)的Tuple数组中构造HashMap。collect方法适用于很多集合，因此需要给返回值显式指定类型`HashMap<_, _>`。
+
+```rust
+use std::collections::HashMap;
+
+let vec = vec![("key1", 1), ("key2", 2), ("key3", 3)];
+let map: HashMap<_, _> = vec.into_iter().collect();
+println!("{:?}", map);
+```
+
+```rust
+//利用zip可以从两个vector构造HashMap
+use std::collections::HashMap;
+
+let keys = vec!["key1", "key2", "key3"];
+let values = vec![1, 2, 3];
+
+let map: HashMap<_, _> = keys.into_iter().zip(values.into_iter()).collect();
+
+println!("{:?}", map);
+```
+
+HashMap直接传值会剥夺所有权。传引用的话要注意数据不能提前失效。
+
+遍历：
+```rust
+for (k,v) in &map {
+	...
+}
+```
+
+insert同一个key会导致覆盖。
+
+entry(key)方法可以返回一个枚举Entry，是key对应的值的入口，可以用于表示key是否存在。Entry有or_insert(value)方法，如果key存在则返回key对应的值的可变引用，如果不存在则插入参数value然后返回值可变引用。
+
+默认的HashMap安全但不是最快的，可以替换hasher。
+
+## 错误
+
+Rust没有异常系统。
+
+- 可恢复错误: `Result<T,E>`
+- 不可恢复错误: `panic!`宏
+
+### 不可恢复错误
+
+panic发生时，默认会**展开（unwind）** 调用栈，往回走，把遇到的所有函数的数据都给清理掉。可以选择不展开，而是**中止（abort）**，不清理而直接停止程序，由操作系统回收内存。中止也可以让二进制文件更小。
+
+```toml
+[profile.release]
+panic = 'abort'
+```
+
+为了让panic发生时打印回溯错误信息，需要：
+
+```bash
+#windows
+set RUST_BACKTRACE=1 && cargo run
+#linux
+RUST_BACKTRACE=1 cargo run
+```
+
+### 可恢复错误
+
+```rust
+enum Result<T,E> {
+	Ok(T),
+	Err(E),
+}
+```
+
+
+
+
 
 
 
