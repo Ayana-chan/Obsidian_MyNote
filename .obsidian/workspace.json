@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824/lab4.md",
+                "file": "MIT6.824/lab3.md",
                 "mode": "source",
                 "source": false
               }
@@ -80,7 +80,7 @@
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -154,7 +154,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/lab随想QA.md"
+                "file": "Rust.md"
               }
             }
           },
@@ -164,7 +164,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/lab随想QA.md",
+                "file": "Rust.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -181,7 +181,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/lab随想QA.md",
+                "file": "Rust.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -234,6 +234,9 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "MIT6.824/lab3.md",
+    "MIT6.824/Lab2.md",
+    "MIT6.824/Lab1.md",
     "MIT6.824/lab4.md",
     "MIT6.824/lab随想QA.md",
     "Rust.md",
@@ -249,7 +252,6 @@
     "rCore",
     "Cpp.md",
     "Shell.md",
-    "MIT6.824/Lab2.md",
     "TODO.md",
     "Vim.md",
     "密码学.md",
@@ -257,10 +259,8 @@
     "Make.md",
     "Git.md",
     "MIT6.824/课堂笔记.md",
-    "MIT6.824/lab3.md",
     "Golang.md",
     "日语/学习笔记.md",
-    "MIT6.824/Lab1.md",
     "MIT6.824/temp.md",
     "MIT6.824/assets/uTools_1690427941963.png",
     "MIT6.824/assets/uTools_1690360831151.png",

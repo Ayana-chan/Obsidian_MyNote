@@ -210,6 +210,30 @@ for (i,&ele) in arr.iter().enumerate(){
 }
 ```
 
+for不仅可以结构，还能通过`&item`接收来进行解引用，可以理解为`&item=&i32`即为`item=i32`。
+
+```rust
+fn func1(list: &[i32]){
+	let mut largest: i32 = 0;
+	for &item in list{
+		if item > largest {
+			largest = item;
+		}
+	}
+	largest
+}
+//等价于
+fn func2(list: &[i32]){
+	let mut largest: i32 = 0;
+	for item in list{
+		if *item > largest {
+			*largest = item;
+		}
+	}
+	largest
+}
+```
+
 ## 结构体
 
 ```rust
@@ -368,6 +392,30 @@ match x {
 }
 ```
 
+## main函数
+
+main函数的默认返回值为`()`，即单元类型。但也可以改成`Result<String, Box<dyn std::error::Error>>`，表示可以接收任意错误，但要在main末尾添上`Ok(())`。
+
+```rust
+use std::fs::File;
+use std::io::Read;
+
+fn read_file() -> Result<String, Box<dyn std::error::Error>> {
+    let mut f = File::open("file.txt")?;
+    let mut buffer = String::new();
+
+    f.read_to_string(&mut buffer)?;
+
+    Ok(buffer)
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let content = read_file()?;
+    println!("File content: {}", content);
+    Ok(())
+}
+```
+
 # 所有权
 
 对于某个值（在堆中），当拥有它的变量走出作用范围时，立刻会自动调用drop函数将此堆内存释放。
@@ -413,13 +461,22 @@ let ref = &v;
 
 匹配到符合的结果，执行其后的语句，且可以有返回值。分支称为arm。
 
-编译时要求必须处理所有情况。使用`_`通配符即可匹配剩余所有情况。
+编译时要求必须处理所有情况。使用`_`通配符或者用一个变量接住即可匹配剩余所有情况。
 
 ```rust
-match value{
-	v1 => {...} //arm
-	v2 => {...}
+let value = 5;
+
+match value {
+	1 => println!("one") //arm
+	2 => {...}
 	_ => {...}
+}
+
+match value {
+    1 => println!("one"),
+    2 => println!("two"),
+    //用变量接住
+    other => println!("The value is: {}", other),
 }
 ```
 
@@ -668,7 +725,128 @@ enum Result<T,E> {
 }
 ```
 
+#### 错误处理
 
+可以提取出Err的参数热然后调用kind()以进一步match错误类型：
+
+```rust
+use std::fs::File;
+use std::io::ErrorKind;
+
+let file = File::open("non_existent_file.txt");
+
+match file {
+    Ok(_) => println!("File opened successfully"),
+    Err(e) => match e.kind() {
+        ErrorKind::NotFound => println!("File not found"),
+        ErrorKind::PermissionDenied => println!("Permission denied"),
+        other => println!("Some other error: {:?}", other),
+    },
+}
+```
+
+也可以直接调用**unwrap**方法，如果是Ok则返回Ok的数据，否则调用panic!。但无法自定义panic信息。
+
+```rust
+let file = File::open("non_existent_file.txt").unwrap();
+```
+
+若调用**expect**方法即可自定义panic信息。
+
+```rust
+let file = File::open("non_existent_file.txt").expect("Expect Panic Msg");
+```
+
+#### 错误传递
+
+只要返回值为result，就可以传递错误，如可以写为`Result<String,io::Error>`。
+
+使用`?`运算符可以在输出为Result::Err的时候自动将其return。
+
+但是使用`?`时要注意，它在成功的时候返回的并不是Result，因此正确地返回时应当用Ok再做包装。
+
+在`?`返回的Err与要求的返回值不匹配时，会隐式地调用from函数进行转换，前提是转化的目标错误对原错误实现了from函数。
+
+```rust
+use std::fs::File;
+use std::io;
+use std::io::Read;
+
+fn read_file() -> io::Result<String> { //等价于Result<String,io::Error>
+    let mut f = File::open("file.txt")?;
+    let mut buffer = String::new();
+
+    f.read_to_string(&mut buffer)?; //等价于match到Err(e)后return Err(e)
+
+    Ok(buffer)
+}
+
+fn main() {
+    match read_file() {
+        Ok(content) => println!("File content: {}", content),
+        Err(e) => println!("An error occurred: {}", e),
+    }
+}
+```
+
+### 错误使用指南
+
+如果确定必然是Ok的，则直接使用unwrap获取结果值。
+
+## 泛型
+
+`<T>`中的T是**类型参数**。在**编译时**会被替换为具体的类型，这个过程称为**单态化（monomorphyzation)**。
+
+在函数名、结构体名或枚举名后面加个`<T>`就表示了泛型。
+
+```rust
+struct Point<T> {
+    x: T,
+    y: T,
+}
+
+fn main() {
+    let integer = Point { x: 5, y: 10 };
+    let float = Point { x: 1.0, y: 4.0 };
+    println!("integer: ({}, {}), float: ({}, {})", integer.x, integer.y, float.x, float.y);
+}
+```
+
+如果要写泛型结构体的impl，则要写成`impl<T> Point<T>{...}`。但针对具体类型的实现就不需要这样写了，如`impl Point<i32>{...}`。
+
+
+## Trait
+
+trait告诉编译器某种类型有哪些可以与其他类型共享的功能。抽象的定义共享行为。
+
+trait bound（约束）: 让泛型的类型参数指定为一个trait，即可规定该类型参数的行为，也就能让以该类型参数为类型的变量能做出一些事情，如比大小。
+
+trait和interface差不多，规定了共用的一组方法签名，但可以没有实现；如果有实现，就相当于是默认实现（java的default）；实现trait的类型必须实现所有未实现的trait方法。
+
+默认实现的方法可以调用其他无默认实现的方法。
+
+```rust
+trait Speak {
+    fn speak(&self);
+}
+
+struct Human;
+
+impl Speak for Human {
+    fn speak(&self) {
+        println!("Hello, world!");
+    }
+}
+
+fn main() {
+    let person = Human;
+    person.speak();
+}
+```
+
+如果一个方法来自于trait，则使用的时候必须保证当前作用域里面有此trait。
+
+可以在某个type上实现某个trait的前提条件是：这个type **或** 这个trait 是**本crate**里定义的。也就是说，无法为外部的类型定义外部的trait。这样可以保证不会出现两个crate分别给同一个struct实现同一个trait的情况。即**孤儿规则（Orphan Rule）**，防止trait的实现是个孤儿（既不属于定义trait的crate，也不属于定义type的crate）。
 
 
 

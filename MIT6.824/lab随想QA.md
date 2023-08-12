@@ -22,8 +22,8 @@
 
 1. Leader向Follower1发送`AppendEntries [2,2,3] preIndex=2 commitIndex=2`，但是网络太慢，此包暂未到达。
 2. 然后，leader更新commitIndex为5（在其他服务器上复制过半），并且收到了新的一个log，此时leader本地的log为`[0,1,1,2,2,3,3]`，于是向Follower1发送`AppendEntries [2,2,3,3] preIndex=2 commitIndex=5`。Follower1成功接收到了这个包，于是本地更新为`[0,1,1,2,2,3,3] commitIndex=5`。
-3. Leader更新commitIndex=6，并再次发送心跳，Follower成功接收到了，变成`[0,1,1,2,2,3,3] commitIndex=6`。
-4. 然后，Follower终于收到了第一个被延迟的网络包。如果直接删掉preIndex后面的所有日志并直接append的话，就会变成`[0,1,1,2,2,3] commitIndex=6`，使得index=6的committed log被删掉。如果此时leader宕机，进行选举的之后，Follower1有可能被选为leader，于是index=6的committed log被永久地丢弃了，这是不合法的。
+3. Leader更新commitIndex=6，并再次发送心跳，Follower1成功接收到了，变成`[0,1,1,2,2,3,3] commitIndex=6`。
+4. 然后，Follower终于收到了第一个被延迟的网络包。如果直接删掉preIndex后面的所有日志并直接append的话，就会变成`[0,1,1,2,2,3] commitIndex=6`，使得index=6的committed log被删掉。如果此时leader宕机，进行选举之后，Follower1有可能被选为leader，于是index=6的committed log被永久地丢弃了，这是不合法的。
 
 >第2、3步可以改成：Leader利用其他服务器将commitIndex更新到6，然后Follower才接收到`AppendEntries [2,2,3,3] preIndex=2 commitIndex=6`，从而一次性地变成`[0,1,1,2,2,3,3] commitIndex=6`。
 
@@ -48,7 +48,7 @@ logOffset：记录Snapshot里面有多少个日志，以保证日志的逻辑索
 
 ### 说说snapshot里面存储了哪些变量，分别叙述存储它们的原因。  
 
-Database：Snapshot的本地数据，此处的database加上raft层剩下的log就组成了完整的数据。
+Database：Snapshot的本质数据，此处的database加上raft层剩下的log就组成了完整的数据。
 
 LastAppliedIndex：主要是为了防止应用Snapshot之后，剔除掉applyCh中传来的不合时宜的log和Snapshot，具体见[如何保证snapshot的过程中不会有commit丢失](MIT6.824/lab随想QA.md#如何保证snapshot的过程中不会有commit丢失？)。
 
