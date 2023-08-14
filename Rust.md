@@ -71,7 +71,7 @@ trait: 可视为接口，提供了一些方法，如`rand::Rng`。
 
 数字可以使用下划线分割来增加可读性，如100_000。
 
-变量名、函数名使用snack_case命名规范。
+变量名、函数名使用snack_case命名规范，其他都是大驼峰。
 
 
 ## shadowing
@@ -404,6 +404,15 @@ match x {
 }
 ```
 
+## 解构赋值
+
+```rust
+let p = Point{ x: 1 , y: 3 };
+let Point{ x_num , y_num } = p;
+let Point{ x , y } = p; //解构的变量名和结构体的成员变量名相同的时候可简写
+```
+
+
 ## main函数
 
 main函数的默认返回值为`()`，即单元类型。但也可以改成`Result<String, Box<dyn std::error::Error>>`，表示可以接收任意错误，但要在main末尾添上`Ok(())`。
@@ -589,6 +598,8 @@ match guess.cmp(&secret_number){
 }
 ```
 
+对于枚举类型、结构体、Tuple等等，也可以在模式匹配的时候将其绑定的值赋值到变量中。即使存在嵌套，也可以解构成功。只想占位的话使用`_`来防止发生不必要的所有权转移。
+
 ```rust
 let guess: u32 = match str.trim().parse(){
 	OK(num)=>num*2,
@@ -598,8 +609,6 @@ let guess: u32 = match str.trim().parse(){
 	}
 };
 ```
-
-对于枚举类型，可以在模式匹配的时候将其绑定的值赋值到变量中：
 
 ```rust
 enum Message {
@@ -627,20 +636,51 @@ fn process_message(msg: Message) {
 }
 ```
 
+### match 守卫
+
+在箭头之前加上if就能进一步判断以进行过滤：
+
+```rust
+fn main() {
+    let x = 5;
+
+    match x {
+        // 如果x是1、2或3时，打印"Small"
+        1 | 2 | 3 if is_even(x) => println!("Small and even"),
+        1 | 2 | 3 => println!("Small"),
+        // 如果x是4到10之间的偶数，打印"Medium and even"
+        y @ 4..=10 if is_even(y) => println!("Medium and even"),
+        // 如果x是4到10之间的数，打印"Medium"
+        4..=10 => println!("Medium"),
+        // 其他情况，打印"Large"
+        _ => println!("Large"),
+    }
+}
+
+fn is_even(num: u32) -> bool {
+    num % 2 == 0
+}
+```
+
 ### if let
 
 当要操作的情况只有一个，其他情况都要忽略时，就能用if let简化：
 
 ```rust
-let v = 4;
-if let 3 = v { //单等号
-	println!("Find 3");
+let option = Some(5);
+
+if let Some(5) = option {
+    println!("Five");
+} else if let Some(6) = option {
+    println!("Six");
 } else {
-	println!("Default");
+    println!("Not five or six");
 }
 ```
 
 和if的区别是，if let使用了match的模式匹配，可以提取绑定值。可以搭配else、else if使用。
+
+if let可以和普通if语句（包括else if）混写，只是带let的判断会利用模式匹配。
 
 ## 切片 slice
 
@@ -791,6 +831,10 @@ insert同一个key会导致覆盖。
 entry(key)方法可以返回一个枚举Entry，是key对应的值的入口，可以用于表示key是否存在。Entry有or_insert(value)方法，如果key存在则返回key对应的值的可变引用，如果不存在则插入参数value然后返回值可变引用。
 
 默认的HashMap安全但不是最快的，可以替换hasher。
+
+## zip
+
+可以将两个数组/迭代器等通过Tuple将每一项合在一起，即`newVec[i]=(vec1[i],vec2[i])`。
 
 ## 错误
 
@@ -1054,6 +1098,62 @@ impl<T: Display> ToString for T {
 }
 ```
 
+### 关联类型
+
+在trait定义一个type，具体使用时将其赋值后即可关联到某个类型，如：
+
+```rust
+trait Iterator {
+    type Item; // 关联类型，表示迭代器的元素类型
+
+    fn next(&mut self) -> Option<Self::Item>; // next方法返回关联类型的Option值
+}
+```
+
+使用关联类型而不使用泛型的话无法给一个类型多次实现一个trait。
+
+### 运算符重载
+
+重载`std::ops`里的trait就等价于运算符重载。
+
+```rust
+//重载了Meters对Millimeters的+运算符
+impl Add<Meters> for Millimeters {
+	type Output = Millimeters;
+	
+	fn add(self, other: Meters) -> Millimeters {
+		Millimeters(self.0 + other.0 * 1000)
+	}
+}
+```
+
+### 完全限定语法
+
+如果结构体Human实现了Pilot trait，也实现了Wizard trait，且Human自己、两个trait内都实现了不同的fly方法，则：
+
+```rust
+let person = Human;
+person.fly(); //调用原来的
+Pilot::fly(&person); //调用Pilot trait的实现
+Wizard::fly(&person); //调用Wizard trait的实现
+```
+
+这种情况下，比如对Pilot这个trait来说，由于接收到了&person为&Human，则可以推断出是调用Human对Pilot的实现中的fly。
+
+但是也有情况是推断不出来的，例如要调用的不是方法而是函数，而且参数很朴素：
+
+```rust
+Dog::baby_name(); //调用原来的
+Animal::baby_name(); //Error: 无法确认到底调用哪个函数
+<Dog as Animal> :: baby_name(); //调用Animal trait的实现
+```
+
+`<TypeName as TraitName>::func_name()`就叫做完全限定语法。
+
+### supertrait
+
+即trait的继承，`trait TraitName: SuperTraitName{...}`即可使用SuperTraitName的所有特性。
+
 ## 闭包
 
 ```rust
@@ -1079,12 +1179,51 @@ fn main() {
 
 >如果想让一个复杂运算只执行一次（延迟计算），则可以维护一个结构体，里面含有一个闭包，和一个存储**参数->返回值**的HashMap。
 
-闭包至少实现了下面三个trait中的一个：
-- Fn
-- FnMut
-- FnOnce
+闭包至少实现了下面三个trait中的一个，且实现了前面的之后就必然也实现了所有后面的：
+- Fn: 对定义所在作用域中的变量进行不可变借用。
+- FnMut: 对定义所在作用域中的变量进行可变借用。
+- FnOnce: 用到定义所在作用域中的变量时就夺取所有权（也因此这个闭包只能调用一次）。
 
 一个闭包可以被`struct STName<T> where T: Fn(i32) -> i32 {...}`使用。
+
+在参数列表前使用move关键字，就可以强制获取所使用的所有环境值的所有权。可用于将闭包传递给新线程并把数据都给新线程使用的时候。
+
+## 迭代器
+
+迭代器实现了Iterator trait。需要指定type Item并实现一个next方法。next返回None意味着迭代结束。
+
+```rust
+pub trait Iterator {
+    type Item; //迭代器的返回类型
+    fn next(&mut self) -> Option<Self::Item>; //遍历方法
+    // methods with default implementations elided
+}
+```
+
+- iter: 遍历的时候获取到的都是不可变引用。
+- iter_mut: 遍历的时候获取到的都是可变引用。
+- into_iter: 遍历的时候会获取所有权。
+
+next方法本质是对迭代器的消耗（因为不能遍历第二遍）。
+
+Iterator trait中有一些带默认实现的方法，如果方法实现里面调用了next，就称为**消耗型适配器**，如sum方法。还有些方法将迭代器转化为不同的迭代器，称为**迭代器适配器**，如map方法。
+
+如果next不配调用（或者说没有消耗型适配器被调用）的话，迭代器**不会做任何事**，包括调用的迭代器适配器。
+
+```rust
+let numbers = vec![10, 20, 30, 40, 50];
+
+//enumerate为迭代值标上索引号
+for (index, number) in numbers.iter().enumerate() {
+    println!("Index: {}, Number: {}", index, number);
+}
+```
+
+```rust
+dataList.into_iter().filter(|x| -> x.dataLen < maxLen).collect();
+```
+
+>迭代器会做循环展开优化。
 
 
 
@@ -1268,6 +1407,10 @@ fn main() {
 ```
 
 `*`是通配符，表示“所有”。
+
+### pub use
+
+类似export，可以将某个Path条目以最少层数的Path对外暴露。
 # Cargo
 
 ## 基本命令
@@ -1295,6 +1438,19 @@ lock文件（`Cargo.lock`）在build后生成，表示目前所用的确切版�
 
 调用`cargo update`可以对各进行更新，且只更新小版本号，如0.3.14只会被更新到0.3.23而不是0.4.0。
 
+## 工作空间
+
+有多个crate时，可以在项目根目录创建一个用于聚合的toml，指定各个crate的路径，然后在对应路径中创建对应的crate（cargo new）。
+
+```toml
+[workspace]
+members = [
+    "package1",
+    "package2",
+]
+```
+
+crate之间的依赖需要在crate内的toml的dependencies通过路径指定。
 # 测试
 
 ```rust

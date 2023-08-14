@@ -73,7 +73,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "学习笔记.md",
+                "file": "Shell.md",
                 "mode": "source",
                 "source": false
               }
@@ -154,7 +154,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "学习笔记.md"
+                "file": "Shell.md"
               }
             }
           },
@@ -164,7 +164,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "学习笔记.md",
+                "file": "Shell.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -181,7 +181,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "学习笔记.md",
+                "file": "Shell.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -232,14 +232,17 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "a26e4fb506ca4351",
+  "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "学习笔记.md",
+    "assets/uTools_1692003763707.png",
+    "assets/uTools_1692003020894.png",
+    "算法.md",
     "assets/uTools_1691937556204.png",
     "assets/uTools_1691937208248.png",
     "assets/uTools_1691936024815.png",
     "Rust.md",
     "MIT6.824/lab随想QA.md",
-    "算法.md",
     "MIT6.824/lab3.md",
     "MIT6.824/Lab2.md",
     "MIT6.824/Lab1.md",
@@ -248,7 +251,6 @@
     "MIT6.824/杂项.md",
     "Docker.md",
     "MIT6.824/Debug.md",
-    "学习笔记.md",
     "assets/uTools_1691813186320.png",
     "assets/uTools_1691812931287.png",
     "assets/uTools_1691812867464.png",
@@ -267,9 +269,6 @@
     "MIT6.824/temp.md",
     "MIT6.824/assets/uTools_1690427941963.png",
     "MIT6.824/assets/uTools_1690360831151.png",
-    "MIT6.824/assets/uTools_1690301114574.png",
-    "MIT6.824/assets/uTools_1690300474869.png",
-    "MIT6.824/assets/uTools_1690298799053.png",
     "日语",
     "Web前端/JS.md",
     "third/设计模式/2.剩余四大创建型模式.pdf",

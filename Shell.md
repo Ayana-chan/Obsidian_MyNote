@@ -336,6 +336,13 @@ Host *.mit.edu
 
 有时将一个远端文件夹挂载到本地会比较方便， [sshfs](https://github.com/libfuse/sshfs) 可以将远端服务器上的一个文件夹挂载到本地，然后您就可以使用本地的编辑器了。
 
+### 装载一个ssh密钥
+
+```bash
+ssh-agent -s  
+ssh-add ~/.ssh/id_rsa #id_rsa名字看情况改
+```
+
 # 命令工具常见共同功能
 
 - 大部分工具支持 `--help` 或者类似的标志参数（flag）来显示它们的简略用法。
