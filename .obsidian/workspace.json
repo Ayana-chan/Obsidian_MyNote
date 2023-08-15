@@ -56,19 +56,19 @@
             }
           },
           {
-            "id": "b573e7ad4b3919da",
+            "id": "c16fa75b7c386b8e",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824/lab随想QA.md",
+                "file": "rCore/学习笔记.md",
                 "mode": "source",
                 "source": false
               }
             }
           },
           {
-            "id": "a26e4fb506ca4351",
+            "id": "b573e7ad4b3919da",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -80,7 +80,7 @@
             }
           }
         ],
-        "currentTab": 5
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -154,7 +154,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Shell.md"
+                "file": "Rust.md"
               }
             }
           },
@@ -164,7 +164,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Shell.md",
+                "file": "Rust.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -181,7 +181,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Shell.md",
+                "file": "Rust.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -234,15 +234,19 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
-    "学习笔记.md",
+    "Shell.md",
+    "MIT6.824/lab随想QA.md",
+    "Rust.md",
+    "rCore/学习笔记.md",
+    "rCore/assets/uTools_1692079341325.png",
+    "rCore/assets",
+    "assets/![](assets/uTools_1686765437511.png.md",
+    "算法.md",
     "assets/uTools_1692003763707.png",
     "assets/uTools_1692003020894.png",
-    "算法.md",
     "assets/uTools_1691937556204.png",
     "assets/uTools_1691937208248.png",
     "assets/uTools_1691936024815.png",
-    "Rust.md",
-    "MIT6.824/lab随想QA.md",
     "MIT6.824/lab3.md",
     "MIT6.824/Lab2.md",
     "MIT6.824/Lab1.md",
@@ -256,7 +260,6 @@
     "assets/uTools_1691812867464.png",
     "rCore",
     "Cpp.md",
-    "Shell.md",
     "TODO.md",
     "Vim.md",
     "密码学.md",
@@ -268,9 +271,7 @@
     "日语/学习笔记.md",
     "MIT6.824/temp.md",
     "MIT6.824/assets/uTools_1690427941963.png",
-    "MIT6.824/assets/uTools_1690360831151.png",
     "日语",
-    "Web前端/JS.md",
     "third/设计模式/2.剩余四大创建型模式.pdf",
     "third/设计模式/1.六大设计原则与单例模式.pdf",
     "third/正则表达式.pdf",
@@ -278,7 +279,6 @@
     "Web前端/assets",
     "temp",
     "legacy",
-    "assets/![](assets",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
