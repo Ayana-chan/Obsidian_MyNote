@@ -1188,6 +1188,32 @@ fn main() {
 
 在参数列表前使用move关键字，就可以强制获取所使用的所有环境值的所有权。可用于将闭包传递给新线程并把数据都给新线程使用的时候。
 
+由于闭包是trait，是动态的，无法直接作为变量类型、返回值等，但可以使用`Box<dyn Fn(i32) -> i32)`。
+
+## 函数指针
+
+函数指针类型为`fn(i32)->i32`。其中fn为**类型**而非trait。
+
+函数指针**必然**同时实现了Fn、FnMut、FnOnce三个trait。因此函数指针也能当闭包用。
+
+对一个数组的每一项都做同一件事的时候，我们可以用map然后传入一个闭包，也可以传入一个函数指针，此时遍历到的项会作为参数传入函数：
+```rust
+let list_of_numbers = vec![1, 2, 3];
+let list_of_strings: Vec<String> =
+list_of_numbers.iter().map(|i| i.to_string()).collect();
+let list_of_strings: Vec<String> = list_of_numbers.iter().map(ToString::to_string).collect();
+```
+
+在带数据的枚举中，构造枚举的构造器也是个函数，因此也能传入map：
+```rust
+enum Status {
+	Value(u32),
+	Stop,
+}
+
+//变为Status::Value数组
+let list_of_statuses: Vec<Status> = (0u32..20).map(Status::Value).collect();
+```
 ## 迭代器
 
 迭代器实现了Iterator trait。需要指定type Item并实现一个next方法。next返回None意味着迭代结束。
@@ -1225,7 +1251,71 @@ dataList.into_iter().filter(|x| -> x.dataLen < maxLen).collect();
 
 >迭代器会做循环展开优化。
 
+## 类型别名
 
+```rust
+type newTypeName = i32;
+type Thunk = Box<dyn Fn() + Send + 'static>;
+type Result<T> = Result<T, std::io::Error>;
+type Result<T> = std::io::Result<T>;
+```
+
+## Never类型
+
+`!`即为Never类型，可以被转换为其他任意类型。并不是void，不返回并不是Never。
+
+## 动态大小类型
+
+动态大小类型（DST）只有在运行时才能知道占多少内存空间，且一旦确定就不能再变化。
+
+比如str类型，如果用str类型赋值了长为3的字符串，就不能再用于长为4的字符串。
+
+所有trait都是动态大小类型，要么使用引用来访问，要么放在指针里面。
+
+Sized trait: 要求编译时已知大小的类型都会隐式地实现这个trait。泛型函数都会隐式添加该trait bound，因此泛型函数的实现类型必须是编译时已知大小的，但可以加`?Sized trait`来解除限制。
+
+?Sized trait: 表示T可能是也可能不是确定大小的，可以强制让泛型函数使用动态大小类型。
+
+## 宏 macro
+
+- 使用`macro_rules!`构建的声明宏（declarative macro）（弃用，下面不再讨论）。
+- 三种过程宏，接收并操作输入的rust代码，然后返回新的rust代码：
+	- 自定义`#[derive]`宏，只能用于struct或enum,可以为其指定随derive属性添加的代码。
+	- 类似属性的宏，在任何条日上添加自定义属性。
+	- 类似函数的宏，看起来像函数调用，对其指定为参数的token进行操作。
+
+### derive宏
+
+写出`#[derive(SomeName)]`后，会匹配标注了`#[proc_macro_derive(SomeName)]`的函数，并把`#[derive(SomeName)]`标注的代码段作为输入传入，生成的输出会贴到`#[derive(SomeName)]`所在的地方的下面。
+
+### 类似属性的宏
+
+```rust
+#[route(GET,"/")]
+fn index(){
+	...
+}
+
+#[proc_macro_attribute] 
+pub fn route(attr: TokenStream, item: TokenStream) -> TokenStream {
+	...
+}
+```
+
+和derive一样进行匹配和传参，但会额外传TokenStream,即`GET, "/"`。
+
+### 类似函数的宏
+
+```rust
+let sql = sql!(SELECT * FROM posts WHERE id=1);
+
+#[proc_macro] 
+pub fn sql(input: TokenStream) -> TokenStream {
+	...
+}
+```
+
+把括号里面的字符都传到TokenStream，进行处理。可以看做其参数可无视rust语法限制的函数。
 ## 文档注释
 
 文档注释也分为单行注释和块注释，但又有内外之分：
