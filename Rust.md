@@ -73,6 +73,7 @@ trait: 可视为接口，提供了一些方法，如`rand::Rng`。
 
 变量名、函数名使用snack_case命名规范，其他都是大驼峰。
 
+有些东西在预导入模块（prelude）里，不需要use。
 
 ## shadowing
 
@@ -411,6 +412,19 @@ let p = Point{ x: 1 , y: 3 };
 let Point{ x_num , y_num } = p;
 let Point{ x , y } = p; //解构的变量名和结构体的成员变量名相同的时候可简写
 ```
+
+## 静态变量
+
+```rust
+static MY_STATIC_VA: &str = "Hello World";
+static mut COUNT: u32 = 0;
+```
+
+- 使用SCREAMING_SNAKE_CASE来命名
+- 必须指定类型
+- 存储引用时，生命周期只能是`'static`
+
+即使是可变静态变量，对其的修改也是不安全的，要在unsafe中进行。[Unsafe Rust](Rust.md#Unsafe%20Rust)
 
 
 ## main函数
@@ -1275,6 +1289,130 @@ type Result<T> = std::io::Result<T>;
 Sized trait: 要求编译时已知大小的类型都会隐式地实现这个trait。泛型函数都会隐式添加该trait bound，因此泛型函数的实现类型必须是编译时已知大小的，但可以加`?Sized trait`来解除限制。
 
 ?Sized trait: 表示T可能是也可能不是确定大小的，可以强制让泛型函数使用动态大小类型。
+
+## 智能指针
+
+### `Box<T>`
+
+最简单的智能指针，指向堆上的内存，没有开销或额外功能。
+
+- 编译时无法确定大小，但使用的时候又要求知道大小。
+- 有大量数据要移交所有权，且要保证不能被复制。
+- 使用某个值，只关心其是否实现了某trait，而不关心具体类型。
+
+使用`Box::new(value)`创建Box指针，且会转移所有权。
+
+#### deref trait
+
+deref trait里面有`fn deref(&self) -> &T`。
+
+- 解引用符号`*y`作用于实现了deref trait的类型的时候，会自动变成`*(y.deref())`，即**隐式解引用转化（Deref Coercion）**。
+- 在函数传递的参数类型不匹配的时候，编译器会试图调用deref来进行转换。如`&String`就有可能会转换成`&str`。
+
+- 当`T:Deref<Target=U>`时，允许`&T`或`&mut T`转换为`&U`。
+- 当`T:DerefMut<Target=U>`时，允许`&mut T`转换为`&mut U`。
+
+#### drop trait
+
+drop trait里面有`fn drop(&mut self)`。会在变量离开作用域时自动调用，被当做析构函数。不能直接地显式调用，但可以调用`std::mem::drop(value)`，以提前释放变量（调用drop）。
+
+### `Rc<T>`
+
+引用计数（Reference Count）的智能指针，可共享数据。只能用于单线程。不在预导入模块，在`std::rc::Rc`。
+
+Rc全都是不可变引用，用于共享只读，因为有多个可变引用的话是违背借用规则的。
+
+`Rc::new(value)`创建Rc指针，且会转移所有权。
+
+`Rc::clone(&rc_pointer)`可以复制一个Rc指针，令引用计数器+1。
+
+>`rc_pointer.clone()`似乎完全等价于`Rc::clone(&rc_pointer)`，但语义上有歧义。
+
+`Rc::strong_count(&rc_pointer)`会返回引用计数。
+
+#### `Weak<T>`
+
+为了防止循环引用导致引用计数永远不为0、因此出现内存泄漏的情况，可以使用`Rc::downgrade(&rc_pointer)`来创建弱引用的智能指针`Weak<T>`，并使弱引用计数+1。
+
+`Rc::weak_count(&rc_pointer)`会返回弱引用计数。
+
+**弱引用计数不为0也不影响数据清理**，当强引用计数为0的时候，弱引用会自动断开。
+
+弱引用有方法`weak_pointer.upgrade`方法，返回`Option<Rc<T>>`，以检测数据是否被清理了，若没有被清理则返回强引用。
+
+### `RefCell<T>`
+
+
+RefCell指针支持可变引用和不可变引用，而其安全检查在运行时；拥有数据的所有权，不共享。不在预导入模块，在`std::cell::RefCell`。即使是不可变引用，也能修改其值。
+
+>**内部可变性（interior mutability）** 允许在持有不可变引用的情况下修改数据。即可变地借用一个不可变的值。
+
+方法（安全接口）：
+- `borrow()`: 返回`Ref<T>`（不可变），实现了deref。
+- `borrow_mut()`: 返回`RefMut<T>`（可变），实现了deref。
+
+会**分别**对borrow出的Ref和RefMut进行引用计数，以此保证**运行时**满足**借用规则**（只有多个不可变借用，或只有一个可变借用）。
+
+使用`Rc<RefCell<T>>`可以使得数据可以被多方共享且能修改。
+
+### `Cell<T>`
+
+通过复制而非借用来访问数据，有内部可变性。
+
+### `Mutex<T>`
+
+用于实现跨线程情形下的内部可变性模式，有内部可变性。
+
+## Unsafe Rust
+
+被unsafe修饰的代码块允许：
+- 解引用原始指针（raw pointer）
+- 调用unsafe函数或方法
+- 访问或修改可变的静态变量
+- 实现unsafe trait
+
+### 原始指针
+
+原始指针：
+- 可变：`*mut T`
+- 不可变：`*const T` （不能通过它对其所指的数据赋值）
+
+目的：
+- 与C语言进行接口
+- 构建借用检查器无法理解的安全抽象
+
+可变指针不算引用，因此可变不可变**不受借用规则约束**，也因此打破了借用规则（但直接用引用的话依旧无法打破）。
+
+可能空指针、野指针，也不自动释放。
+
+在安全代码块里面也能定义原始指针，但禁止解引用。
+
+```rust
+let mut num = 5;
+let r1 = &num as *const i32;
+
+let address = 0x012345usize;
+let r2 = &num as *mut i32;
+
+let slice: &mut [i32] = ...;
+let r3 = slice.as_mut_ptr();
+```
+
+### 安全抽象
+
+在安全的函数里面可以使用unsafe代码块，因此要在unsafe代码块的外面确保unsafe是safe的。这个必须人为保证。
+
+### unsafe trait
+
+定义trait的时候加上unsafe，则它只能在unsafe的代码块中实现，一般直接`unsafe impl`。
+
+## extern
+
+extern简化创建和使用外部函数接口（FFI，foreign function interface）的过程。
+
+使用类似`extern "C"{...}`可以调用其他语言的函数；`"C"`就是ABI（application binary interface），通过指定汇编规则来指定语言。extern代码块里的所有东西都是unsafe的。
+
+在fn前加上`extern "C"`即可创建接口供其它语言调用。添加`#[no_mangle]`注解可以防止编译期间发生名称更改。
 
 ## 宏 macro
 
