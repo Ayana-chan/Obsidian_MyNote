@@ -1507,6 +1507,14 @@ let random_number: u32 = rng.gen_range(0,5); //生成[0,5)的随机数
 println!("random_num: {}", random_number);  
 ```
 
+## 多个char拼接字符串
+
+```rust
+let chars = vec!['H', 'e', 'l', 'l', 'o'];
+let string: String = chars.into_iter().collect();
+```
+
+不要使用String的push，因为String每次push都会重新分配内存，而vector的容量是指数倍增长的，重新分配的次数少。
 # 模块系统
 
 按层级从高到低为：
@@ -1547,6 +1555,8 @@ binary crate可视为独立运行，无法共享功能给其他crate，也就无
 Module在一个Crate内将代码进行分组，增加可读性，同时控制项目（item）的私有性（private，public）。
 
 Module可以嵌套，包含子Module。
+
+子mod默认无法被上级发现，若想暴露需要使用`pub mod`。
 
 使用mod关键字来定义模块：
 
