@@ -54,6 +54,16 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "d71c649e38bcc579",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "third/设计模式/2.剩余四大创建型模式.pdf"
+              }
+            }
           }
         ],
         "currentTab": 3
@@ -210,10 +220,12 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "third/设计模式/2.剩余四大创建型模式.pdf",
+    "third/设计模式/1.六大设计原则与单例模式.pdf",
+    "Rust.md",
     "MIT6.824/lab3.md",
     "算法.md",
     "Cpp.md",
-    "Rust.md",
     "MIT6.824/lab随想QA.md",
     "rCore/学习笔记.md",
     "Shell.md",
@@ -248,8 +260,6 @@
     "MIT6.824/temp.md",
     "MIT6.824/assets/uTools_1690427941963.png",
     "日语",
-    "third/设计模式/2.剩余四大创建型模式.pdf",
-    "third/设计模式/1.六大设计原则与单例模式.pdf",
     "third/正则表达式.pdf",
     "数学",
     "Web前端/assets",

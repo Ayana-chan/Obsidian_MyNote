@@ -723,6 +723,7 @@ String是Byte的集合，采用UTF-8编码，是在标准库中的。本质是�
 ```rust
 let mut str = String::from("abc");
 str.push_str("def");
+let mut str1 = "abc1".parse().unwrap();
 ```
 
 函数参数如果是字符串的话，最好使用`&str`类型来表示参数，即强制要求传切片。这使得在传参为切片的时候可以直接调用，传参为String的时候则要求创建完整切片（Rust会自动转换）后传入，更加通用了。这也可以使得字符串传参没有任何的副作用。
@@ -1005,7 +1006,24 @@ fn main() {
 
 如果一个方法来自于trait，则使用的时候必须保证当前作用域里面有此trait。
 
-可以在某个type上实现某个trait的前提条件是：这个type **或** 这个trait 是**本crate**里定义的。也就是说，无法为外部的类型定义外部的trait。这样可以保证不会出现两个crate分别给同一个struct实现同一个trait的情况。即**孤儿规则（Orphan Rule）**，防止trait的实现是个孤儿（既不属于定义trait的crate，也不属于定义type的crate）。
+可以在某个type上实现某个trait的前提条件是：这个type **或** 这个trait 是**本crate**里定义的。也就是说，无法为外部的类型定义外部的trait。这样可以保证不会出现两个crate分别给同一个struct实现同一个trait的情况。即**孤儿规则（Orphan Rule）**，防止trait的实现是个孤儿（既不属于定义trait的crate，也不属于定义type的crate）。但也因此可能无法做到为某些外部结构体实现Debug、Display，再套一层结构体即可解决：
+
+```rust
+use std::fmt;
+
+struct Wrapper(Vec<String>);
+
+impl fmt::Display for Wrapper {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{}]", self.0.join(", "))
+    }
+}
+
+fn main() {
+    let w = Wrapper(vec![String::from("hello"), String::from("world")]);
+    println!("w = {}", w);
+}
+```
 
 ### trait作为函数参数
 
@@ -1032,6 +1050,11 @@ impl Animal for Cat {
 }  
 
 //impl trait 写法 （是trait bound 写法的语法糖）
+fn make_animal_speak1(animal: &impl Animal) {  
+    animal.speak();  
+}  
+
+//dyn trait 写法（动态分发）
 fn make_animal_speak1(animal: &impl Animal) {  
     animal.speak();  
 }  
@@ -1168,6 +1191,14 @@ Animal::baby_name(); //Error: 无法确认到底调用哪个函数
 
 即trait的继承，`trait TraitName: SuperTraitName{...}`即可使用SuperTraitName的所有特性。
 
+
+## 动态分发与静态分发
+
+- 动态分发: dyn trait，运行时调用对应实现的方法。
+- 静态分发: impl trait，会在编译期单态化，因此并不能同时适配多种类型，如作为函数返回值类型的之后返回两种类型。
+
+智能指针`Box<TraitName>`逻辑上没问题，但已被弃用，应当使用`Box<dyn TraitName>`。
+
 ## 闭包
 
 ```rust
@@ -1202,7 +1233,7 @@ fn main() {
 
 在参数列表前使用move关键字，就可以强制获取所使用的所有环境值的所有权。可用于将闭包传递给新线程并把数据都给新线程使用的时候。
 
-由于闭包是trait，是动态的，无法直接作为变量类型、返回值等，但可以使用`Box<dyn Fn(i32) -> i32)`。
+由于闭包是trait，是动态的，无法直接作为变量类型、返回值等，但可以使用`Box<dyn Fn(i32) -> i32>`。
 
 ## 函数指针
 
@@ -1351,9 +1382,11 @@ RefCell指针支持可变引用和不可变引用，而其安全检查在运行�
 - `borrow()`: 返回`Ref<T>`（不可变），实现了deref。
 - `borrow_mut()`: 返回`RefMut<T>`（可变），实现了deref。
 
+>因为实现了deref，因此borrow到了之后解引用即可直接使用。
+
 会**分别**对borrow出的Ref和RefMut进行引用计数，以此保证**运行时**满足**借用规则**（只有多个不可变借用，或只有一个可变借用）。
 
-使用`Rc<RefCell<T>>`可以使得数据可以被多方共享且能修改。
+使用`Rc<RefCell<T>>`可以使得数据可以被多方共享且能修改，只要保证读写完之后引用的`RefCell<T>`马上消失即可。
 
 ### Cell\<T\>
 
@@ -1515,6 +1548,16 @@ let string: String = chars.into_iter().collect();
 ```
 
 不要使用String的push，因为String每次push都会重新分配内存，而vector的容量是指数倍增长的，重新分配的次数少。
+
+## 函数传递多个参数
+
+```rust
+fn func(&[i32]){...}
+
+fn main(){
+	func(&[2,3,4]);
+}
+```
 # 模块系统
 
 按层级从高到低为：
