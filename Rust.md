@@ -858,7 +858,7 @@ Rust没有异常系统。
 - 可恢复错误: `Result<T,E>`
 - 不可恢复错误: `panic!`宏
 
-### 不可恢复错误
+### 不可恢复错误 Panic
 
 panic发生时，默认会**展开（unwind）** 调用栈，往回走，把遇到的所有函数的数据都给清理掉。可以选择不展开，而是**中止（abort）**，不清理而直接停止程序，由操作系统回收内存。中止也可以让二进制文件更小。
 
@@ -876,7 +876,7 @@ set RUST_BACKTRACE=1 && cargo run
 RUST_BACKTRACE=1 cargo run
 ```
 
-### 可恢复错误
+### 可恢复错误 Result
 
 ```rust
 enum Result<T,E> {
@@ -885,6 +885,7 @@ enum Result<T,E> {
 }
 ```
 
+可以把T或E写成`()`表示不关心该返回值。
 #### 错误处理
 
 可以提取出Err的参数热然后调用kind()以进一步match错误类型：
@@ -1371,6 +1372,21 @@ Rc全都是不可变引用，用于共享只读，因为有多个可变引用的
 
 弱引用有方法`weak_pointer.upgrade()`，返回`Option<Rc<T>>`，以检测数据是否被清理了，若没有被清理则返回强引用。
 
+```rust
+fn main() {
+    let strong = Rc::new("Hello, world!".to_string());
+    let weak = Rc::downgrade(&strong);
+
+    if let Some(weak_ref) = Weak::upgrade(&weak) {
+        // 强引用还存在，可以安全地访问
+        println!("Strong: {}", *weak_ref);
+    } else {
+        // 强引用已断开
+        println!("Strong reference has been dropped.");
+    }
+}
+```
+
 ### RefCell\<T\>
 
 
@@ -1558,6 +1574,15 @@ fn main(){
 	func(&[2,3,4]);
 }
 ```
+
+## 引用存活时间意外被延长
+
+`match xxx {...}` 在`xxx`处的返回结果不会发生拷贝，导致里面的某些引用被延长到match结束。因此复杂的`xxx`取值最好在外面赋给一个变量然后再match。在if等语句中应该都会出现。
+
+## 将结构体的成员变量Move出来
+
+有时候一个结构体要销毁了，但它的成员变量还有用，又不好使用智能指针时，可以考虑将其类型设为`Option<T>`，要Move走时就进行`obj.variable_name.take().unwrap()`将`T`取出。
+
 # 模块系统
 
 按层级从高到低为：
