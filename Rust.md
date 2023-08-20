@@ -1581,7 +1581,7 @@ fn main(){
 
 ## 将结构体的成员变量Move出来
 
-有时候一个结构体要销毁了，但它的成员变量还有用，又不好使用智能指针时，可以考虑将其类型设为`Option<T>`，要Move走时就进行`obj.variable_name.take().unwrap()`将`T`取出。
+有时候一个结构体要销毁了，但它的成员变量还有用，又不好使用智能指针，也不应当clone时，可以考虑将其类型设为`Option<T>`，要Move走时就进行`obj.variable_name.take().unwrap()`将`T`取出。
 
 # 模块系统
 
