@@ -7,6 +7,8 @@ Clion中，安装Rust插件，进行如下配置：
 - Toolchain Location: `...\.rustup\toolchains\stable-x86_64-pc-windows-gnu\bin`
 - Standard Library: `...\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\src\rust`
 
+>这里不知道什么时候可以自动填入了，且toolchain路径为`...\.cargo\bin`。可能是因为我下了且在用nightly版本。
+
 如果Standard Library找不到的话，运行下方命令即可：
 ```bash
 rustup component add rust-src --toolchain stable-x86_64-pc-windows-gnu
