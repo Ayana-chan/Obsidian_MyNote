@@ -77,6 +77,8 @@ trait: 可视为接口，提供了一些方法，如`rand::Rng`。
 
 有些东西在预导入模块（prelude）里，不需要use。
 
+T代表所有类型，包括&T和&mut T；而&T和&mut T完全没有交集。
+
 ## shadowing
 
 rust允许定义同名的新变量来shadow（隐藏）旧变量，常用于类型转换。新旧的变量的类型可以完全不同，也可以都是不可变变量。
@@ -620,6 +622,210 @@ fn main() {
 ## 静态生命周期
 
 `'static`是特殊的生命周期，表示整个程序的运行时间。如所有字符串字面值都有此生命周期。
+
+`<T: 'static>`让T成为`'static`的子类，只有当T为引用的时候才要求必须是`'static`，否则是有所有权的变量的话不做任何要求。
+
+## 型变
+
+[Subtyping and Variance - The Rust Reference](https://doc.rust-lang.org/stable/reference/subtyping.html)
+
+目的：让子可以完全处理父。
+
+若有一个类型构造器`Foo(Class)`，以类型为参数来产生另一个类型。设A是B的父类。
+1. 若`Foo(A)`与`Foo(B)`*无关*，则称为**不变（invariant）**
+2. 若`Foo(A)`是`Foo(B)`的*父类*，则称为**协变（covariant）**
+3. 若`Foo(A)`是`Foo(B)`的*子类*，则称为**逆变（contra-variant）**
+
+原文：
+- `F<T>` is _covariant_ over `T` if `T` being a subtype of `U` implies that `F<T>` is a subtype of `F<U>` (subtyping "passes through")
+- `F<T>` is _contravariant_ over `T` if `T` being a subtype of `U` implies that `F<U>` is a subtype of `F<T>`
+- `F<T>` is _invariant_ over `T` otherwise (no subtyping relation can be derived)
+
+>不变实际上是要求A和B必须完全相同才能在转化后兼容。
+
+若A 是B的父类，B是C的父类，则`fn A => C`是`fn B => B`的父类，因为参数为A的函数必然能处理参数B，而返回值为C的函数必然也能返回B（即`fn A => C`无论是入参还是返回值都可以直接在外部视为`fn B => B`）。因此fn类型对参数类型是逆变的，对返回值类型是协变的。
+
+|Type|Variance in `'a`|Variance in `T`|
+|---|---|---|
+|`&'a T`|covariant|covariant|
+|`&'a mut T`|covariant|invariant|
+|`*const T`||covariant|
+|`*mut T`||invariant|
+|`[T]` and `[T; n]`||covariant|
+|`fn() -> T`||covariant|
+|`fn(T) -> ()`||**contravariant**|
+|`std::cell::UnsafeCell<T>`||invariant|
+|`std::marker::PhantomData<T>`||covariant|
+|`dyn Trait<T> + 'a`|covariant|invariant|
+
+可见只有函数参数是逆变的；涉及可变的类型（而非生命周期）基本都是不变；剩下都是协变。
+
+如果T不变，但T形如`TypeName<X>`，则X也不变。
+
+```rust
+struct Bar<'r>{
+	_phantom: PhantomData<fn(&'r ())>, //逆变套协变=逆变
+}
+fn bar<'short, 'long: 'short>(
+	mut short_bar: Bar<'short>,
+	mut long_bar: Bar<'long>)
+{
+	//short_bar=long_bar; //编译不通过
+	long_bar=short_bar; //编译通过
+}
+
+//如果两个参数都改成mut short_bar: &mut Bar<'short>，就会导致short_bar和long_bar互相都不能赋值
+```
+
+下面是一个比较典型的例子：
+
+```rust
+struct Manager<'val>{  
+    text: &'val str,
+}
+
+//不好的写法，因为&'a是协变，但<'a>是不变，因此Interface<'a>是不变
+//这导致此结构体没有子类型，无法使其生命周期短于Manager<'a>
+//struct Interface<'a>
+//	manager: &'a mut Manager<'a>
+//}
+
+//好的写法，解耦使'r保持协变，可以让Interface提前消亡而不影响Manager
+struct Interface<'r, 'val>{
+	manager: &'r mut Manager<'val> //隐式定义'val: 'r
+}
+
+//这种解耦可以有效防止出现过长的、不可测的借用
+//因此生命周期标注可以看做是缩短、切割、独立而不是延长、接续、衔接
+struct List<'val>{
+	manager: Manager<'val>,
+}
+
+impl<'val> List<'val>{
+	//解耦了：1.该方法对self的借用；2.self本身（所有权变量）的生命周期
+	//相当于要求这个借用一直持续到Interface消亡（由于'val: 'r所以不用管'val）
+	pub fn get_interface<'r>(&'r mut self) -> Interface<'r, 'val> {
+		Interface{
+			manager: &mut self.manager,
+		}
+	}
+
+	//也可以省略'r，让编译器自己推断
+	pub fn get_interface_2(&mut self) -> Interface<'_, 'val> {  
+	    Interface{  
+	        manager: &mut self.manager,  
+	    }  
+	}
+}
+
+fn main(){  
+    let mut list = List{  
+        manager: Manager{  
+            text: "abc",  
+        }  
+    };  
+  
+    let i1 = list.get_interface();  
+    println!("1: {}",i1.manager.text);  
+    let i2 = list.get_interface();  
+    println!("2: {}",i2.manager.text);  
+    
+    //然而下面这个是过不了的，因为i1这个interface还没消亡，因此对list的借用没结束
+	//let i1 = list.get_interface();  
+    //let i2 = list.get_interface();
+    //println!("1: {}",i1.manager.text);  
+    //println!("2: {}",i2.manager.text);
+}
+```
+
+## reborrow
+
+>&T实现了Copy，但&mut T没有
+
+下面的代码中，`let y: &mut i32 = x;`并不会发生Move，而是等价于`let y: &mut i32 = &mut *x;`，将x解引用后再次创建可变引用，即reborrow。当y消亡后，x又可以继续使用。如果提前使用x，就会提示x已经被借用了；也就是说，reborrow相当于对引用进行一次借用。
+
+```rust
+fn main(){
+	let mut i = 42;
+	let x = &mut i;
+	let y: &mut i32 = x;
+	//y对x重引用后，y成为了i的唯一可变引用
+	*y=43;
+	println!("y {}",*y);
+	//此处y消亡，x重新变成i的唯一可变引用
+	*x=44;
+	println!("x {}",*x);
+}
+```
+
+实际上，将一个可变引用传参到`func_name(val_name: &mut T)`也是一次重引用。
+
+## 对引用的引用
+
+`&'b &'a StructName`即为`&'b (&'a StructName)`。解引用时先把`'b`给解了。
+
+`&'b &'a StructName`=>`'a: 'b`，因为`&'a StructName`作为一个`&T`收到了`'b &T'`的制约，因此`'a`不得短于`'b`。
+
+`*rb`产生`'c`，`'c: 'b`，因为`'c`是`&'b &'a`解引用出来的，因此`&'b &'c`也要合法。
+
+>可以简单记忆成*返回`'a`和`'b`中生命周期短的那个*。
+
+```rust
+//返回为&'b时，参数无论怎样mut都是合法的，证略
+//返回的'b并不是指'b层的引用，而是返回的'c: 'b，因此返回'b必然合法
+fn func_name<'b, 'a>(rb: &'b &'a StructName) -> &'b StructName {
+	*rb
+}
+
+//返回为&'b mut时，仅当参数为&'b mut &'a mut时才是合法的，实际上是进行一次reborrow
+//&'b &'a mut是不行的，因为&'b不可变，可以拷贝多份，因此显然不能随意拿出它里面的可变引用
+fn func_name<'b, 'a>(rb: &'b mut &'a mut StructName) -> &'b mut StructName {
+	*rb
+}
+
+//返回为&'a时，参数只能是&'b &'a或&'b mut &'a，即要求参数的&'a不能是mut，以进行copy
+fn func_name<'b, 'a>(rb: &'b mut &'a StructName) -> &'a StructName {
+	*rb
+}
+
+//返回为&'a时，参数是什么都不行，只有如下情况可以使用
+fn func_name<'b: 'a, 'a>(rb: &'b mut &'a mut StructName) -> &'a StructName {
+	*rb
+}
+```
+
+## 延长函数内新变量的生命周期
+
+涉及到高阶trait绑定。
+
+下面这段代码无法通过编译，因为如果在函数上定义了`'a`，则`'a`默认比函数体要长，因此不接纳zero。
+
+```rust
+fn call_on_ref_zero<'a, F>(f: F)
+where
+	F: Fn(&'a i32),
+{
+	let zero = 0;
+	f(&zero);
+}
+```
+
+将代码改成如下形式即可：
+
+```rust
+fn call_on_ref_zero<F>(f: F)
+where
+	F: for <'a> Fn(&'a i32), //表示类型参数F可以接纳任意的'a
+	//F: Fn(&'a i32) 也可以直接这样写，因为Fn本身就是高阶的生命周期绑定。
+{
+	//zero的生命周期依然只有这两行
+	let zero = 0;
+	f(&zero);
+}
+```
+
+
+
 # 库与语法
 
 ## expect
