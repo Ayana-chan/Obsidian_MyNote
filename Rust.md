@@ -1770,6 +1770,73 @@ pub fn sql(input: TokenStream) -> TokenStream {
 
 另外，在文档注释中可以使用 Markdown 语法。
 
+## 并发编程
+
+Rust标准库只提供1:1模型，即通过调用OS API来创建线程，有较小的运行时（宿主环境），可以方便与C交互。
+
+使用`std::thread::spawn`传入一个闭包即可创建一个新线程，返回值为一个handle，对handle调用join即可阻塞直到其完成。
+
+```rust
+use std::thread;
+use std::time::Duration;
+
+fn main() {
+    let handle = thread::spawn(|| {
+        for i in 1..10 {
+            println!("hi number {} from the spawned thread!", i);
+            thread::sleep(Duration::from_millis(1));
+        }
+    });
+
+    for i in 1..5 {
+        println!("hi number {} from the main thread!", i);
+        thread::sleep(Duration::from_millis(1));
+    }
+
+    handle.join().unwrap();
+}
+```
+
+### move闭包
+
+如果线程需要获得某个变量的所有权，则在闭包前面加上`move`。这样的话，直到该线程结束之前，其他线程都不能使用此变量。
+
+```rust
+fn main() {
+    let v = vec![1, 2, 3];
+
+    let handle = thread::spawn(move || {
+        println!("Here's a vector: {:?}", v);
+    });
+
+    handle.join().unwrap();
+}
+```
+
+### channel
+
+使用`std::sync::mpsc::channel()`即可创建一个channel，返回元组`(发送端tx,接收端rx)`。
+
+>mpsc = mutiple producer, single consumer
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+
+fn main() {
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(move || {
+        let val = String::from("hi");
+        tx.send(val).unwrap();
+    });
+
+    let received = rx.recv().unwrap();
+    println!("Got: {}", received);
+}
+```
+
+使用`try_recv()`方法即可不阻塞地尝试接收一次，如果接收失败则返回Err。
 # 问题、技巧、解决方案
 
 ## 完整地打印到输出
