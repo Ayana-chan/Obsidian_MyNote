@@ -1,6 +1,7 @@
 
 # 基础知识
 
+
 ## 主要路径意义
 
 [文件系统，层次结构标准（Filesystem, Hierarchy Standard）](https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard)
@@ -19,6 +20,25 @@
     - `/usr/sbin` - 非必须的系统二进制文件，通常是由root运行的
     - `/usr/local/bin` - 用户编译程序的二进制文件
 - `/var` -变量文件 像日志或缓存
+
+## 设备
+
+在Linux系统中，每个设备都被当成一个文件来对待，放在`/dev/`中。
+
+|设备|设备在Linux内的文件名|
+|---|---|
+|SCSI/SATA/USB硬盘机|/dev/sd[a-p]|
+|USB闪存盘|/dev/sd[a-p] （与SATA相同）|
+|VirtI/O界面|/dev/vd[a-p] （用于虚拟机内）|
+|软盘机|/dev/fd[0-7]|
+|打印机|/dev/lp[0-2] （25针打印机） /dev/usb/lp[0-15] （USB 接口）|
+|鼠标|/dev/input/mouse[0-15] （通用） /dev/psaux （PS/2界面） /dev/mouse （当前鼠标）|
+|CDROM/DVDROM|/dev/scd[0-1] （通用） /dev/sr[0-1] （通用，CentOS 较常见） /dev/cdrom （当前 CDROM）|
+|磁带机|/dev/ht0 （IDE 界面） /dev/st0 （SATA/SCSI界面） /dev/tape （当前磁带）|
+|IDE硬盘机|/dev/hd[a-d] （旧式系统才有）|
+
+
+磁盘分区后，会在对应文件名后面加数字（1、2、...）。
 ## 权限
 
 - r: read查看
@@ -29,6 +49,13 @@
 
 
 # 指令
+
+- 文件管理 - `cd`, `pwd`, `mkdir`, `rmdir`, `ls`, `cp`, `rm`, `mv`, `tar`
+- 文件检索 - `cat`, `more`, `less`, `head`, `tail`, `file`, `find`
+- 输入输出控制 - 重定向, 管道, `tee`, `xargs`
+- 文本处理 - `vim`, `grep`, `awk`, `sed`, `sort`, `wc`, `uniq`, `cut`, `tr`
+- 正则表达式
+- 系统监控 - `jobs`, `ps`, `top`, `kill`, `free`, `dmesg`, `lsof`
 
 ### ls
 
@@ -50,17 +77,19 @@
 
 `touch {1..10}.html`会创建`1.html`~`10.html`十个文件。
 
-### cat
-
-参数为目标文件，会将目标文件内容写到标准输出。
-
 ### echo 
 
 参数为自定义内容，会将内容写到标准输出。
 
+通常用于打印环境变量。
+
+### cat
+
+参数为目标文件，会将目标文件内容写到标准输出。
+
 ### tee 
 
-参数为目标，会将输入（一般被管道赋予）写到目标。
+参数为目标文件，会将输入（一般被管道赋予）写到目标。
 
 `echo 3 | sudo tee brightness`将3写入到brightness文件。
 
@@ -154,6 +183,62 @@ SH:BJ:HZ
 ```bash
 xxx | paste -sd+ | bc -l
 ```
+
+## cheat sheet
+
+```bash
+#查询所有被include过的头文件
+find . -name "*.[ch]" | xargs grep "#include" | sort | uniq
+```
+
+# make
+
+`make`是最常用的**构建系统**之一。
+
+`make -j?`可以自动获取CPU核数进行并发编译。
+
+执行`make`时，它会去参考当前目录下名为`Makefile`的文件。所有构建目标、相关依赖和规则都需要在该文件中定义，它看上去是这样的：
+
+```makefile
+paper.pdf: paper.tex plot-data.png
+	pdflatex paper.tex
+
+plot-%.png: %.dat plot.py
+	./plot.py -i $*.dat -o $@
+```
+
+冒号左侧的是**构建目标**，冒号右侧的是构建它所需的**依赖**。缩进的部分是从依赖构建目标时需要用到的一段**程序**。
+
+若`make`不带参数，则默认构建第一条。以目标名为参数就可以构建该目标：`make plot-data.png`。
+
+规则中的 `%` 是一种模式，它会匹配其左右两侧相同的字符串。例如，如果目标是 `plot-foo.png`， `make` 会去寻找 `foo.dat` 和 `plot.py` 作为依赖。
+
+make会以目标为单位检查之前的构建是否因其依赖改变而需要被更新。如果一个目标的依赖都没变，则不会对该目标做任何事。
+
+```
+$#  是传给脚本的参数个数
+$ 0 是脚本本身的名字
+$ 1 是传递给该shell脚本的第一个参数
+$ 2 是传递给该shell的脚本的第二哥参数
+$@  是传给脚本的所有参数的列表，代表目标文件（target）
+$*  是以一个单字符串显示所有向脚本传递的参数，与位置变量不同，参数可超过9个
+$$  是脚本运行的当前进程ID号
+$?  是显示最后命令的退出状态，0表示没有错误，其他表示有错误
+@   这个符串通常用在“规则”行中，表示不显示命令本身，而只显示它的结果
+ 
+$^ 代表所有的依赖文件（components）
+```
+# 工具
+
+## tmux
+
+tmux是终端复用器，使得窗口与会话分离。
+
+[Tmux 使用教程](http://www.ruanyifeng.com/blog/2019/10/tmux.html)
+
+## ccache
+
+`make clean`重新编译、且源文件不变时，ccache能把之前编译的结果给直接挪过来。
 
 # 杂项
 
