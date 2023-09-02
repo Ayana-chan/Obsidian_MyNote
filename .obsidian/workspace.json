@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Cpp.md",
+                "file": "Vim.md",
                 "mode": "source",
                 "source": false
               }
@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Shell.md"
+                "file": "笔记.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Shell.md",
+                "file": "笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Shell.md",
+                "file": "笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -220,8 +220,10 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "b4b03788dce9a39c",
   "lastOpenFiles": [
+    "Vim.md",
+    "Cpp.md",
     "Linux.md",
     "笔记.md",
     "Git.md",
@@ -233,7 +235,6 @@
     "MIT6.824/课堂笔记.md",
     "MIT6.824/lab3.md",
     "文档.md",
-    "Cpp.md",
     "third/设计模式/2.剩余四大创建型模式.pdf",
     "third/设计模式/1.六大设计原则与单例模式.pdf",
     "MIT6.824/lab随想QA.md",
@@ -258,7 +259,6 @@
     "assets/uTools_1691812867464.png",
     "rCore",
     "TODO.md",
-    "Vim.md",
     "密码学.md",
     "Golang.md",
     "日语/学习笔记.md",
