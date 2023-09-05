@@ -95,6 +95,7 @@ operator *number* motion
 
 - 用 `:sp` / `:vsp` 来分割窗口
 - 同一个缓存可以在多个窗口中显示。
+- 使用`Ctrl+w w`可以切换窗口
 
 ### 宏
 
