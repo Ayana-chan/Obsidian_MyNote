@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Vim.md",
+                "file": "算法.md",
                 "mode": "source",
                 "source": false
               }
@@ -67,7 +67,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -141,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "杂记.md"
+                "file": "算法.md"
               }
             }
           },
@@ -151,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "杂记.md",
+                "file": "算法.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -168,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "杂记.md",
+                "file": "算法.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -219,8 +220,10 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e771fe0f2cb989d4",
+  "active": "417908cd7e14a3de",
   "lastOpenFiles": [
+    "Vim.md",
+    "杂记.md",
     "算法.md",
     "TODO.md",
     "Shell.md",
@@ -232,7 +235,6 @@
     "Web后端/OSS.md",
     "Web后端/Mybatis-Plus.md",
     "Linux.md",
-    "Vim.md",
     "Cpp.md",
     "Git.md",
     "pa",
@@ -256,7 +258,6 @@
     "MIT6.824/Lab2.md",
     "MIT6.824/Lab1.md",
     "MIT6.824/lab4.md",
-    "杂记.md",
     "assets/uTools_1691813186320.png",
     "assets/uTools_1691812931287.png",
     "assets/uTools_1691812867464.png",
