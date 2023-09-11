@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "杂记.md",
+                "file": "算法.md",
                 "mode": "source",
                 "source": false
               }
@@ -23,11 +23,9 @@
             "id": "173af0fcea462ae7",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "kanban",
               "state": {
-                "file": "pa/笔记.md",
-                "mode": "source",
-                "source": false
+                "file": "TODO.md"
               }
             }
           },
@@ -67,8 +65,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -142,7 +139,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "pa/笔记.md"
+                "file": "算法.md"
               }
             }
           },
@@ -152,7 +149,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "pa/笔记.md",
+                "file": "算法.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +166,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "pa/笔记.md",
+                "file": "算法.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -220,11 +217,12 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "11c372a1f8696678",
+  "active": "e771fe0f2cb989d4",
   "lastOpenFiles": [
-    "密码学.md",
     "杂记.md",
     "TODO.md",
+    "pa/笔记.md",
+    "密码学.md",
     "Temp.md",
     "Web前端/vue3.md",
     "Web前端/css.md",
@@ -240,7 +238,6 @@
     "算法.md",
     "Vim.md",
     "Shell.md",
-    "pa/笔记.md",
     "Web后端/Mybatis-Plus.md",
     "Linux.md",
     "Cpp.md",

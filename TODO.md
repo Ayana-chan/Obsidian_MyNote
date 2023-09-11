@@ -12,6 +12,7 @@ kanban-plugin: basic
 - [ ] docker file & compose
 - [ ] Zizekism & Maoism
 - [ ] Cpp
+- [ ] GC
 
 
 ## 备忘录
