@@ -232,6 +232,8 @@
   },
   "active": "b4b03788dce9a39c",
   "lastOpenFiles": [
+    "pa/assets/uTools_1694872112737.png",
+    "pa/assets",
     "Vim.md",
     "算法.md",
     "pa/笔记.md",
@@ -258,7 +260,6 @@
     "pa",
     "Rust.md",
     "Make.md",
-    "MIT6.824/课堂笔记.md",
     "third/设计模式/2.剩余四大创建型模式.pdf",
     "third/设计模式/1.六大设计原则与单例模式.pdf",
     "rCore/assets/uTools_1692079341325.png",
@@ -277,7 +278,6 @@
     "third/正则表达式.pdf",
     "数学",
     "Web前端/assets",
-    "temp",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
