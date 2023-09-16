@@ -15,6 +15,9 @@
 
 operator *number* motion
 
+## 当前记忆区
+
+` =G` 或者` =num`可以格式化下面的所有行或指定行数。
 ## 基础
 ### 移动 motion
 
