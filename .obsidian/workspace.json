@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Shell.md",
+                "file": "Cpp.md",
                 "mode": "source",
                 "source": false
               }
@@ -232,12 +232,13 @@
   },
   "active": "b4b03788dce9a39c",
   "lastOpenFiles": [
+    "算法.md",
+    "Cpp.md",
+    "Shell.md",
+    "pa/笔记.md",
     "pa/assets/uTools_1694872112737.png",
     "pa/assets",
     "Vim.md",
-    "算法.md",
-    "pa/笔记.md",
-    "Cpp.md",
     "TODO.md",
     "杂记.md",
     "密码学.md",
@@ -253,7 +254,6 @@
     "Web后端/SpringBoot.md",
     "Web后端/Java.md",
     "Web后端/Maven.md",
-    "Shell.md",
     "Web后端/Mybatis-Plus.md",
     "Linux.md",
     "Git.md",
@@ -273,7 +273,6 @@
     "assets/uTools_1691812931287.png",
     "assets/uTools_1691812867464.png",
     "rCore",
-    "MIT6.824/assets/uTools_1690427941963.png",
     "日语",
     "third/正则表达式.pdf",
     "数学",
