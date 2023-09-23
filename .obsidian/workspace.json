@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "算法.md",
+                "file": "日语/学习笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Cpp.md",
+                "file": "Rust.md",
                 "mode": "source",
                 "source": false
               }
@@ -231,15 +231,17 @@
   },
   "active": "b4b03788dce9a39c",
   "lastOpenFiles": [
-    "Cpp.md",
+    "Vim.md",
+    "日语/学习笔记.md",
     "pa/笔记.md",
-    "Linux.md",
+    "Rust.md",
+    "Cpp.md",
     "算法.md",
+    "Linux.md",
     "Makefile.md",
     "Shell.md",
     "pa/assets/uTools_1694872112737.png",
     "pa/assets",
-    "Vim.md",
     "TODO.md",
     "杂记.md",
     "密码学.md",
@@ -258,8 +260,6 @@
     "Web后端/Mybatis-Plus.md",
     "Git.md",
     "pa",
-    "Rust.md",
-    "Make.md",
     "third/设计模式/2.剩余四大创建型模式.pdf",
     "third/设计模式/1.六大设计原则与单例模式.pdf",
     "rCore/assets/uTools_1692079341325.png",

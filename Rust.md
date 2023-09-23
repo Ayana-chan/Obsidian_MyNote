@@ -1,3 +1,9 @@
+
+# 链接
+
+[Rust语言圣经(Rust Course)](https://course.rs/about-book.html)
+
+[命名规范 - Rust语言圣经(Rust Course)](https://course.rs/practice/naming.html)
 # 安装与起步
 
 [Rust安装配置\_rust下载到d盘\_Andreby的博客-CSDN博客](https://blog.csdn.net/andrewby/article/details/75139736)
@@ -2136,9 +2142,54 @@ mod tests {
 **binary crate意味着独立运行，无法构造集成测试。**
 
 
+# 外部库
 
+[日常开发三方库精选 - Rust语言圣经(Rust Course)](https://course.rs/practice/third-party-libs.html)
+## log
 
+[日志门面 log - Rust语言圣经(Rust Course)](https://course.rs/logs/log.html)
 
+提供了几个宏来输出不同层级的log。
+
+```rust
+use log::{info, trace, warn};
+
+pub fn shave_the_yak(yak: &mut Yak) {
+    trace!("Commencing yak shaving");
+
+    loop {
+        match find_a_razor() {
+            Ok(razor) => {
+                info!("Razor located: {}", razor);
+                yak.shave(razor);
+                break;
+            }
+            Err(err) => {
+                warn!("Unable to locate a razor: {}, retrying", err);
+            }
+        }
+    }
+}
+```
+
+但是log并不会直接输出到某个地方，需要配合日志库使用，如`env_logger`。
+
+```rust
+use log::{debug, error, log_enabled, info, Level};
+
+fn main() {
+    // 注意，env_logger 必须尽可能早的初始化
+    env_logger::init();
+
+    debug!("this is a debug {}", "message");
+    error!("this is printed by default");
+
+    if log_enabled!(Level::Info) {
+        let x = 3 * 4; // expensive computation
+        info!("the answer was: {}", x);
+    }
+}
+```
 
 
 
