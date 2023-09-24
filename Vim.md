@@ -89,10 +89,12 @@ operator *number* motion
 
 `:s` （替换）命令（[文档](http://vim.wikia.com/wiki/Search_and_replace)）。
 
-- `%s/foo/bar/g`
+- `:%s/foo/bar/g`
     - 在整个文件中将 foo 全局替换成 bar
-- `%s/\[.*\](\(.*\))/\1/g`
+- `:%s/\[.*\](\(.*\))/\1/g`
     - 将有命名的 Markdown 链接替换成简单 URLs
+- `:%s/Vim/vim/gc`
+	- 逐个确认的替换，输入a确认全部
 
 ### 多窗口
 
