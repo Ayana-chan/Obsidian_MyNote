@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Git.md",
+                "file": "Linux.md",
                 "mode": "source",
                 "source": false
               }
@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Makefile.md",
+                "file": "Shell.md",
                 "mode": "source",
                 "source": false
               }
@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Git.md"
+                "file": "pa/笔记.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Git.md",
+                "file": "pa/笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Git.md",
+                "file": "pa/笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -229,18 +229,19 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "7468f25875a5715b",
+  "active": "b4b03788dce9a39c",
   "lastOpenFiles": [
+    "Shell.md",
+    "Linux.md",
+    "Makefile.md",
+    "Git.md",
+    "pa/笔记.md",
     "Rust.md",
     "日语/学习笔记.md",
-    "pa/笔记.md",
     "Vim.md",
     "pa/assets/uTools_1695529814464.png",
     "Cpp.md",
     "算法.md",
-    "Linux.md",
-    "Makefile.md",
-    "Shell.md",
     "pa/assets/uTools_1694872112737.png",
     "pa/assets",
     "TODO.md",

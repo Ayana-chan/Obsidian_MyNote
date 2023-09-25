@@ -512,11 +512,13 @@ find . -name '*.png' -exec convert {} {}.jpg \;
 
 ## 查找内容 grep
 
-grep是用于对输入文本进行匹配的通用工具。
+grep是用于对输入文本进行匹配的通用工具。会输出匹配串所在的一整行。
 
 - `-C`: context，其后再传入一个数字x，会输出匹配结果前后五行。
 - `-v`: invert，反选，把不符合要求的给输出出来。
 - `-R`: recursive，会递归地查找。
+
+`grep -r "target name" /path`可以递归地查找path下的所有文件。
 
 `命令 | grep 关键字`即可对命令的输出进行筛选。
 

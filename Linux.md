@@ -104,7 +104,10 @@
 
 按行搜索，输出所有匹配行。
 
-`grep -r "target name" /path`可以递归地查找path下的所有文件。
+
+### find
+
+`find src/ -name "*.[cS]"`
 ### less
 
 可以分页地查看输入或参数指定文件。
