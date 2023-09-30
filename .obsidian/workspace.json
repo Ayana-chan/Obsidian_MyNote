@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Linux.md",
+                "file": "Git.md",
                 "mode": "source",
                 "source": false
               }
@@ -231,12 +231,13 @@
   },
   "active": "b4b03788dce9a39c",
   "lastOpenFiles": [
+    "pa/assets/uTools_1696064924705.png",
+    "Git.md",
+    "Linux.md",
     "日语/学习笔记.md",
     "pa/笔记.md",
     "Shell.md",
-    "Linux.md",
     "Makefile.md",
-    "Git.md",
     "Rust.md",
     "Vim.md",
     "pa/assets/uTools_1695529814464.png",
@@ -259,7 +260,6 @@
     "Web后端/SpringBoot.md",
     "Web后端/Java.md",
     "Web后端/Maven.md",
-    "Web后端/Mybatis-Plus.md",
     "pa",
     "third/设计模式/2.剩余四大创建型模式.pdf",
     "third/设计模式/1.六大设计原则与单例模式.pdf",
