@@ -56,7 +56,7 @@ LastRequestDoneOfClients：Snapshot之后，log就不能自动更新LastRequestD
 
 Config: 保证config不丢失，至少configNum不能丢；用于记录push的目标。
 
-PreConfig: 这个疑似真不需要Snapshot。。。
+*PreConfig: 这个疑似真不需要Snapshot，甚至该变量就是没必要的，尚未实践。*
 
 ShardState: 用于记录shard状态，Snapshot前未完成的push继续完成，未gc的继续gc，未pull的继续等待。
 
@@ -91,10 +91,37 @@ config的很多想法都不得不面临一个问题：如果一个push无人接�
 
 由于config的完成是需要一定时间来检测的，且与apply协程完全异步，因此可能当前config还没被标记完成，就apply了下一个config了。此时必然可以保证，老的config是被配置成功了的（重启的leader会触发，而所有Follower会不断触发，所以从Follower角度出发更容易想出这段逻辑）。此时将pull标记为online是无害的，但push和gc标记为offline的同时都必须进行一次gc操作，但不需要Start gc log，因为所有服务器都会进行这个apply，只要暴力地删除本地的对应shard就算完成了。
 
-**gc时机**：1.gc态会Start gc log，当log apply的时候进行删除就行了；2.提前接收到新log的时候，直接对本地进行删除即可。
+**gc时机**：
+1. gc态会Start gc log，当log apply的时候进行删除就行了；
+2. 提前接收到新log的时候，直接对本地进行删除即可。
 
+### 描述在一次shard转移时双方的状态变化，并说明特殊情况下如何保证正常工作
+
+若config 3完成后收到config 4，一个shard需要从源迁移到目的，则两者中该shard对应的状态：
+
+| 阶段 | 源/configNum: 状态   | 目的/configNum: 状态  | 可处理请求的group数 |
+| ---- | -------------------- | --------------------- | ------------------- |
+| 初始 | 3: online            | 3: offline            | 1                   |
+| 启动 | 4: push 或 3: online | 3: offline 或 4: pull | 0 或 1              | 
+| 开始 | 4: push              | 4: pull               | 0                   |
+| 抵达 | 4: push              | 4: online             | 1                   |
+| 确认 | 4: gc                | 4: online             | 1                   |
+| 删除 | 4: offline           | 4: online             | 1                   |
+
+1. 初始时，源和目的都接收到新config后迁移才能开始。
+2. 源主动向目的发迁移请求，目的接受到后，告知raft层，对shard进行install，完毕后目的变成online，开始接收此shard的请求。然后，RPC返回。
+3. 源接收到返回的RPC，得知目的已经安装成功，说明迁移完成，则源进入gc状态。
+4. 源告知raft层进行shard删除，删除完毕后变成offline状态。
+
+特殊情况：
+
+1. 从gid 0去pull和向gid 0去push时要特判，因为此时pull永远等不到，而push也无法找到真的gid 0的group。
+2. 若源端迟一点得知新config，则目的不会做任何事，保持pull等待接收；若目的端迟一点得知新config，则会拒绝新config的push。只有configNum完全对上的时候才能进行迁移，因此各种重启也不会有事。
+3. 若目的install成功，但源并没有收到RPC回复（或者源宕机），则目的可以继续正常运行；而源会重新进行push，此时目的会直接回复成功，使得源也正常工作。源未收到确认时一直保持不可服务状态。
 
 ### lab4中，所有client请求的操作是如何保证总是可以完成、不重复、apply后不丢失的？
+
+要确保在每个瞬间，对任意一个请求，只有零个或一个group能处理它（不丢失）；client可以追踪到可处理的group（总是可完成）；一个shard在转移数据时也转移相关的所有信息，包括防重复信息（不重复）。
 
 #### 总是可以完成
 
@@ -113,14 +140,14 @@ config的很多想法都不得不面临一个问题：如果一个push无人接�
 首先给出一个重要性质：**对于每个configNum，任何一个shard只存在于一个group。** 因此，每个请求也应当标明configNum，如果Start时和apply时（apply时的检测才重要，Start时的检测仅仅是为了加速）configNum对不上，则判定为请求失败（即禁止修改不同configNum的shard）。失败的话server不会更新LastRequestDoneOfClients，以让该请求不会被判重复，可以再次完成。
 
 然后再考虑两种情况：
-1. 如果大部分group都很新，其中一个group更换了leader，其config暂时较老；刚好client也没更新config，两者configNum相同，于是向该group发起请求。但是，即使更换了leader，那些config的apply、push、gc都记录在了log当中，新来的请求会排在这些log后面，因此轮到该请求的时候，config已经很新了，则拒绝执行。
-2. 如果大部分group都很新，其中一个group整个宕机了好久，重新启动的时候尚未获取到新的config，日志空空如也；刚好client也没更新config，两者configNum相同，于是向该group发起请求。但是，此时必然有其他group在等着从它那里pull group；或者说，请求对应的shard在所有更新的config中所在的group都会被迫在某个config上停下，等待当前group恢复以将shard传球一样传出来。因此此时对请求进行apply是无害的，apply后的shard会被安全地抛给新的config的group中去；而抛出后，与此shard相关的请求就会被丢弃。
+1. 如果大部分group都很新，其中一个group更换了leader（或者全部重启），其config暂时较老；刚好client也没更新config，两者configNum相同，于是向该group发起请求。但是，即使更换了leader，**那些config的更新、apply、push、gc都记录在了log当中**，**新来的请求会排在这些log后面**，因此**轮到该请求的时候，config和状态已经很新了，则拒绝执行**。
+2. 如果大部分group都很新，其中一个group整个宕机了好久，重新启动的时候尚未获取到新的config，日志空空如也，某个shard为online；刚好client也比较卡，没更新config，两者configNum相同，于是向该group发起请求。但是，此时必然有其他group在等着从它那里pull group；或者说，请求对应的shard在所有更加新的config中应在的group都会被迫在某个config上停下，等待当前group恢复以将shard传球一样传出来。如果其他group已经接到过shard了，则当前group的状态必然是下一个configNum的push或gc或offline，因此此时对请求进行apply是无害的，或者说此group确实是唯一合法能接收此请求的group。apply后的shard会被安全地抛给新的config的group中去。
+
+其他情况举例：group 1得知config 12后，将一个分片发给group 1，group 1 install成功但group 2宕机了。许久之后，group 2重启，一个很卡的client以config 12访问group 2，若put成功，就有可能造成操作丢失。解答：此时group 1的此分片还处于push状态，无法进行服务。
 
 
+### 思考
 
-
-
-
-
+**真的需要server和client的configNum完全相同的时候才能接收请求吗？**[apply后不丢失](MIT6.824/lab随想QA.md#apply后不丢失)中的两种情况以及[描述在一次shard转移时双方的状态变化，并说明特殊情况下如何保证正常工作](MIT6.824/lab随想QA.md#描述在一次shard转移时双方的状态变化，并说明特殊情况下如何保证正常工作)似乎可以说明，只要server中的目标shard是online的，则它就是全局里唯一一个可以合法接收请求的，此时接收该请求应该是没有任何问题的。
 
 

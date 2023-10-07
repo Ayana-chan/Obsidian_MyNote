@@ -147,7 +147,7 @@ TestChallenge2Partial也因此自然得到满足。
 
 实际操作database时要极为谨慎，如果config和state中途变换，可能让正在操作中的database开始接收服务，导致race。
 
-- 如果一个服务器宕机很久一直更新config，其启动的时候收到请求发现和自己刚好对得上，放入日志后无阻碍地解决了；然后收到了新的（很旧的）config，并试图把这块shard push给别人，别人说你太老了，于是直接判定成功，那个请求也就丢失了。可以在client请求中添加configNum，**当服务器发现自己的config比client新时再继续受理**。这也不会影响效率或者不相关性，因为本来就要起码等对应的config跟上后才算合法的请求处理。
+- 如果一个group宕机很久，其启动的时候收到很卡的Client请求，发现自己的config允许接收，则顺利操作成功；然后收到了新的（对其他group来说很老的）config，并试图把这块shard push给别人，别人说你太老了，于是直接判定成功，那个请求也就丢失了。可以在client请求中添加configNum判定，**当服务器发现自己的config比client新时再继续受理**。这也不会影响效率或者不相关性，因为本来就要起码等对应的config跟上后才算合法的请求处理。
 - **即使服务器的configNum偏大也不能受理**，无法保证不被删。
 - 综上：只有configNum严格等同时，client请求才会被受理。这样拥有完全合理的一致性，如同term。
 
