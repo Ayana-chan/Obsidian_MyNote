@@ -500,6 +500,8 @@ let ref = &v;
 
 # 生命周期
 
+[深入生命周期 - Rust语言圣经(Rust Course)](https://course.rs/advance/lifetime/advance.html)
+
 生命周期的目的是为了避免悬空引用。
 
 编译器在编译时会列出各个变量生命周期的长度，保证不发生数据失效后的使用。但是有些情况无法在编译时得知生命周期：

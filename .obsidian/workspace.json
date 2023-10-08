@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "日语/学习笔记.md",
+                "file": "Rust.md",
                 "mode": "source",
                 "source": false
               }
@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824/lab随想QA.md"
+                "file": "Rust.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824/lab随想QA.md",
+                "file": "Rust.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824/lab随想QA.md",
+                "file": "Rust.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -230,11 +230,11 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "7468f25875a5715b",
+  "active": "173af0fcea462ae7",
   "lastOpenFiles": [
-    "MIT6.824/lab4.md",
     "日语/学习笔记.md",
     "MIT6.824/lab随想QA.md",
+    "MIT6.824/lab4.md",
     "pa/笔记.md",
     "Shell.md",
     "Git.md",
