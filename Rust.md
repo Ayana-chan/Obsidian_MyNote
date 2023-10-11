@@ -439,7 +439,7 @@ static mut COUNT: u32 = 0;
 
 ## main函数
 
-main函数的默认返回值为`()`，即单元类型。但也可以改成`Result<String, Box<dyn std::error::Error>>`，表示可以接收任意错误，但要在main末尾添上`Ok(())`。
+main函数的默认返回值为`()`，即单元类型。但也可以改成`Result<String, Box<dyn std::error::Error>>`，表示可以接收**任意错误**，但要在main末尾添上`Ok(())`。
 
 ```rust
 use std::fs::File;
@@ -976,6 +976,8 @@ println!("slice: {} {}",s1,s2);
 
 对`i32`字符串的切片类型为`&[i32]`。
 
+使用`len()`方法可以获得切片的元素数量。
+
 ## 字符串
 
 String是Byte的集合，采用UTF-8编码，是在标准库中的。本质是对`Vec<u8>`的封装。
@@ -988,6 +990,17 @@ String是Byte的集合，采用UTF-8编码，是在标准库中的。本质是�
 let mut str = String::from("abc");
 str.push_str("def");
 let mut str1 = "abc1".parse().unwrap();
+```
+
+加法运算合并字符串时，只有第一个参数可以是String：
+```rust
+let s1 = "Hello";
+let s2 = "World";
+let merged = s1 + s2;
+
+let s11 = String::from("Hello");
+let s22 = String::from("World");
+let mergedd = s1 + &s2;
 ```
 
 函数参数如果是字符串的话，最好使用`&str`类型来表示参数，即强制要求传切片。这使得在传参为切片的时候可以直接调用，传参为String的时候则要求创建完整切片（Rust会自动转换）后传入，更加通用了。这也可以使得字符串传参没有任何的副作用。
@@ -1130,7 +1143,7 @@ for (k,v) in &map {
 
 insert同一个key会导致覆盖。可以用`contains_key()`来检测一个key是否存在于HashMap中
 
-entry(key)方法可以返回一个枚举Entry，是key对应的值的入口，可以用于表示key是否存在。Entry有or_insert(value)方法，如果key存在则返回key对应的值的可变引用，如果不存在则插入参数value然后返回值可变引用。
+entry(key)方法可以返回一个枚举Entry，是key对应的值的入口，可以用于表示key是否存在。Entry有or_insert(value)方法，如果key存在则返回key对应的值的可变引用，如果不存在则插入参数value然后返回对应的值的可变引用。
 
 默认的HashMap安全但不是最快的，可以替换hasher。
 
@@ -1247,6 +1260,8 @@ fn main() {
 
 在函数名、结构体名或枚举名后面加个`<T>`就表示了泛型。
 
+使用泛型时使用`StructName::<TypeName>`来指明T的具体类型TypeName，也可以自动推断。
+
 ```rust
 struct Point<T> {
     x: T,
@@ -1254,13 +1269,64 @@ struct Point<T> {
 }
 
 fn main() {
+	//自动推断
     let integer = Point { x: 5, y: 10 };
-    let float = Point { x: 1.0, y: 4.0 };
+    //手动指定
+    let float = Point::<f32> { x: 1.0, y: 4.0 };
     println!("integer: ({}, {}), float: ({}, {})", integer.x, integer.y, float.x, float.y);
 }
 ```
 
-如果要写泛型结构体的impl，则要写成`impl<T> Point<T>{...}`。但针对具体类型的实现就不需要这样写了，如`impl Point<i32>{...}`。
+如果要写泛型结构体的impl，则要写成`impl<T> Point<T>{...}`。但针对具体类型的实现就不需要这样写了，如`impl Point<i32>{...}`。（要尽量早地“注册”所有符号名）
+
+泛型T的约束加在impl的后面。
+
+```rust
+//这个例子中，ReportCard::<f32>不需要指明具体类型，可自动推断，即不用写::<f32>
+pub struct ReportCard<T> {
+    pub grade: T,
+    pub student_name: String,
+    pub student_age: u8,
+}
+
+impl<T: std::fmt::Display> ReportCard<T> {
+    pub fn print(&self) -> String {
+        format!("{} ({}) - achieved a grade of {}",
+            &self.student_name, &self.student_age, &self.grade)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+  
+    #[test]
+    fn generate_numeric_report_card() {
+        let report_card = ReportCard::<f32> {
+            grade: 2.1,
+            student_name: "Tom Wriggle".to_string(),
+            student_age: 12,
+        };
+        assert_eq!(
+            report_card.print(),
+            "Tom Wriggle (12) - achieved a grade of 2.1"
+        );
+    }
+  
+    #[test]
+    fn generate_alphabetic_report_card() {
+        let report_card = ReportCard::<String> {
+            grade: "A+".to_string(),
+            student_name: "Gary Plotter".to_string(),
+            student_age: 11,
+        };
+        assert_eq!(
+            report_card.print(),
+            "Gary Plotter (11) - achieved a grade of A+"
+        );
+    }
+}
+```
 
 
 ## Trait
@@ -1293,6 +1359,21 @@ fn main() {
 ```
 
 如果一个方法来自于trait，则使用的时候必须保证当前作用域里面有此trait。
+
+参数的mut与否似乎并不是严格限制的：
+```rust
+trait AppendBar {
+    fn append_bar(self) -> Self;
+}
+  
+impl AppendBar for String {
+    // TODO: Implement `AppendBar` for type `String`.
+    fn append_bar(mut self) -> Self{
+        self.push_str("Bar");
+        self
+    }
+}
+```
 
 可以在某个type上实现某个trait的前提条件是：这个type **或** 这个trait 是**本crate**里定义的。也就是说，无法为外部的类型定义外部的trait。这样可以保证不会出现两个crate分别给同一个struct实现同一个trait的情况。即**孤儿规则（Orphan Rule）**，防止trait的实现是个孤儿（既不属于定义trait的crate，也不属于定义type的crate）。但也因此可能无法做到为某些外部结构体实现Debug、Display，再套一层结构体即可解决：
 
