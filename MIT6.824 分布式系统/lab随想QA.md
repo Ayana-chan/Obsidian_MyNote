@@ -50,7 +50,7 @@ logOffset：记录Snapshot里面有多少个日志，以保证日志的逻辑索
 
 Database：Snapshot的本质数据，此处的database加上raft层剩下的log就组成了完整的数据。
 
-LastAppliedIndex：主要是为了防止应用Snapshot之后，剔除掉applyCh中传来的不合时宜的log和Snapshot，具体见[如何保证snapshot的过程中不会有commit丢失](MIT6.824/lab随想QA.md#如何保证snapshot的过程中不会有commit丢失？)。
+LastAppliedIndex：主要是为了防止应用Snapshot之后，剔除掉applyCh中传来的不合时宜的log和Snapshot，具体见[如何保证snapshot的过程中不会有commit丢失](lab随想QA.md#如何保证snapshot的过程中不会有commit丢失？)。
 
 LastRequestDoneOfClients：Snapshot之后，log就不能自动更新LastRequestDoneOfClients了，需要Snapshot来说明被压缩的日志apply了哪些请求。
 
@@ -76,7 +76,7 @@ config的很多想法都不得不面临一个问题：如果一个push无人接�
 
 另外，如果一个服务器重启，它可能会携带出旧config、旧shard，无人可以保证它们被乱迁移会不会出问题。
 
-最佳的解法就是一个一个配置config，把配置看成group协作的过程，如果一个group push不到或pull不来就会等待，由于config不会被跳过，因此必然会有group 来接应。更多益处见[叙述一下当一个服务器宕机重启后，它是如何进行config的。顺便说出所有gc的时机](MIT6.824/lab随想QA.md#叙述一下当一个服务器宕机重启后，它是如何进行config的。顺便说出所有gc的时机。)
+最佳的解法就是一个一个配置config，把配置看成group协作的过程，如果一个group push不到或pull不来就会等待，由于config不会被跳过，因此必然会有group 来接应。更多益处见[叙述一下当一个服务器宕机重启后，它是如何进行config的。顺便说出所有gc的时机](lab随想QA.md#叙述一下当一个服务器宕机重启后，它是如何进行config的。顺便说出所有gc的时机。)
 
 
 ### 叙述一下当一个服务器宕机重启后，它是如何进行config的。顺便说出所有gc的时机。  
@@ -148,6 +148,6 @@ config的很多想法都不得不面临一个问题：如果一个push无人接�
 
 ### 思考
 
-**真的需要server和client的configNum完全相同的时候才能接收请求吗？**[apply后不丢失](MIT6.824/lab随想QA.md#apply后不丢失)中的两种情况以及[描述在一次shard转移时双方的状态变化，并说明特殊情况下如何保证正常工作](MIT6.824/lab随想QA.md#描述在一次shard转移时双方的状态变化，并说明特殊情况下如何保证正常工作)似乎可以说明，**在一个请求被commit时，只要当前server中的该请求对应的shard处于online状态，那么该server所在的group就是所有group里唯一一个可以合法接收请求的，因此此时执行该请求应该是没有任何问题的。**
+**真的需要server和client的configNum完全相同的时候才能接收请求吗？**[apply后不丢失](lab随想QA.md#apply后不丢失)中的两种情况以及[描述在一次shard转移时双方的状态变化，并说明特殊情况下如何保证正常工作](lab随想QA.md#描述在一次shard转移时双方的状态变化，并说明特殊情况下如何保证正常工作)似乎可以说明，**在一个请求被commit时，只要当前server中的该请求对应的shard处于online状态，那么该server所在的group就是所有group里唯一一个可以合法接收请求的，因此此时执行该请求应该是没有任何问题的。**
 
 

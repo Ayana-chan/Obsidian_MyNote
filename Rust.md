@@ -436,6 +436,128 @@ match x {
 }
 ```
 
+### unwrap_or_default()
+
+使用`unwrap_or_default()`，在Some时返回提取的内容，在None时返回Default trait的`default()`的结果。
+
+### and() and_then()
+
+`and(x)`: 如果是Some，则返回`Some(x)`，否则直接返回None。
+
+`and_then(|x| {...})`: 如果是Some，则将内部数据当做闭包参数调用闭包，且闭包返回值类型是Option；否则直接返回None。
+## 错误
+
+Rust没有异常系统。
+
+- 可恢复错误: `Result<T,E>`
+- 不可恢复错误: `panic!`宏
+
+### 不可恢复错误 Panic
+
+panic发生时，默认会**展开（unwind）** 调用栈，往回走，把遇到的所有函数的数据都给清理掉。可以选择不展开，而是**中止（abort）**，不清理而直接停止程序，由操作系统回收内存。中止也可以让二进制文件更小。
+
+```toml
+[profile.release]
+panic = 'abort'
+```
+
+为了让panic发生时打印回溯错误信息，需要：
+
+```bash
+#windows
+set RUST_BACKTRACE=1 && cargo run
+#linux
+RUST_BACKTRACE=1 cargo run
+```
+
+### 可恢复错误 Result
+
+```rust
+enum Result<T,E> {
+	Ok(T),
+	Err(E),
+}
+```
+
+可以把T或E写成`()`表示不关心该返回值。
+#### 错误处理
+
+可以提取出Err的参数热然后调用kind()以进一步match错误类型：
+
+```rust
+use std::fs::File;
+use std::io::ErrorKind;
+
+let file = File::open("non_existent_file.txt");
+
+match file {
+    Ok(_) => println!("File opened successfully"),
+    Err(e) => match e.kind() {
+        ErrorKind::NotFound => println!("File not found"),
+        ErrorKind::PermissionDenied => println!("Permission denied"),
+        other => println!("Some other error: {:?}", other),
+    },
+}
+```
+
+也可以直接调用**unwrap**方法，如果是Ok则返回Ok的数据，否则调用panic!。但无法自定义panic信息。
+
+```rust
+let file = File::open("non_existent_file.txt").unwrap();
+```
+
+若调用**expect**方法即可自定义panic信息。
+
+```rust
+let file = File::open("non_existent_file.txt").expect("Expect Panic Msg");
+```
+
+#### 错误传递
+
+只要返回值为result，就可以传递错误，如可以写为`Result<String,io::Error>`。
+
+使用`?`运算符可以在输出为Result::Err的时候自动将其return。
+
+但是使用`?`时要注意，它在成功的时候返回的并不是Result，因此正确地返回时应当用Ok再做包装。
+
+在`?`返回的Err与要求的返回值不匹配时，会隐式地调用from函数进行转换，前提是转化的目标错误对原错误实现了from函数。
+
+```rust
+use std::fs::File;
+use std::io;
+use std::io::Read;
+
+fn read_file() -> io::Result<String> { //等价于Result<String,io::Error>
+    let mut f = File::open("file.txt")?;
+    let mut buffer = String::new();
+
+    f.read_to_string(&mut buffer)?; //等价于match到Err(e)后return Err(e)
+
+    Ok(buffer)
+}
+
+fn main() {
+    match read_file() {
+        Ok(content) => println!("File content: {}", content),
+        Err(e) => println!("An error occurred: {}", e),
+    }
+}
+```
+
+#### Result转Option
+
+使用`ok()`或`err()`方法可以将Result枚举转换为Option枚举：
+```rust
+let x: Result<u32, &str> = Ok(2);
+assert_eq!(x.ok(), Some(2));
+
+let x: Result<u32, &str> = Err("Nothing here");
+assert_eq!(x.ok(), None);
+```
+### 错误使用指南
+
+如果确定必然是Ok的，则直接使用unwrap获取结果值。
+
 ## 解构赋值
 
 ```rust
@@ -1172,109 +1294,6 @@ entry(key)方法可以返回一个枚举Entry，是key对应的值的入口，�
 
 可以将两个数组/迭代器等通过Tuple将每一项合在一起，即`newVec[i]=(vec1[i],vec2[i])`。
 
-## 错误
-
-Rust没有异常系统。
-
-- 可恢复错误: `Result<T,E>`
-- 不可恢复错误: `panic!`宏
-
-### 不可恢复错误 Panic
-
-panic发生时，默认会**展开（unwind）** 调用栈，往回走，把遇到的所有函数的数据都给清理掉。可以选择不展开，而是**中止（abort）**，不清理而直接停止程序，由操作系统回收内存。中止也可以让二进制文件更小。
-
-```toml
-[profile.release]
-panic = 'abort'
-```
-
-为了让panic发生时打印回溯错误信息，需要：
-
-```bash
-#windows
-set RUST_BACKTRACE=1 && cargo run
-#linux
-RUST_BACKTRACE=1 cargo run
-```
-
-### 可恢复错误 Result
-
-```rust
-enum Result<T,E> {
-	Ok(T),
-	Err(E),
-}
-```
-
-可以把T或E写成`()`表示不关心该返回值。
-#### 错误处理
-
-可以提取出Err的参数热然后调用kind()以进一步match错误类型：
-
-```rust
-use std::fs::File;
-use std::io::ErrorKind;
-
-let file = File::open("non_existent_file.txt");
-
-match file {
-    Ok(_) => println!("File opened successfully"),
-    Err(e) => match e.kind() {
-        ErrorKind::NotFound => println!("File not found"),
-        ErrorKind::PermissionDenied => println!("Permission denied"),
-        other => println!("Some other error: {:?}", other),
-    },
-}
-```
-
-也可以直接调用**unwrap**方法，如果是Ok则返回Ok的数据，否则调用panic!。但无法自定义panic信息。
-
-```rust
-let file = File::open("non_existent_file.txt").unwrap();
-```
-
-若调用**expect**方法即可自定义panic信息。
-
-```rust
-let file = File::open("non_existent_file.txt").expect("Expect Panic Msg");
-```
-
-#### 错误传递
-
-只要返回值为result，就可以传递错误，如可以写为`Result<String,io::Error>`。
-
-使用`?`运算符可以在输出为Result::Err的时候自动将其return。
-
-但是使用`?`时要注意，它在成功的时候返回的并不是Result，因此正确地返回时应当用Ok再做包装。
-
-在`?`返回的Err与要求的返回值不匹配时，会隐式地调用from函数进行转换，前提是转化的目标错误对原错误实现了from函数。
-
-```rust
-use std::fs::File;
-use std::io;
-use std::io::Read;
-
-fn read_file() -> io::Result<String> { //等价于Result<String,io::Error>
-    let mut f = File::open("file.txt")?;
-    let mut buffer = String::new();
-
-    f.read_to_string(&mut buffer)?; //等价于match到Err(e)后return Err(e)
-
-    Ok(buffer)
-}
-
-fn main() {
-    match read_file() {
-        Ok(content) => println!("File content: {}", content),
-        Err(e) => println!("An error occurred: {}", e),
-    }
-}
-```
-
-### 错误使用指南
-
-如果确定必然是Ok的，则直接使用unwrap获取结果值。
-
 ## 泛型
 
 `<T>`中的T是**类型参数**。在**编译时**会被替换为具体的类型，这个过程称为**单态化（monomorphyzation)**。
@@ -1388,7 +1407,6 @@ trait AppendBar {
 }
   
 impl AppendBar for String {
-    // TODO: Implement `AppendBar` for type `String`.
     fn append_bar(mut self) -> Self{
         self.push_str("Bar");
         self
@@ -1663,15 +1681,40 @@ pub trait Iterator {
 }
 ```
 
-- iter: 遍历的时候获取到的都是不可变引用。
-- iter_mut: 遍历的时候获取到的都是可变引用。
-- into_iter: 遍历的时候会获取所有权。
+- `iter`: 遍历的时候获取到的都是不可变引用。
+- `iter_mut`: 遍历的时候获取到的都是可变引用。
+- `into_iter`: 遍历的时候会获取所有权。
 
 next方法本质是对迭代器的消耗（因为不能遍历第二遍）。
 
 Iterator trait中有一些带默认实现的方法，如果方法实现里面调用了next，就称为**消耗型适配器**，如sum方法。还有些方法将迭代器转化为不同的迭代器，称为**迭代器适配器**，如map方法。
 
 如果next不配调用（或者说没有消耗型适配器被调用）的话，迭代器**不会做任何事**，包括调用的迭代器适配器。
+
+[Iterator in std::iter - Rust](https://doc.rust-lang.org/std/iter/trait.Iterator.html)
+
+迭代器函数可能是lazy的，不一定会立刻执行！
+
+```rust
+let a = [1, 2, 3];
+//map对所有元素作某事后，返回新的迭代器
+//因此闭包的传入与输出类型不同时可以实现类型转换
+let mut iter = a.iter().map(|x| 2 * x);
+
+assert_eq!(iter.next(), Some(2));
+assert_eq!(iter.next(), Some(4));
+assert_eq!(iter.next(), Some(6));
+assert_eq!(iter.next(), None);
+```
+
+```rust
+//使用for_each可以用闭包替代for循环
+//不返回新东西，且立即执行
+(0..5).flat_map(|x| x * 100 .. x * 110)
+      .enumerate()
+      .filter(|&(i, x)| (i + x) % 3 == 0)
+      .for_each(|(i, x)| println!("{i}:{x}"));
+```
 
 ```rust
 let numbers = vec![10, 20, 30, 40, 50];
@@ -1697,6 +1740,16 @@ pub fn factorial(num: u64) -> u64 {
 }
 ```
 
+```rust
+let a = [0, 1, 2, 3, 4, 5];
+//step_by改变next的行为
+let mut iter = a.iter().step_by(2);
+
+assert_eq!(iter.next(), Some(&0));
+assert_eq!(iter.next(), Some(&2));
+assert_eq!(iter.next(), Some(&4));
+assert_eq!(iter.next(), None);
+```
 ## 类型别名
 
 ```rust
@@ -1724,7 +1777,7 @@ Sized trait: 要求编译时已知大小的类型都会隐式地实现这个trai
 
 ## 智能指针
 
-### Box\<T\>
+### Box
 
 最简单的智能指针，指向堆上的内存，没有开销或额外功能。
 
@@ -1748,7 +1801,7 @@ deref trait里面有`fn deref(&self) -> &T`。
 
 drop trait里面有`fn drop(&mut self)`。会在变量离开作用域时自动调用，被当做析构函数。不能直接地显式调用，但可以调用`std::mem::drop(value)`，以提前释放变量（调用drop）。
 
-### Rc\<T\>
+### Rc std::rc::Rc
 
 引用计数（Reference Count）的智能指针，可共享数据。只能用于单线程。不在预导入模块，在`std::rc::Rc`。
 
@@ -1762,7 +1815,7 @@ Rc全都是不可变引用，用于共享只读，因为有多个可变引用的
 
 `Rc::strong_count(&rc_pointer)`会返回引用计数。
 
-#### Weak\<T\>
+#### Weak
 
 为了防止循环引用导致引用计数永远不为0、因此出现内存泄漏的情况，可以使用`Rc::downgrade(&rc_pointer)`来创建弱引用的智能指针`Weak<T>`，并使弱引用计数+1。
 
@@ -1787,12 +1840,11 @@ fn main() {
 }
 ```
 
-### RefCell\<T\>
-
+### RefCell std::cell::RefCell
 
 RefCell指针支持可变引用和不可变引用，而其安全检查在运行时；拥有数据的所有权，不共享。不在预导入模块，在`std::cell::RefCell`。即使是不可变引用，也能修改其值。
 
->**内部可变性（interior mutability）** 允许在持有不可变引用的情况下修改数据。即可变地借用一个不可变的值。
+>**内部可变性（interior mutability）** **可变地借用一个不可变的值**，从而允许在持有不可变引用的情况下修改数据。指针本身对外是不可变的数据，但依旧提供接口来改变内部数据。
 
 方法（安全接口）：
 - `borrow()`: 返回`Ref<T>`（不可变），实现了deref。
@@ -1804,134 +1856,229 @@ RefCell指针支持可变引用和不可变引用，而其安全检查在运行�
 
 使用`Rc<RefCell<T>>`可以使得数据可以被多方共享且能修改，只要保证读写完之后引用的`RefCell<T>`马上消失即可。
 
-### Cell\<T\>
+### Cell
 
 通过复制而非借用来访问数据，有内部可变性。
 
-### Mutex\<T\>
+### Cow std::borrow::Cow
+
+使用`Cow::from(xxx)`来对xxx建立Clone-On-Write的访问机制。当Cow不具有xxx的所有权时，其类型为`Cow::Borrowed(xxx)`；具有所有权时为`Cow::Owned(xxx)`。可以使用`is_borrowed()`和`is_owned()`或者模式匹配来判断其类型。
+
+使用`to_mut()`来获得可变引用。如果此时未拥有所有权，则对值进行复制，变成`Cow::Owned(xxx)`。
+
+```rust
+use std::borrow::Cow;
+  
+fn abs_all<'a, 'b>(input: &'a mut Cow<'b, [i32]>) -> &'a mut Cow<'b, [i32]> {
+    for i in 0..input.len() {
+        let v = input[i];
+        if v < 0 {
+            // Clones into a vector if not already owned.
+            input.to_mut()[i] = -v;
+        }
+    }
+    input
+}
+  
+#[cfg(test)]
+mod tests {
+    use super::*;
+  
+    #[test]
+    fn reference_mutation() -> Result<(), &'static str> {
+        // Clone occurs because `input` needs to be mutated.
+        let slice = [-1, 0, 1];
+        let mut input = Cow::from(&slice[..]);
+        match abs_all(&mut input) {
+            Cow::Owned(_) => Ok(()),
+            _ => Err("Expected owned value"),
+        }
+    }
+  
+    #[test]
+    fn reference_no_mutation() -> Result<(), &'static str> {
+        // No clone occurs because `input` doesn't need to be mutated.
+        let slice = [0, 1, 2];
+        let mut input = Cow::from(&slice[..]);
+        match abs_all(&mut input) {
+            Cow::Borrowed(_) => Ok(()),
+            _ => Err("Expected borrowed value"),
+        }
+    }
+  
+    #[test]
+    fn owned_no_mutation() -> Result<(), &'static str> {
+        // We can also pass `slice` without `&` so Cow owns it directly. In this
+        // case no mutation occurs and thus also no clone, but the result is
+        // still owned because it was never borrowed or mutated.
+        let slice = vec![0, 1, 2];
+        let mut input = Cow::from(slice);
+        match abs_all(&mut input) {
+            Cow::Owned(_) => Ok(()),
+            _ => Err("Expected owned value"),
+        }
+    }
+  
+    #[test]
+    fn owned_mutation() -> Result<(), &'static str> {
+        // Of course this is also the case if a mutation does occur. In this
+        // case the call to `to_mut()` returns a reference to the same data as
+        // before.
+        let slice = vec![-1, 0, 1];
+        let mut input = Cow::from(slice);
+        match abs_all(&mut input) {
+            Cow::Owned(_) => Ok(()),
+            _ => Err("Expected owned value"),
+        }
+    }
+}
+```
+
+### Arc std::sync::Arc
+
+类似于Rc\<T\>，但使用原子操作来进行引用计数，是线程安全的。
+
+```rust
+use std::sync::Arc;
+use std::thread;
+
+fn main() {
+    let numbers: Vec<_> = (0..100u32).collect();
+    let shared_numbers = Arc::new(numbers);
+    let mut joinhandles = Vec::new();
+  
+    for offset in 0..8 {
+        let child_numbers = shared_numbers.clone();
+        joinhandles.push(thread::spawn(move || {
+            let sum: u32 = child_numbers.iter().filter(|&&n| n % 8 == offset).sum();
+            println!("Sum of offset {} is {}", offset, sum);
+        }));
+    }
+    for handle in joinhandles.into_iter() {
+        handle.join().unwrap();
+    }
+}
+```
+
+### Mutex std::sync::Mutex
 
 用于实现跨线程情形下的内部可变性模式，有内部可变性。
 
-## Unsafe Rust
-
-被unsafe修饰的代码块允许：
-- 解引用原始指针（raw pointer）
-- 调用unsafe函数或方法
-- 访问或修改可变的静态变量
-- 实现unsafe trait
-
-### 原始指针
-
-原始指针：
-- 可变：`*mut T`
-- 不可变：`*const T` （不能通过它对其所指的数据赋值）
-
-目的：
-- 与C语言进行接口
-- 构建借用检查器无法理解的安全抽象
-
-可变指针不算引用，因此可变不可变**不受借用规则约束**，也因此打破了借用规则（但直接用引用的话依旧无法打破）。
-
-可能空指针、野指针，也不自动释放。
-
-在安全代码块里面也能定义原始指针，但禁止解引用。
-
+结合Arc使用即可进行线程安全的读写共享：
 ```rust
-let mut num = 5;
-let r1 = &num as *const i32;
+use std::sync::{Arc, Mutex};
+use std::thread;
 
-let address = 0x012345usize;
-let r2 = &num as *mut i32;
+fn main() {
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
 
-let slice: &mut [i32] = ...;
-let r3 = slice.as_mut_ptr();
-```
+    for _ in 0..10 {
+        let counter = Arc::clone(&counter);
+        let handle = thread::spawn(move || {
+	        //对Mutex进行lock后unwrap就能获得值，并且在离开作用域后自动解锁
+            let mut num = counter.lock().unwrap();
+            *num += 1;
+        });
+        handles.push(handle);
+    }
 
-### 安全抽象
+    for handle in handles {
+        handle.join().unwrap();
+    }
 
-在安全的函数里面可以使用unsafe代码块，因此要在unsafe代码块的外面确保unsafe是safe的。这个必须人为保证。
-
-### unsafe trait
-
-定义trait的时候加上unsafe，则它只能在unsafe的代码块中实现，一般直接`unsafe impl`。
-
-## extern
-
-extern简化创建和使用外部函数接口（FFI，foreign function interface）的过程。
-
-使用类似`extern "C"{...}`可以调用其他语言的函数；`"C"`就是ABI（application binary interface），通过指定汇编规则来指定语言。extern代码块里的所有东西都是unsafe的。
-
-在fn前加上`extern "C"`即可创建接口供其它语言调用。添加`#[no_mangle]`注解可以防止编译期间发生名称更改。
-
-## 宏 macro
-
-- 使用`macro_rules!`构建的声明宏（declarative macro）（弃用，下面不再讨论）。
-- 三种过程宏，接收并操作输入的rust代码，然后返回新的rust代码：
-	- 自定义`#[derive]`宏，只能用于struct或enum,可以为其指定随derive属性添加的代码。
-	- 类似属性的宏，在任何条日上添加自定义属性。
-	- 类似函数的宏，看起来像函数调用，对其指定为参数的token进行操作。
-
-### derive宏
-
-写出`#[derive(SomeName)]`后，会匹配标注了`#[proc_macro_derive(SomeName)]`的函数，并把`#[derive(SomeName)]`标注的代码段作为输入传入，生成的输出会贴到`#[derive(SomeName)]`所在的地方的下面。
-
-### 类似属性的宏
-
-```rust
-#[route(GET,"/")]
-fn index(){
-	...
-}
-
-#[proc_macro_attribute] 
-pub fn route(attr: TokenStream, item: TokenStream) -> TokenStream {
-	...
+    println!("Result: {}", *counter.lock().unwrap());
 }
 ```
 
-和derive一样进行匹配和传参，但会额外传TokenStream,即`GET, "/"`。
+## 类型转换
+### as
 
-### 类似函数的宏
+用于类型转换和import的重命名。
 
+### From trait
+
+[From in std::convert - Rust](https://doc.rust-lang.org/std/convert/trait.From.html)
+
+实现了From就能使用`into()`来转换类型：
 ```rust
-let sql = sql!(SELECT * FROM posts WHERE id=1);
-
-#[proc_macro] 
-pub fn sql(input: TokenStream) -> TokenStream {
-	...
-}
+// Use the `from` function
+let p1 = Person::from("Mark,20");
+// Since From is implemented for Person, we should be able to use Into
+let p2: Person = "Gerald,70".into();
 ```
 
-把括号里面的字符都传到TokenStream，进行处理。可以看做其参数可无视rust语法限制的函数。
-## 文档注释
+### AsRef AsMut
 
-文档注释也分为单行注释和块注释，但又有内外之分：
-
-- 内部文档注释（Inner doc comment）
-	- 单行注释（以 /// 开头）
-	- 块注释（用 /** ... */ 分隔）
-- 外部文档注释（Outer doc comment）
-	- 单行注释（以 //! 开头）
-	- 块注释（用 /*! ... */ 分隔）
-
-二者的区别：
-- 内部文档注释是对它之后的项做注释，与使用 `#[doc="..."]` 是等价的。
-- 外部文档注释是对它所在的项做注释，与使用 `#![doc="..."]` 是等价的。
-
-另外，在文档注释中可以使用 Markdown 语法。
+```rust
+// Obtain the number of bytes (not characters) in the given argument.
+// TODO: Add the AsRef trait appropriately as a trait bound.
+fn byte_counter<T: AsRef<str>>(arg: T) -> usize {
+    arg.as_ref().as_bytes().len()
+}
+  
+// Obtain the number of characters (not bytes) in the given argument.
+// TODO: Add the AsRef trait appropriately as a trait bound.
+fn char_counter<T: AsRef<str>>(arg: T) -> usize {
+    arg.as_ref().chars().count()
+}
+  
+// Squares a number using as_mut().
+// TODO: Add the appropriate trait bound.
+fn num_sq<T: AsMut<u32>>(arg: &mut T) {
+    // TODO: Implement the function body.
+    *arg.as_mut() *= *arg.as_mut();
+}
+  
+#[cfg(test)]
+mod tests {
+    use super::*;
+  
+    #[test]
+    fn different_counts() {
+        let s = "Café au lait";
+        assert_ne!(char_counter(s), byte_counter(s));
+    }
+  
+    #[test]
+    fn same_counts() {
+        let s = "Cafe au lait";
+        assert_eq!(char_counter(s), byte_counter(s));
+    }
+  
+    #[test]
+    fn different_counts_using_string() {
+        let s = String::from("Café au lait");
+        assert_ne!(char_counter(s.clone()), byte_counter(s));
+    }
+  
+    #[test]
+    fn same_counts_using_string() {
+        let s = String::from("Cafe au lait");
+        assert_eq!(char_counter(s.clone()), byte_counter(s));
+    }
+  
+    #[test]
+    fn mult_box() {
+        let mut num: Box<u32> = Box::new(3);
+        num_sq(&mut num);
+        assert_eq!(*num, 9);
+    }
+}
+```
 
 ## 并发编程
 
 Rust标准库只提供1:1模型，即通过调用OS API来创建线程，有较小的运行时（宿主环境），可以方便与C交互。
 
-使用`std::thread::spawn`传入一个闭包即可创建一个新线程，返回值为一个handle，对handle调用join即可阻塞直到其完成。
+使用`std::thread::spawn`传入一个闭包即可创建一个新线程，返回值为一个handle，对handle调用join即可让当前线程阻塞直到handler其完成。
 
 ```rust
 use std::thread;
 use std::time::Duration;
 
 fn main() {
-    let handle = thread::spawn(|| {
+    let handler = thread::spawn(|| {
         for i in 1..10 {
             println!("hi number {} from the spawned thread!", i);
             thread::sleep(Duration::from_millis(1));
@@ -1943,7 +2090,7 @@ fn main() {
         thread::sleep(Duration::from_millis(1));
     }
 
-    handle.join().unwrap();
+    handler.join().unwrap();
 }
 ```
 
@@ -1987,6 +2134,259 @@ fn main() {
 ```
 
 使用`try_recv()`方法即可不阻塞地尝试接收一次，如果接收失败则返回Err。
+
+对发送方tx进行clone即可建立多个发送方。
+
+## 宏 macro
+
+- 使用`macro_rules!`构建的**声明宏（declarative macros）**（弃用）。
+- 三种**过程宏（procedural macros）**，接收并操作输入的rust代码，然后返回新的rust代码：
+	- 自定义`#[derive]`宏，只能用于struct或enum,可以为其指定随derive属性添加的代码。
+	- 类似属性的宏，在任何条日上添加自定义属性。
+	- 类似函数的宏，看起来像函数调用，对其指定为参数的token进行操作。
+
+宏定义前的代码无法使用此宏，要注意宏定义顺序。
+### macro_rules!
+
+用macro_rules!书写的宏的语法类似于match语句。定义时名字不用加感叹号。
+
+```rust
+macro_rules! my_macro {
+    () => {
+        println!("Check out my macro!");
+    };
+}
+  
+fn main() {
+    my_macro!();
+}
+```
+
+>in this situation, the value is the literal Rust source code passed to the macro; the patterns are compared with the structure of that source code; and the code associated with each pattern, when matched, replaces the code passed to the macro. This all happens during compilation
+
+>The `#[macro_export]` annotation indicates that this macro should be made available whenever the crate in which the macro is defined is brought into scope. Without this annotation, the macro can’t be brought into scope.
+
+```rust
+#[macro_export]
+macro_rules! vec {
+    ( $( $x:expr ),* ) => {
+        {
+            let mut temp_vec = Vec::new();
+            $(
+                temp_vec.push($x);
+            )*
+            temp_vec
+        }
+    };
+}
+```
+
+```rust
+mod macros {
+    #[macro_export]
+    macro_rules! my_macro {
+        () => {
+            println!("Check out my macro!");
+        };
+    }
+}
+  
+fn main() {
+    my_macro!();
+}
+```
+
+可以有多个分支情况：
+```rust
+macro_rules! my_macro {
+    () => {
+        println!("Check out my macro!");
+    };
+    ($val:expr) => {
+        println!("Look at this other macro: {}", $val);
+    };
+}
+  
+fn main() {
+    my_macro!();
+    my_macro!(7777);
+}
+```
+### derive宏
+
+写出`#[derive(SomeName)]`后，会匹配标注了`#[proc_macro_derive(SomeName)]`的函数，并把`#[derive(SomeName)]`标注的代码段作为输入传入，生成的输出会贴到`#[derive(SomeName)]`所在的地方的下面。
+
+### 类似属性的宏
+
+```rust
+#[route(GET,"/")]
+fn index(){
+	...
+}
+
+#[proc_macro_attribute] 
+pub fn route(attr: TokenStream, item: TokenStream) -> TokenStream {
+	...
+}
+```
+
+和derive一样进行匹配和传参，但会额外传TokenStream,即`GET, "/"`。
+
+### 类似函数的宏
+
+```rust
+let sql = sql!(SELECT * FROM posts WHERE id=1);
+
+#[proc_macro] 
+pub fn sql(input: TokenStream) -> TokenStream {
+	...
+}
+```
+
+把括号里面的字符都传到TokenStream，进行处理。可以看做其参数可无视rust语法限制的函数。
+
+## Unsafe Rust
+
+被unsafe修饰的代码块允许：
+- 解引用原始指针（raw pointer）
+- 调用unsafe函数或方法
+- 访问或修改可变的静态变量
+- 实现unsafe trait
+
+### 原始指针 raw pointer
+
+原始指针：
+- 可变：`*mut T`
+- 不可变：`*const T` （不能通过它对其所指的数据赋值）
+
+目的：
+- 与C语言进行接口
+- 构建借用检查器无法理解的安全抽象
+
+可变指针不算引用，因此可变不可变**不受借用规则约束**，也因此打破了借用规则（但直接用引用的话依旧无法打破）。
+
+可能空指针、野指针，也不自动释放。
+
+在安全代码块里面也能定义原始指针，但禁止解引用。
+
+```rust
+let mut num = 5;
+let r1 = &num as *const i32;
+
+let address = 0x012345usize;
+let r2 = &num as *mut i32;
+
+let slice: &mut [i32] = ...;
+let r3 = slice.as_mut_ptr();
+```
+
+#### 原始指针和Box互相转换
+
+```rust
+/// # Safety
+///
+/// The `ptr` must contain an owned box of `Foo`.
+unsafe fn raw_pointer_to_box(ptr: *mut Foo) -> Box<Foo> {
+    // SAFETY: The `ptr` contains an owned box of `Foo` by contract. We
+    // simply reconstruct the box from that pointer.
+    let mut ret: Box<Foo> = unsafe { Box::from_raw(ptr) };
+    ret.b = Some("hello".to_owned());
+    ret
+}
+  
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Instant;
+  
+    #[test]
+    fn test_success() {
+        let data = Box::new(Foo { a: 1, b: None });
+  
+        let ptr_1 = &data.a as *const u128 as usize;
+        // SAFETY: We pass an owned box of `Foo`.
+        let ret = unsafe { raw_pointer_to_box(Box::into_raw(data)) };
+  
+        let ptr_2 = &ret.a as *const u128 as usize;
+  
+        assert!(ptr_1 == ptr_2);
+        assert!(ret.b == Some("hello".to_owned()));
+    }
+}
+```
+
+### 安全抽象
+
+在安全的函数里面可以使用unsafe代码块，因此要在unsafe代码块的外面确保unsafe是safe的。这个必须人为保证。
+
+### unsafe trait
+
+定义trait的时候加上unsafe，则它只能在unsafe的代码块中实现，一般直接`unsafe impl`。
+
+## extern
+
+[Unsafe Rust - The Rust Programming Language](https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html#using-extern-functions-to-call-external-code)
+
+[External blocks - The Rust Reference](https://doc.rust-lang.org/reference/items/external-blocks.html)
+
+extern简化创建和使用外部函数接口（FFI，foreign function interface）的过程。
+
+使用类似`extern "C" {...}`可以声明外部的不同语言的函数；`"C"`就是ABI（application binary interface），通过指定汇编规则来指定语言。**extern代码块里的所有东西都是unsafe的**。
+
+在fn前加上`extern "C"`即可创建接口供其它语言调用。若不加则等价于`extern "Rust"`。添加`#[no_mangle]`注解可以防止编译期间发生名称更改。
+
+```rust
+extern "Rust" {
+    fn my_demo_function(a: u32) -> u32;
+    #[link_name = "my_demo_function"]
+    fn my_demo_function_alias(a: u32) -> u32;
+}
+  
+mod Foo {
+    // No `extern` equals `extern "Rust"`.
+    #[no_mangle]
+    fn my_demo_function(a: u32) -> u32 {
+        a
+    }
+}
+  
+#[cfg(test)]
+mod tests {
+    use super::*;
+  
+    #[test]
+    fn test_success() {
+        // The externally imported functions are UNSAFE by default
+        // because of untrusted source of other languages. You may
+        // wrap them in safe Rust APIs to ease the burden of callers.
+        //
+        // SAFETY: We know those functions are aliases of a safe
+        // Rust function.
+        unsafe {
+            my_demo_function(123);
+            my_demo_function_alias(456);
+        }
+    }
+}
+```
+
+## 文档注释
+
+文档注释也分为单行注释和块注释，但又有内外之分：
+
+- 内部文档注释（Inner doc comment）
+	- 单行注释（以 /// 开头）
+	- 块注释（用 /** ... */ 分隔）
+- 外部文档注释（Outer doc comment）
+	- 单行注释（以 //! 开头）
+	- 块注释（用 /*! ... */ 分隔）
+
+二者的区别：
+- 内部文档注释是对它之后的项做注释，与使用 `#[doc="..."]` 是等价的。
+- 外部文档注释是对它所在的项做注释，与使用 `#![doc="..."]` 是等价的。
+
+另外，在文档注释中可以使用 Markdown 语法。
+
 # 问题、技巧、解决方案
 
 ## 完整地打印到输出
@@ -2239,6 +2639,68 @@ members = [
 ```
 
 crate之间的依赖需要在crate内的toml的dependencies通过路径指定。
+
+## Build Script
+
+[Build Scripts - The Cargo Book](https://doc.rust-lang.org/cargo/reference/build-scripts.html)
+
+在跟目录下的`build.rs`中的rust代码会在包构建前运行。println出来的字符串会被用于告知cargo。
+
+如打印`cargo:rustc-env=VAR=VALUE`就会建立环境变量`VAR`，其值为`VALUE`，可以在程序里使用`std::env::var("TEST_FOO").unwrap();`访问。
+
+如打印`cargo:rustc-cfg=feature="pass"`就会使得`#[cfg(feature = "pass")]`为真。
+
+用途：
+- Building a bundled C library.
+- Finding a C library on the host system.
+- Generating a Rust module from a specification.
+- Performing any platform-specific configuration needed for the crate.
+
+```rust
+// build.rs
+
+use std::env;
+use std::fs;
+use std::path::Path;
+
+fn main() {
+    let out_dir = env::var_os("OUT_DIR").unwrap();
+    let dest_path = Path::new(&out_dir).join("hello.rs");
+    fs::write(
+        &dest_path,
+        "pub fn message() -> &'static str {
+            \"Hello, World!\"
+        }
+        "
+    ).unwrap();
+    println!("cargo:rerun-if-changed=build.rs");
+}
+
+// src/main.rs
+
+include!(concat!(env!("OUT_DIR"), "/hello.rs"));
+
+fn main() {
+    println!("{}", message());
+}
+```
+
+```rust
+fn main() {
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let your_command = format!(
+        "rustc-env=TEST_FOO={}",
+        timestamp
+    );
+    println!("cargo:{}", your_command);
+
+    let your_command = "rustc-cfg=feature=\"pass\"";
+    println!("cargo:{}", your_command);
+}
+```
 # 测试
 
 ```rust
