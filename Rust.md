@@ -1290,10 +1290,6 @@ entry(key)方法可以返回一个枚举Entry，是key对应的值的入口，�
 
 默认的HashMap安全但不是最快的，可以替换hasher。
 
-## zip
-
-可以将两个数组/迭代器等通过Tuple将每一项合在一起，即`newVec[i]=(vec1[i],vec2[i])`。
-
 ## 泛型
 
 `<T>`中的T是**类型参数**。在**编译时**会被替换为具体的类型，这个过程称为**单态化（monomorphyzation)**。
@@ -1602,7 +1598,7 @@ Animal::baby_name(); //Error: 无法确认到底调用哪个函数
 
 ## 动态分发与静态分发
 
-- 动态分发: dyn trait，运行时调用对应实现的方法。
+- 动态分发: dyn trait，运行时调用对应实现的方法。使用胖指针（两倍指针大小）来描述传入的指针对应的类型，这样调用方法时就能正确找到函数位置。**胖指针是虚表的替代品**。
 - 静态分发: impl trait，会在编译期单态化，因此并不能同时适配多种类型，如作为函数返回值类型的之后返回两种类型。
 
 智能指针`Box<TraitName>`逻辑上没问题，但已被弃用，应当使用`Box<dyn TraitName>`。
@@ -2442,13 +2438,82 @@ fn main(){
 }
 ```
 
-## 引用存活时间意外被延长
+## 引用存活时间被意外延长
 
 `match xxx {...}` 在`xxx`处的返回结果不会发生拷贝，导致里面的某些引用被延长到match结束。因此复杂的`xxx`取值最好在外面赋给一个变量然后再match。在if等语句中应该都会出现。
 
 ## 将结构体的成员变量Move出来
 
 有时候一个结构体要销毁了，但它的成员变量还有用，又不好使用智能指针，也不应当clone时，可以考虑将其类型设为`Option<T>`，要Move走时就进行`obj.variable_name.take().unwrap()`将`T`取出。
+
+## 可变引用一个结构体下的多个成员变量
+
+```rust
+#[derive(Debug, PartialEq, Eq)]
+struct A {
+    x: i32,
+    y: i32,
+}
+
+impl A {
+    /// 这个方法将self这个可变引用的生命周期转移到了字段x上。
+    ///
+    /// 这种函数相当于在这个生命周期范围内，对该结构体的
+    /// 可访问范围从整个结构体**缩小**到了其中的某个字段上，
+    /// 而舍弃了在这个生命周期内访问其他字段的权利。
+    fn x(&mut self) -> &mut i32 {
+        &mut self.x
+    }
+
+    /// 同理同上
+    #[allow(unused)]
+    fn y(&mut self) -> &mut i32 {
+        &mut self.y
+    }
+
+    /// 这个方法将self可变引用的生命周期**拆分并分别转移**到了x和y上。
+    fn x_and_y(&mut self) -> (&mut i32, &mut i32) {
+        (&mut self.x, &mut self.y)
+    }
+}
+
+fn main() {
+    let mut a = A {
+        x: 1,
+        y: 2,
+    };
+    {
+        let (x, y) = a.x_and_y();
+        *x += 2;
+        *y += 2;
+        assert_eq!(a, A { x: 3, y: 4 });
+    }
+    {
+        // 这里使用了另一种方法：结构化绑定。这种语法是模式匹配的一种，与在match中列举enum的各种枚举值的表达式是同一种语法。
+        let A { x, y } = &mut a;
+        *x += 2;
+        *y += 2;
+        assert_eq!(a, A { x: 5, y: 6 });
+
+        match &mut a {
+            A { x: 5, y } => assert_eq!(y, &mut 6),
+            _ => panic!("x != 5"),
+        }
+
+        match &mut a {
+            // 忽略了y。作用相当于通配符“_”。
+            A { x, .. } => assert_eq!(x, &mut 5),
+        }
+    }
+    // 错误用法。
+    {
+        let x = a.x();
+        // let y = a.y();
+        *x += 2;
+        // *y += 2;
+    }
+}
+```
 
 # 模块系统
 
