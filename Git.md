@@ -199,7 +199,7 @@ Git 处理这些场景的方法是使用一种叫做 “暂存区（staging area
 
 [Git - gitignore Documentation](https://git-scm.com/docs/gitignore)
 
-使用`bash git check-ignore -v <file-path>`即可查看目标文件是否被ignore，以及相应的gitignore规则。
+使用`git check-ignore -v <file-path>`即可查看目标文件是否被ignore，以及相应的gitignore规则。
 
 对于springboot的多模块项目（所有模块被聚合于上级），可以这样写`.gitignore`：
 

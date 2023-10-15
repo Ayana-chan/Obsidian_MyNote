@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824 分布式系统/lab随想QA.md",
+                "file": "杂记.md",
                 "mode": "source",
                 "source": false
               }
@@ -231,15 +231,16 @@
   },
   "active": "b4b03788dce9a39c",
   "lastOpenFiles": [
+    "杂记.md",
+    "Git.md",
+    "pa/笔记.md",
+    "MIT6.824 分布式系统/lab随想QA.md",
     "Rust.md",
     "Temp.md",
     "CMU15445/lab1.md",
     "日语/学习笔记.md",
-    "MIT6.824 分布式系统/lab随想QA.md",
     "MIT6.824 分布式系统/lab4.md",
-    "pa/笔记.md",
     "Shell.md",
-    "Git.md",
     "Vim.md",
     "pa/assets/uTools_1696064924705.png",
     "Linux.md",
@@ -250,7 +251,6 @@
     "pa/assets/uTools_1694872112737.png",
     "pa/assets",
     "TODO.md",
-    "杂记.md",
     "密码学.md",
     "Web前端/vue3.md",
     "Web前端/css.md",
