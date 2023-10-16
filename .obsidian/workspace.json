@@ -61,7 +61,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "15-418/笔记.md",
+                "file": "15-418 并行体系结构与编程/课堂笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "15-418/笔记.md"
+                "file": "15-418 并行体系结构与编程/课堂笔记.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "15-418/笔记.md",
+                "file": "15-418 并行体系结构与编程/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "15-418/笔记.md",
+                "file": "15-418 并行体系结构与编程/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,7 +212,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -232,8 +233,8 @@
   "active": "b4b03788dce9a39c",
   "lastOpenFiles": [
     "pa/笔记.md",
-    "15-418/笔记.md",
-    "15-418",
+    "15-418 并行体系结构与编程/课堂笔记.md",
+    "15-418 并行体系结构与编程",
     "杂记.md",
     "Git.md",
     "MIT6.824 分布式系统/lab随想QA.md",
