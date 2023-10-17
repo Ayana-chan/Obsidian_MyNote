@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Vim.md",
+                "file": "Git.md",
                 "mode": "source",
                 "source": false
               }
@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "杂记.md",
+                "file": "Cpp.md",
                 "mode": "source",
                 "source": false
               }
@@ -61,7 +61,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "15-418 并行体系结构与编程/课堂笔记.md",
+                "file": "cs144 计算机网络/lab0.md",
                 "mode": "source",
                 "source": false
               }
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "15-418 并行体系结构与编程/课堂笔记.md"
+                "file": "cs144 计算机网络/lab0.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "15-418 并行体系结构与编程/课堂笔记.md",
+                "file": "cs144 计算机网络/lab0.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "15-418 并行体系结构与编程/课堂笔记.md",
+                "file": "cs144 计算机网络/lab0.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,8 +212,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -232,24 +231,26 @@
   },
   "active": "b4b03788dce9a39c",
   "lastOpenFiles": [
-    "pa/笔记.md",
-    "15-418 并行体系结构与编程/课堂笔记.md",
-    "15-418 并行体系结构与编程",
+    "Cpp.md",
     "杂记.md",
-    "Git.md",
-    "MIT6.824 分布式系统/lab随想QA.md",
     "Rust.md",
+    "cs144 计算机网络/lab0.md",
+    "Git.md",
+    "Vim.md",
+    "15-418 并行体系结构与编程/课堂笔记.md",
+    "cs144 计算机网络",
+    "pa/笔记.md",
+    "15-418 并行体系结构与编程",
+    "MIT6.824 分布式系统/lab随想QA.md",
     "Temp.md",
     "CMU15445/lab1.md",
     "日语/学习笔记.md",
     "MIT6.824 分布式系统/lab4.md",
     "Shell.md",
-    "Vim.md",
     "pa/assets/uTools_1696064924705.png",
     "Linux.md",
     "Makefile.md",
     "pa/assets/uTools_1695529814464.png",
-    "Cpp.md",
     "算法.md",
     "pa/assets/uTools_1694872112737.png",
     "pa/assets",
@@ -262,7 +263,6 @@
     "Web后端/OSS.md",
     "Web后端/WebSocket.md",
     "Web后端/SpringMVC.md",
-    "Web后端/SpringCloud.md",
     "pa",
     "third/设计模式/2.剩余四大创建型模式.pdf",
     "third/设计模式/1.六大设计原则与单例模式.pdf",
@@ -277,7 +277,6 @@
     "rCore",
     "日语",
     "third/正则表达式.pdf",
-    "数学",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]

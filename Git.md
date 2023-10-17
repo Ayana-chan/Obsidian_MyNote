@@ -136,7 +136,6 @@ def load_reference(name_or_id):
 
 Git 处理这些场景的方法是使用一种叫做 “暂存区（staging area）”的机制，它允许您指定下次快照中要包括那些**改动**（而非整体的复制）。
 # 使用
-
 ## 各种命令行接口
 
 [Pro Git 中文版](https://git-scm.com/book/zh/v2)
@@ -215,13 +214,14 @@ Git 处理这些场景的方法是使用一种叫做 “暂存区（staging area
 **/.gitignore
 ```
 
-## 获取新的分支信息
+## 技巧&功能
+### 获取新的分支信息
 
 ```bash
 git remote update origin --prune
 ```
 
-## 拉取全部分支
+### 拉取全部分支
 
 ```bash
 git branch -r | grep -v '\->' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | while read remote; do git branch --track "${remote#origin/}" "$remote"; done
@@ -229,7 +229,9 @@ git fetch --all
 git pull --all
 ```
 
+### 从别人的公有库创建私有库
 
+[git - GitHub: How to make a fork of public repository private? - Stack Overflow](https://stackoverflow.com/questions/10065526/github-how-to-make-a-fork-of-public-repository-private)
 
 
 

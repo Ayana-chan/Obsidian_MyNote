@@ -596,6 +596,9 @@ private:
 };
 ```
 
+### std::static_cast
+
+用于类型转换（替代了C风格的`(Type)var`）。
 ### std::copy
 
 ```cpp
