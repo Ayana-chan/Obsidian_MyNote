@@ -1020,7 +1020,42 @@ priority_queue<node>q;
 ## 字符串
 
 [C++中将Char转换成String的4种方法\_C 语言\_脚本之家](https://www.jb51.net/article/277515.htm)
-### String
+### C风格字符串操作
+
+都是对char数组的操作（参数为char*）。
+
+- strcpy(p, p1) 复制字符串 
+- strncpy(p, p1, n) 复制指定长度字符串 
+- strcat(p, p1) 附加字符串 
+- strncat(p, p1, n) 附加指定长度字符串 
+- strlen(p) 取字符串长度 
+- strcmp(p, p1) 比较字符串 
+- strcasecmp(p, p1)忽略大小写比较字符串 
+- strncmp(p, p1, n) 比较指定长度字符串 
+- strchr(p, c) 在字符串中查找指定字符 
+- strrchr(p, c) 在字符串中反向查找 
+- strstr(p, p1) 查找字符串 
+- strpbrk(p, p1) 以目标字符串的所有字符作为集合，在当前字符串查找该集合的任一元素 
+- strspn(p, p1) 以目标字符串的所有字符作为集合，在当前字符串查找不属于该集合的任一元素的偏移 
+- strcspn(p, p1) 以目标字符串的所有字符作为集合，在当前字符串查找属于该集合的任一元素的偏移
+
+### char字符检查函数
+
+参数都为char。
+
+- isalpha() 检查是否为字母字符 
+- isupper() 检查是否为大写字母字符 
+- islower() 检查是否为小写字母字符 
+- isdigit() 检查是否为数字 
+- isxdigit() 检查是否为十六进制数字表示的有效字符 
+- isspace() 检查是否为空格类型字符 
+- iscntrl() 检查是否为控制字符 
+- ispunct() 检查是否为标点符号 
+- isalnum() 检查是否为字母和数字 
+- isprint() 检查是否是可打印字符 
+- isgraph() 检查是否是图形字符，等效于 isalnum() | ispunct()
+
+### string
 
 | 方法      | 功能                                                                                                                 |
 | --------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -1083,41 +1118,30 @@ cout<<"\n";
 ```
 
 找到了就返回起始下标值，找不到就返回`std::string::npos`，等于-1。
-### C风格字符串操作
 
-都是对char数组的操作（参数为char*）。
+### string_view
 
-- strcpy(p, p1) 复制字符串 
-- strncpy(p, p1, n) 复制指定长度字符串 
-- strcat(p, p1) 附加字符串 
-- strncat(p, p1, n) 附加指定长度字符串 
-- strlen(p) 取字符串长度 
-- strcmp(p, p1) 比较字符串 
-- strcasecmp(p, p1)忽略大小写比较字符串 
-- strncmp(p, p1, n) 比较指定长度字符串 
-- strchr(p, c) 在字符串中查找指定字符 
-- strrchr(p, c) 在字符串中反向查找 
-- strstr(p, p1) 查找字符串 
-- strpbrk(p, p1) 以目标字符串的所有字符作为集合，在当前字符串查找该集合的任一元素 
-- strspn(p, p1) 以目标字符串的所有字符作为集合，在当前字符串查找不属于该集合的任一元素的偏移 
-- strcspn(p, p1) 以目标字符串的所有字符作为集合，在当前字符串查找属于该集合的任一元素的偏移
+对string的引用，不进行拷贝。
 
-### char字符检查函数
+```cpp
+#include <iostream>
+#include <string_view>
 
-参数都为char。
+void printSubstring(std::string_view str)
+{
+    std::cout << "Substring: " << str << std::endl;
+}
 
-- isalpha() 检查是否为字母字符 
-- isupper() 检查是否为大写字母字符 
-- islower() 检查是否为小写字母字符 
-- isdigit() 检查是否为数字 
-- isxdigit() 检查是否为十六进制数字表示的有效字符 
-- isspace() 检查是否为空格类型字符 
-- iscntrl() 检查是否为控制字符 
-- ispunct() 检查是否为标点符号 
-- isalnum() 检查是否为字母和数字 
-- isprint() 检查是否是可打印字符 
-- isgraph() 检查是否是图形字符，等效于 isalnum() | ispunct()
+int main()
+{
+    std::string fullString = "Hello, World!";
+    std::string_view substring = fullString.substr(7, 5); // 获取子串 "World"
 
+    printSubstring(substring);
+
+    return 0;
+}
+```
 ## iterator迭代器
 
 ### distance()

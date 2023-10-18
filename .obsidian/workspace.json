@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824 分布式系统/lab4.md",
+                "file": "杂记.md",
                 "mode": "source",
                 "source": false
               }
@@ -61,7 +61,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "cs144 计算机网络/lab0.md",
+                "file": "cs144 计算机网络/lab笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "cs144 计算机网络/lab0.md"
+                "file": "cs144 计算机网络/lab笔记.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "cs144 计算机网络/lab0.md",
+                "file": "cs144 计算机网络/lab笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "cs144 计算机网络/lab0.md",
+                "file": "cs144 计算机网络/lab笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -231,10 +231,13 @@
   },
   "active": "b4b03788dce9a39c",
   "lastOpenFiles": [
+    "cs144 计算机网络/assets/uTools_1697615151790.png",
+    "cs144 计算机网络/assets",
     "Cpp.md",
+    "cs144 计算机网络/lab笔记.md",
     "杂记.md",
+    "MIT6.824 分布式系统/lab4.md",
     "Rust.md",
-    "cs144 计算机网络/lab0.md",
     "Git.md",
     "Vim.md",
     "15-418 并行体系结构与编程/课堂笔记.md",
@@ -245,7 +248,6 @@
     "Temp.md",
     "CMU15445/lab1.md",
     "日语/学习笔记.md",
-    "MIT6.824 分布式系统/lab4.md",
     "Shell.md",
     "pa/assets/uTools_1696064924705.png",
     "Linux.md",
@@ -262,7 +264,6 @@
     "Web前端/vite.md",
     "Web后端/OSS.md",
     "Web后端/WebSocket.md",
-    "Web后端/SpringMVC.md",
     "pa",
     "third/设计模式/2.剩余四大创建型模式.pdf",
     "third/设计模式/1.六大设计原则与单例模式.pdf",
@@ -276,7 +277,6 @@
     "assets/uTools_1691813186320.png",
     "rCore",
     "日语",
-    "third/正则表达式.pdf",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
