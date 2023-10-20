@@ -44,19 +44,7 @@
             }
           },
           {
-            "id": "313855b843e089ca",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "杂记.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "b4b03788dce9a39c",
+            "id": "d7bc361c56af0214",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -68,7 +56,7 @@
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -212,7 +200,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -229,13 +218,20 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "b4b03788dce9a39c",
+  "active": "d7bc361c56af0214",
   "lastOpenFiles": [
-    "cs144 计算机网络/assets/uTools_1697615151790.png",
-    "cs144 计算机网络/assets",
     "Cpp.md",
+    "cs144 计算机网络/assets/uTools_1697628021845.png",
+    "cs144 计算机网络/assets/uTools_1697714749898.png",
+    "cs144 计算机网络/assets/uTools_1697714665648.png",
+    "cs144 计算机网络/assets/uTools_1697615151790.png",
+    "cs144 计算机网络/assets/uTools_1697714853329.png",
     "cs144 计算机网络/lab笔记.md",
+    "cs144 计算机网络/assets/uTools_1697685427105.png",
+    "cs144 计算机网络/assets/uTools_1697684472206.png",
+    "cs144 计算机网络/assets/uTools_1697682751165.png",
     "杂记.md",
+    "cs144 计算机网络/assets",
     "MIT6.824 分布式系统/lab4.md",
     "Rust.md",
     "Git.md",
@@ -254,7 +250,6 @@
     "Makefile.md",
     "pa/assets/uTools_1695529814464.png",
     "算法.md",
-    "pa/assets/uTools_1694872112737.png",
     "pa/assets",
     "TODO.md",
     "密码学.md",
@@ -267,14 +262,7 @@
     "pa",
     "third/设计模式/2.剩余四大创建型模式.pdf",
     "third/设计模式/1.六大设计原则与单例模式.pdf",
-    "rCore/assets/uTools_1692079341325.png",
     "rCore/assets",
-    "assets/uTools_1692003763707.png",
-    "assets/uTools_1692003020894.png",
-    "assets/uTools_1691937556204.png",
-    "assets/uTools_1691937208248.png",
-    "assets/uTools_1691936024815.png",
-    "assets/uTools_1691813186320.png",
     "rCore",
     "日语",
     "未命名.canvas",

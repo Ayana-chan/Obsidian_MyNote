@@ -8,7 +8,7 @@ ubuntu20.04默认apt不到gcc12，需要：[ubuntu 22.04 切 gcc/g++ 版本 - �
 
 CMake 3.24.2也要手动安装：[Ubuntu安装cmake-3.24.2（成功案例）\_ubuntu 安装cmake\_处女座佩奇的博客-CSDN博客](https://blog.csdn.net/qq_42264030/article/details/128142926)
 
-vscode的架构选择linux-gcc-x64就没有红线了。
+vscode的架构选择linux-gcc-x64就没有头文件红线了。
 ## 尝试
 
 `Fetch a Web page`时要快速地输入那几条命令，否则会报超时。
@@ -104,6 +104,25 @@ albSPqBcvs11Pw263K7x4Wv3JckI
 
 >**What should the behaviour of my program be if the caller tries to pop with a `len` greater than what is available?**
 We don't have any preference on the behavior if the caller tries to pop more than is buffered in the stream, as long as you behave reasonably and don't crash in that situation. If you want to pop the maximum available, that is fine with us. If you want to throw an exception, that is also fine with us.
+
+## 命令
+
+运行测试：
+```bash
+cmake --build build --target test_name
+```
+
+运行单个测试：
+```bash
+ctest -R single_test_name
+```
+
+格式化代码：
+```bash
+cmake --build build --target format
+```
+
+![](assets/uTools_1697714853329.png)
 # checkpoint 1
 
 The TCP sender is dividing its byte stream up into short segments (substrings no more than about 1,460 bytes apiece) so that they each fit inside a datagram.
@@ -120,25 +139,113 @@ The Reassembler’s will not store any bytes that can’t be pushed to the ByteS
 
 如果进来的部分下标过大，不小于first_acceptable_index，则超过部分会被截断。这样的话，即使最开始的index迟迟不来，后面的index疯狂到来，也不会挤占掉最开始的index的位置。
 
+一个设想：也许可以使用循环队列记录数据，同时维护一个map来记录所有起始点和终点。
+
 ![](assets/uTools_1697615151790.png)
 
+# checkpoint 2
+
+These “receiver messages” are responsible for telling the sender:
+1. the index of the “first unassembled” byte, which is called the “**acknowledgment number**” or “**ackno**.” This is the first byte that the receiver needs from the sender. 尚未被装配的都被视为没收到；或者说要让装配成功必须要求first unassembled的到达。
+2. the available **capacity** in the output ByteStream. This is called the “**window size**” 读缓冲区+装配缓冲区=窗口
+
+Together, the ackno and window size describe describes the receiver’s **window**: **a range of indexes** that <u>the TCP sender is allowed to send</u>.
+
+- left edge： ackno
+- right edge： ackno + window_size
+- --> need $[left edge, right edge)$
+
+>TCP is a protocol that reliably conveys a pair of flow-controlled byte streams (one in each direction) over unreliable datagrams. Two parties, or “peers,” participate in the TCP connection, and each peer acts as both “sender” (of its own outgoing byte stream) and “receiver” (of an incoming byte stream) at the same time.
+
+>These signals are crucial to TCP’s ability to provide the service of a flow-controlled, reliable byte stream over an unreliable datagram network. In TCP, acknowledgment means, “What’s the index of the next byte that the receiver needs so it can reassemble more of the ByteStream?” This tells the sender what bytes it needs to send or resend. Flow control means, “What range of indices is the receiver interested and willing to receive?” (a function of its available capacity). This tells the sender how much it’s allowed to send.
+
+receiver收到消息后，还要负责构建之后回复的信息内容，包括确认信息和流量控制信息。
+
+The first sequence number in the stream is a random 32-bit number called the Initial Sequence Number (ISN). This is the sequence number that represents the “zero point” or the SYN (beginning of stream).
+
+In addition to ensuring the receipt of all bytes of data, TCP makes sure that the **beginning and ending of the stream are received reliably**. Thus, in TCP the SYN (beginning-of stream) and FIN (end-of-stream) control flags are assigned sequence numbers. **Each of these occupies one sequence number.** (The sequence number occupied by the SYN flag is the ISN.) Keep in mind that SYN and FIN aren’t part of the stream itself and aren’t “bytes”—they represent the beginning and ending of the byte stream itself.
+
+there are two streams—one in each direction. Each stream has separate sequence numbers and a different random ISN.
+
+2^64 Byte可以视为无限，因为要网络用满这么多要很久很久。
+
+![](assets/uTools_1697628021845.png)
+
+猜测，unwrap时的checkpoint应当全部使用已存储的absolute seqno。
+
+The sequence number of the first arriving segment that has the SYN flag set is the initial sequence number.
+
+Reassembler expects stream indexes starting at zero; you will have to unwrap the seqnos to produce these.
+
+sequence_length表示占用的序列号大小，已经考虑的SYN和FIN。
+```c
+size_t sequence_length() const { return SYN + payload.size() + FIN; }
+```
+
+window size超过65535时，视为65535。
+
+![](assets/uTools_1697714749898.png)
 
 
+# checkpoint 3
 
+The TCPSender is a tool that translates from an outbound byte stream to segments that will become the payloads of unreliable datagrams, responsible for reading from a ByteStream (created and written to by some sender-side application), and turning the stream into a sequence of outgoing TCP segments. **given an outgoing ByteStream, split it up into segments, send them to the receiver, and if they don’t get acknowledged soon enough, keep resending them.**
 
+The sender should keep sending segments until either the window is full or the outbound ByteStream has nothing more to send.
 
+“outstanding” segments：Keep track of which segments have been sent but not yet acknowledged by the receiver.
 
+The basic principle is to send whatever the receiver will allow us to send (filling the window), and keep retransmitting until the receiver acknowledges each segment. This is called “automatic repeat request” (ARQ).
 
+Periodically, the owner of the TCPSender will call the TCPSender’s tick method, indicating the passage of time.
 
+**retransmission timeout (RTO)** is <u>the number of milliseconds to wait</u> before resending an outstanding TCP segment. The value of the RTO will change over time, but the “initial value” stays the same. The starter code saves the “initial value” of the RTO in a member variable called initial retransmission timeout.
 
+timer：每次有效信息发送时，若timer关闭，则将其重置为RTO。所有outstanding data被确认后，timer会关闭。收到了ack，但依然还有outstanding data，则重置timer为RTO。
 
+RTO超时时，会统计连续重传次数，用于决定是否abort；然后将RTO翻倍（exponential backoff）。
 
+You’ll want to make sure that every TCPSenderMessage you send fits fully inside the receiver’s window. Make each individual message as big as possible, but no bigger than the value given by TCPConfig::MAX PAYLOAD SIZE (1452 bytes).
 
+SYN and FIN flags also occupy a sequence number each, which means that they occupy space in the window. window_size大小虽然是实际数据意义上的，但此处为了一致性似乎也将flag考虑为占位置的内容。
 
+窗口大小为0的时候，也应当（仅仅在push方法里面）看做是1，发送小部分数据，以求得对方回复来获取window size的更新信息。刚开始的时候也默认窗口大小是1.
 
+ack大于某个seg的全部seq时，才认为该seg被确认。
 
+a segment which occupies no sequence numbers doesn’t need to be kept track of as “outstanding” and won’t ever be retransmitted.
 
+FIN的话看reader关没关就行，就像Receiver看writer关没关一样。
 
+先塞SYN，剩下还有空间就塞数据，然后再剩下空间就塞FIN。 没空间塞数据很容易搞，但没空间塞FIN的时候就需要留下标记，保证能进入push的下一个循环。
 
+`Impossible ackno (beyond next seqno) is ignored`说明receive到过大的非法ack时要丢弃。即使没有ack或ack非法，也要记录window size。
 
+![](assets/uTools_1697714665648.png)
+
+# checkpoint 4
+
+If the network interface already sent an ARP request about the same IP address in the last five seconds, don’t send a second request
+
+```c
+// 对象转字符串
+// Helper to serialize any object (without constructing a Serializer of the caller's own)
+template<class T>
+std::vector<Buffer> serialize( const T& obj )
+{
+  Serializer s;
+  obj.serialize( s );
+  return s.output();
+}
+
+// 字符串转对象
+// Helper to parse any object (without constructing a Parser of the caller's own). Returns true if successful.
+template<class T>
+bool parse( T& obj, const std::vector<Buffer>& buffers )
+{
+  Parser p { buffers };
+  obj.parse( p );
+  return not p.has_error();
+}
+```
 
