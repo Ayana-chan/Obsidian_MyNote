@@ -249,3 +249,4 @@ bool parse( T& obj, const std::vector<Buffer>& buffers )
 }
 ```
 
+![](assets/uTools_1697775226346.png)
