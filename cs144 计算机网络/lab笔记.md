@@ -250,3 +250,19 @@ bool parse( T& obj, const std::vector<Buffer>& buffers )
 ```
 
 ![](assets/uTools_1697775226346.png)
+
+ARP的supported好像是给parser用的。
+
+![](assets/uTools_1697795826469.png)
+
+
+
+
+
+
+
+
+
+
+
+
