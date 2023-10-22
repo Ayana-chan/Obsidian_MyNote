@@ -122,10 +122,37 @@ ctest -R single_test_name
 cmake --build build --target format
 ```
 
+## byte stream
+
+```cpp
+/*
+ * read: A helper function thats peeks and pops up to `len` bytes
+ * from a ByteStream Reader into a string;
+ */
+void read( Reader& reader, uint64_t len, std::string& out )
+{
+  out.clear();
+
+  while ( reader.bytes_buffered() and out.size() < len ) {
+    auto view = reader.peek();
+
+    if ( view.empty() ) {
+      throw std::runtime_error( "Reader::peek() returned empty string_view" );
+    }
+
+    view = view.substr( 0, len - out.size() ); // Don't return more bytes than desired.
+    out += view;
+    reader.pop( view.size() );
+  }
+}
+```
+
 ![](assets/uTools_1697714853329.png)
 
-阅读[CS144 2023 完全指南 - 知乎](https://zhuanlan.zhihu.com/p/630739394/)后，发现可能对API理解有误，peek可以返回包含多个字节的string_view，只要前缀正确即可，因此不需要一个一个char存储。TODO：重写
+阅读[CS144 2023 完全指南 - 知乎](https://zhuanlan.zhihu.com/p/630739394/)后，发现可能对API理解有误，peek可以返回包含多个字节的string_view，只要前缀正确即可，因此不需要一个一个char存储。当然，这个博客写的代码也不是我认为的高效的，我只用了一个stream view。
 
+重写后的结果：
+![](assets/uTools_1697946945126.png)
 # checkpoint 1
 
 The TCP sender is dividing its byte stream up into short segments (substrings no more than about 1,460 bytes apiece) so that they each fit inside a datagram.
@@ -146,6 +173,9 @@ The Reassembler’s will not store any bytes that can’t be pushed to the ByteS
 
 ![](assets/uTools_1697615151790.png)
 
+重写byte stream后，结果如下：
+
+![](assets/uTools_1697952357702.png)
 # checkpoint 2
 
 These “receiver messages” are responsible for telling the sender:
