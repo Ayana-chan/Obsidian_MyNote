@@ -1142,6 +1142,11 @@ int main()
     return 0;
 }
 ```
+
+### substr
+
+string的substr是$O(n)$的，会直接拷贝出子串；但string_view的substr是$O(1)$的，不会发生拷贝。
+
 ## iterator迭代器
 
 ### distance()

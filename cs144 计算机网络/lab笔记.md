@@ -123,6 +123,9 @@ cmake --build build --target format
 ```
 
 ![](assets/uTools_1697714853329.png)
+
+阅读[CS144 2023 完全指南 - 知乎](https://zhuanlan.zhihu.com/p/630739394/)后，发现可能对API理解有误，peek可以返回包含多个字节的string_view，只要前缀正确即可，因此不需要一个一个char存储。TODO：重写
+
 # checkpoint 1
 
 The TCP sender is dividing its byte stream up into short segments (substrings no more than about 1,460 bytes apiece) so that they each fit inside a datagram.
@@ -225,6 +228,8 @@ FIN的话看reader关没关就行，就像Receiver看writer关没关一样。
 
 # checkpoint 4
 
+这是最底层的接口，输出数据链路层包。
+
 If the network interface already sent an ARP request about the same IP address in the last five seconds, don’t send a second request
 
 ```c
@@ -254,6 +259,32 @@ bool parse( T& obj, const std::vector<Buffer>& buffers )
 ARP的supported好像是给parser用的。
 
 ![](assets/uTools_1697795826469.png)
+
+
+# checkpoint 5
+
+找到next hop之后，将其传给checkpoint 4的NetworkInterface。
+
+prefix：网络码，prefix匹配上了就是网络匹配上了。
+
+The interface num gives the index of the router’s NetworkInterface that should use to send the datagram to the next hop. You can access this interface with the interface(interface num) method.
+
+**longest-prefix-match**：• Among the matching routes, the router chooses the route with the **biggest** value of **prefix length**.
+
+the router sends the modified datagram on the appropriate interface ( interface(interface num).send datagram() ) to the appropriate next hop
+
+If the router is directly attached to the network in question, the next hop will be an **empty optional**. In that case,<u> the next hop is the datagram’s destination address</u>.
+
+路由表：根据网络码确认下一跳地址和输出用的端口。
+
+对数据报的任何更新都需要重新计算checksum！！！如更新TTL时，否则会报parse失败。
+
+![](assets/uTools_1697880782313.png)
+
+
+
+
+
 
 
 
