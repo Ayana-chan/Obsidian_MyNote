@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Cpp.md",
+                "file": "pa/笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "算法.md",
+                "file": "rCore/学习笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "rCore/Daily Record.md"
+                "file": "rCore/学习笔记.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "rCore/Daily Record.md",
+                "file": "rCore/学习笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "rCore/Daily Record.md",
+                "file": "rCore/学习笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,7 +212,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -229,9 +230,13 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "d7bc361c56af0214",
+  "active": "9c467b59e0bbb34c",
   "lastOpenFiles": [
+    "pa/笔记.md",
+    "Cpp.md",
+    "Rust.md",
     "rCore/学习笔记.md",
+    "算法.md",
     "rCore/Daily Record.md",
     "15-418 并行体系结构与编程/课堂笔记.md",
     "15-418 并行体系结构与编程/assets/uTools_1698041605328.png",
@@ -246,19 +251,15 @@
     "cs144 计算机网络/assets/uTools_1697880782313.png",
     "cs144 计算机网络/assets/uTools_1697952357702.png",
     "cs144 计算机网络/lab笔记.md",
-    "算法.md",
-    "Cpp.md",
     "RISC-V/riscv-privileged-20211203.pdf",
     "RISC-V/riscv-spec-20191213.pdf",
     "RISC-V",
     "杂记.md",
     "cs144 计算机网络/assets",
     "MIT6.824 分布式系统/lab4.md",
-    "Rust.md",
     "Git.md",
     "Vim.md",
     "cs144 计算机网络",
-    "pa/笔记.md",
     "15-418 并行体系结构与编程",
     "MIT6.824 分布式系统/lab随想QA.md",
     "Temp.md",
