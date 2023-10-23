@@ -44,18 +44,6 @@
             }
           },
           {
-            "id": "d7bc361c56af0214",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "cs144 计算机网络/lab笔记.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
             "id": "9c467b59e0bbb34c",
             "type": "leaf",
             "state": {
@@ -66,9 +54,21 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "d7bc361c56af0214",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "rCore/Daily Record.md",
+                "mode": "source",
+                "source": false
+              }
+            }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "cs144 计算机网络/lab笔记.md"
+                "file": "rCore/Daily Record.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "cs144 计算机网络/lab笔记.md",
+                "file": "rCore/Daily Record.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "cs144 计算机网络/lab笔记.md",
+                "file": "rCore/Daily Record.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,8 +212,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -232,31 +231,32 @@
   },
   "active": "d7bc361c56af0214",
   "lastOpenFiles": [
+    "rCore/学习笔记.md",
+    "rCore/Daily Record.md",
+    "15-418 并行体系结构与编程/课堂笔记.md",
+    "15-418 并行体系结构与编程/assets/uTools_1698041605328.png",
+    "15-418 并行体系结构与编程/assets/uTools_1698041113102.png",
+    "15-418 并行体系结构与编程/assets/uTools_1698037591707.png",
+    "15-418 并行体系结构与编程/assets/uTools_1698031596956.png",
+    "15-418 并行体系结构与编程/assets",
+    "cs144 计算机网络/assets/uTools_1697714749898.png",
+    "cs144 计算机网络/assets/uTools_1697714853329.png",
+    "cs144 计算机网络/assets/uTools_1697775226346.png",
+    "cs144 计算机网络/assets/uTools_1697795826469.png",
+    "cs144 计算机网络/assets/uTools_1697880782313.png",
     "cs144 计算机网络/assets/uTools_1697952357702.png",
-    "cs144 计算机网络/assets/uTools_1697946945126.png",
+    "cs144 计算机网络/lab笔记.md",
     "算法.md",
     "Cpp.md",
     "RISC-V/riscv-privileged-20211203.pdf",
     "RISC-V/riscv-spec-20191213.pdf",
     "RISC-V",
-    "cs144 计算机网络/lab笔记.md",
-    "cs144 计算机网络/assets/uTools_1697880782313.png",
-    "rCore/学习笔记.md",
-    "cs144 计算机网络/assets/uTools_1697795826469.png",
-    "cs144 计算机网络/assets/uTools_1697775226346.png",
-    "cs144 计算机网络/assets/uTools_1697628021845.png",
-    "cs144 计算机网络/assets/uTools_1697714749898.png",
-    "cs144 计算机网络/assets/uTools_1697714665648.png",
-    "cs144 计算机网络/assets/uTools_1697615151790.png",
-    "cs144 计算机网络/assets/uTools_1697714853329.png",
-    "cs144 计算机网络/assets/uTools_1697685427105.png",
     "杂记.md",
     "cs144 计算机网络/assets",
     "MIT6.824 分布式系统/lab4.md",
     "Rust.md",
     "Git.md",
     "Vim.md",
-    "15-418 并行体系结构与编程/课堂笔记.md",
     "cs144 计算机网络",
     "pa/笔记.md",
     "15-418 并行体系结构与编程",
@@ -277,7 +277,6 @@
     "Web后端/OSS.md",
     "pa",
     "third/设计模式/2.剩余四大创建型模式.pdf",
-    "third/设计模式/1.六大设计原则与单例模式.pdf",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
