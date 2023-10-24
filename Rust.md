@@ -578,7 +578,7 @@ let Point{ x_num , y_num } = p;
 let Point{ x , y } = p; //解构的变量名和结构体的成员变量名相同的时候可简写
 ```
 
-## 静态变量
+## 静态变量 static
 
 ```rust
 static MY_STATIC_VA: &str = "Hello World";
@@ -591,7 +591,29 @@ static mut COUNT: u32 = 0;
 
 即使是可变静态变量，对其的修改也是不安全的，要在unsafe中进行。[Unsafe Rust](Rust.md#Unsafe%20Rust)
 
+不能直接用RefCell，因为不能保证线程安全，必须unsafe地实现Sync trait，对其做一层封装。例如：
+```rust
+pub struct UPSafeCell<T> {
+    /// inner data
+    inner: RefCell<T>,
+}
 
+unsafe impl<T> Sync for UPSafeCell<T> {}
+
+impl<T> UPSafeCell<T> {
+    /// User is responsible to guarantee that inner struct is only used in
+    /// uniprocessor.
+    pub unsafe fn new(value: T) -> Self {
+        Self { inner: RefCell::new(value) }
+    }
+    /// Panic if the data has been borrowed.
+    pub fn exclusive_access(&self) -> RefMut<'_, T> {
+        self.inner.borrow_mut()
+    }
+}
+```
+
+当一个静态变量需要在运行时进行赋值时，可以使用`lazy_static`外部库，让`lazy_static!`宏中的静态变量在首次被使用时才赋值。
 ## main函数
 
 main函数的默认返回值为`()`，即单元类型。但也可以改成`Result<String, Box<dyn std::error::Error>>`，表示可以接收**任意错误**，但要在main末尾添上`Ok(())`。
@@ -1864,6 +1886,7 @@ RefCell指针支持可变引用和不可变引用，而其安全检查在运行�
 
 使用`Rc<RefCell<T>>`可以使得数据可以被多方共享且能修改，只要保证读写完之后引用的`RefCell<T>`马上消失即可。
 
+
 ### Cell
 
 通过复制而非借用来访问数据，有内部可变性。
@@ -2395,6 +2418,35 @@ mod tests {
 
 另外，在文档注释中可以使用 Markdown 语法。
 
+## 汇编
+
+[Inline assembly - The Rust Reference](https://doc.rust-lang.org/reference/inline-assembly.html)
+
+`include_str!`可以将一个文件的内容给复制粘贴（如c语言的include）进来；而`global_asm!`可以嵌入全局汇编代码。
+
+```rust
+use core::arch::global_asm;
+global_asm!(include_str!("entry.asm"));
+```
+
+相比 `global_asm!` ， `asm!` 宏可以获取上下文中的变量信息并允许嵌入的汇编代码对这些变量进行操作。由于编译器的能力不足以判定插入汇编代码这个行为的安全性，所以我们需要将其包裹在 unsafe 块中自己来对它负责。
+
+```rust
+ 2use core::arch::asm;
+ 3fn syscall(id: usize, args: [usize; 3]) -> isize {
+ 4    let mut ret: isize;
+ 5    unsafe {
+ 6        asm!(
+ 7            "ecall",
+ 8            inlateout("x10") args[0] => ret,
+ 9            in("x11") args[1],
+10            in("x12") args[2],
+11            in("x17") id
+12        );
+13    }
+14    ret
+15}
+```
 # 问题、技巧、解决方案
 
 ## 完整地打印到输出
