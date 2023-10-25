@@ -234,7 +234,9 @@ git pull --all
 [git - GitHub: How to make a fork of public repository private? - Stack Overflow](https://stackoverflow.com/questions/10065526/github-how-to-make-a-fork-of-public-repository-private)
 
 
+# bug
 
+[Git问题：Git clone 时遇到fatal: protocol ''https'' is not supported问题解决方案\_fatal: protocol ' https' is not supported-CSDN博客](https://blog.csdn.net/jiunian_2761/article/details/100005715)
 
 
 
