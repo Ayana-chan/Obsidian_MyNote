@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Rust.md"
+                "file": "rCore/学习笔记.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Rust.md",
+                "file": "rCore/学习笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Rust.md",
+                "file": "rCore/学习笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -229,24 +229,24 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "173af0fcea462ae7",
+  "active": "9c467b59e0bbb34c",
   "lastOpenFiles": [
-    "rCore/学习笔记.md",
     "rCore/Daily Record.md",
+    "rCore/学习笔记.md",
+    "Rust.md",
+    "rCore/assets/uTools_1698463840690.png",
     "rCore/assets/uTools_1698460828504.png",
     "rCore/assets/uTools_1698459210513.png",
     "rCore/assets/uTools_1698458625782.png",
     "cs杂记.md",
     "杂记.md",
     "rCore/assets/uTools_1698385100594.png",
-    "Rust.md",
     "rCore/assets/uTools_1698236547397.png",
     "Git.md",
     "rCore/assets/uTools_1698224401893.png",
     "rCore/assets/uTools_1698224271221.png",
     "rCore/assets/uTools_1698223642896.png",
     "rCore/assets/uTools_1698138305266.png",
-    "rCore/assets/uTools_1698135926246.png",
     "pa/笔记.md",
     "Cpp.md",
     "算法.md",
