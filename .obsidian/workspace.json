@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "rCore/学习笔记.md"
+                "file": "rCore/Daily Record.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "rCore/学习笔记.md",
+                "file": "rCore/Daily Record.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "rCore/学习笔记.md",
+                "file": "rCore/Daily Record.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -229,11 +229,14 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "9c467b59e0bbb34c",
+  "active": "d7bc361c56af0214",
   "lastOpenFiles": [
-    "rCore/Daily Record.md",
     "rCore/学习笔记.md",
+    "rCore/Daily Record.md",
     "Rust.md",
+    "rCore/assets/uTools_1698489927144.png",
+    "rCore/assets/uTools_1698489911870.png",
+    "rCore/assets/uTools_1698489899995.png",
     "rCore/assets/uTools_1698463840690.png",
     "rCore/assets/uTools_1698460828504.png",
     "rCore/assets/uTools_1698459210513.png",
@@ -244,9 +247,6 @@
     "rCore/assets/uTools_1698236547397.png",
     "Git.md",
     "rCore/assets/uTools_1698224401893.png",
-    "rCore/assets/uTools_1698224271221.png",
-    "rCore/assets/uTools_1698223642896.png",
-    "rCore/assets/uTools_1698138305266.png",
     "pa/笔记.md",
     "Cpp.md",
     "算法.md",

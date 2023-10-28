@@ -1629,6 +1629,25 @@ Animal::baby_name(); //Error: 无法确认到底调用哪个函数
 
 即trait的继承，`trait TraitName: SuperTraitName{...}`即可使用SuperTraitName的所有特性。
 
+### 典型trait
+#### deref trait
+
+唯一一种隐式转化逻辑。
+
+deref trait里面有`fn deref(&self) -> &T`。
+
+- 解引用符号`*y`作用于实现了deref trait的类型的时候，会自动变成`*(y.deref())`，即**隐式解引用转化（Deref Coercion）**。
+- 在函数传递的参数类型不匹配的时候，编译器会试图调用deref来进行转换。如`&String`就有可能会转换成`&str`。
+
+- 当`T:Deref<Target=U>`时，允许`&T`或`&mut T`转换为`&U`。
+- 当`T:DerefMut<Target=U>`时，允许`&mut T`转换为`&mut U`。
+
+#### drop trait
+
+drop trait里面有`fn drop(&mut self)`。会在变量离开作用域时自动调用，被当做析构函数，可用于释放资源。
+
+不能直接地显式调用，但可以调用`std::mem::drop(value)`，以提前释放变量（调用drop）。
+
 ### 可直接derive的经典trait
 
 #### Eq & PartialEq
@@ -1835,20 +1854,6 @@ Sized trait: 要求编译时已知大小的类型都会隐式地实现这个trai
 - 使用某个值，只关心其是否实现了某trait，而不关心具体类型。
 
 使用`Box::new(value)`创建Box指针，且会转移所有权。
-
-#### deref trait
-
-deref trait里面有`fn deref(&self) -> &T`。
-
-- 解引用符号`*y`作用于实现了deref trait的类型的时候，会自动变成`*(y.deref())`，即**隐式解引用转化（Deref Coercion）**。
-- 在函数传递的参数类型不匹配的时候，编译器会试图调用deref来进行转换。如`&String`就有可能会转换成`&str`。
-
-- 当`T:Deref<Target=U>`时，允许`&T`或`&mut T`转换为`&U`。
-- 当`T:DerefMut<Target=U>`时，允许`&mut T`转换为`&mut U`。
-
-#### drop trait
-
-drop trait里面有`fn drop(&mut self)`。会在变量离开作用域时自动调用，被当做析构函数。不能直接地显式调用，但可以调用`std::mem::drop(value)`，以提前释放变量（调用drop）。
 
 ### Rc std::rc::Rc
 
@@ -2606,6 +2611,9 @@ fn main() {
 }
 ```
 
+## 将一段连续内存视为某一个类型的切片
+
+core::slice::from_raw_parts
 # 模块系统
 
 按层级从高到低为：
