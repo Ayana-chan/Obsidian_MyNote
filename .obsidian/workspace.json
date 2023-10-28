@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "rCore/Daily Record.md"
+                "file": "rCore/学习笔记.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "rCore/Daily Record.md",
+                "file": "rCore/学习笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "rCore/Daily Record.md",
+                "file": "rCore/学习笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,7 +212,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -229,10 +230,10 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "d7bc361c56af0214",
+  "active": "9c467b59e0bbb34c",
   "lastOpenFiles": [
-    "rCore/学习笔记.md",
     "rCore/Daily Record.md",
+    "rCore/学习笔记.md",
     "Rust.md",
     "rCore/assets/uTools_1698489927144.png",
     "rCore/assets/uTools_1698489911870.png",
