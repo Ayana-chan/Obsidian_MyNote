@@ -591,7 +591,7 @@ static mut COUNT: u32 = 0;
 
 即使是可变静态变量，对其的修改也是不安全的，要在unsafe中进行。[Unsafe Rust](Rust.md#Unsafe%20Rust)
 
-不能直接用RefCell，因为不能保证线程安全，必须unsafe地实现Sync trait，对其做一层封装。例如：
+不能直接用RefCell，因为不能保证线程安全（有内部可变性的类型也都受此约束），必须unsafe地实现Sync trait，对其做一层封装。例如：
 ```rust
 pub struct UPSafeCell<T> {
     /// inner data
@@ -1629,6 +1629,25 @@ Animal::baby_name(); //Error: 无法确认到底调用哪个函数
 
 即trait的继承，`trait TraitName: SuperTraitName{...}`即可使用SuperTraitName的所有特性。
 
+### 可直接derive的经典trait
+
+#### Eq & PartialEq
+
+生成相等的相关逻辑。
+
+PartialEq不实现反身性，即没有`a == a`。
+
+浮点类型只实现了PartialEq，因为`NaN!=NaN`。
+
+#### Ord & PartialOrd
+
+生成比大小（Order）的相关逻辑。
+
+PartialOrd不实现确定性（必定存在`>`或\=\=或`<`其中的一个关系）。它允许存在无法比较的两数，返回None。
+
+PartialOrd继承了PartialEq。PartialOrd完成后提供`lt()`，`le()`，`gt()`，`ge()`。
+
+Ord继承了Eq和PartialOrd。Ord完成后提供`max()`，`min()`，`clamp()`。
 
 ## 动态分发与静态分发
 
@@ -1886,6 +1905,7 @@ RefCell指针支持可变引用和不可变引用，而其安全检查在运行�
 
 使用`Rc<RefCell<T>>`可以使得数据可以被多方共享且能修改，只要保证读写完之后引用的`RefCell<T>`马上消失即可。
 
+>核心库中也有类似的指针core::cell::RefCell，因为它不需要多少运行时环境
 
 ### Cell
 
@@ -2023,15 +2043,17 @@ fn main() {
 ```
 
 ## 类型转换
+
+>解引用 `Deref` Trait 是 Rust 编译器唯一允许的一种隐式类型转换，而对于其他的类型转换，我们必须手动调用类型转化方法或者是显式给出转换前后的类型。
 ### as
 
 用于类型转换和import的重命名。
 
-### From trait
+### From/Into trait
 
 [From in std::convert - Rust](https://doc.rust-lang.org/std/convert/trait.From.html)
 
-实现了From就能使用`into()`来转换类型：
+当我们为`U`实现了`From<T>`之后，Rust会自动为`T`实现`Into<U>`Trait：
 ```rust
 // Use the `from` function
 let p1 = Person::from("Mark,20");
@@ -2300,6 +2322,8 @@ pub fn sql(input: TokenStream) -> TokenStream {
 
 在安全代码块里面也能定义原始指针，但禁止解引用。
 
+原始指针也分可变和不可变。
+
 ```rust
 let mut num = 5;
 let r1 = &num as *const i32;
@@ -2474,6 +2498,9 @@ println!("{:#?}",st)
 // }
 ```
 
+## 变量生命周期太长导致其借用太久
+
+适当使用drop来消解这些持久的变量来进行重新借用。
 ## 生成随机数
 
 ```rust
@@ -2926,7 +2953,15 @@ fn main() {
 }
 ```
 
+## lazy static
 
+当static不可变，但最初的初始化不太简单，是一个运行时执行的语句，就需要lazy static来进行延迟初始化。
+
+```rust
+lazy_static! {
+    pub static ref SYSCALL_TIMES: UPSafeCell<[u32; MAX_SYSCALL_NUM]> = unsafe{UPSafeCell::new([0; MAX_SYSCALL_NUM])};
+}
+```
 
 
 

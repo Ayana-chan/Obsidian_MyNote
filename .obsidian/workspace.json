@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "rCore/学习笔记.md"
+                "file": "Rust.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "rCore/学习笔记.md",
+                "file": "Rust.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "rCore/学习笔记.md",
+                "file": "Rust.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -229,32 +229,33 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "9c467b59e0bbb34c",
+  "active": "173af0fcea462ae7",
   "lastOpenFiles": [
-    "rCore/Daily Record.md",
     "rCore/学习笔记.md",
+    "rCore/Daily Record.md",
+    "rCore/assets/uTools_1698460828504.png",
+    "rCore/assets/uTools_1698459210513.png",
+    "rCore/assets/uTools_1698458625782.png",
+    "cs杂记.md",
+    "杂记.md",
+    "rCore/assets/uTools_1698385100594.png",
+    "Rust.md",
+    "rCore/assets/uTools_1698236547397.png",
     "Git.md",
     "rCore/assets/uTools_1698224401893.png",
     "rCore/assets/uTools_1698224271221.png",
     "rCore/assets/uTools_1698223642896.png",
-    "Rust.md",
     "rCore/assets/uTools_1698138305266.png",
     "rCore/assets/uTools_1698135926246.png",
-    "rCore/assets/uTools_1698134401117.png",
     "pa/笔记.md",
-    "rCore/assets/uTools_1698128364987.png",
-    "rCore/assets/uTools_1698125802902.png",
     "Cpp.md",
     "算法.md",
     "15-418 并行体系结构与编程/课堂笔记.md",
-    "15-418 并行体系结构与编程/assets/uTools_1698041605328.png",
-    "15-418 并行体系结构与编程/assets/uTools_1698041113102.png",
     "15-418 并行体系结构与编程/assets",
     "cs144 计算机网络/lab笔记.md",
     "RISC-V/riscv-privileged-20211203.pdf",
     "RISC-V/riscv-spec-20191213.pdf",
     "RISC-V",
-    "杂记.md",
     "cs144 计算机网络/assets",
     "MIT6.824 分布式系统/lab4.md",
     "Vim.md",
@@ -273,7 +274,6 @@
     "Web前端/vue3.md",
     "Web前端/css.md",
     "Web前端/js.md",
-    "Web前端/vite.md",
     "pa",
     "third/设计模式/2.剩余四大创建型模式.pdf",
     "未命名.canvas",
