@@ -2340,6 +2340,7 @@ let slice: &mut [i32] = ...;
 let r3 = slice.as_mut_ptr();
 ```
 
+当原始指针作为结果时，可以将其转化为`&'static mut`，这样就不需要unsafe也能使用该数据。
 #### 原始指针和Box互相转换
 
 ```rust
