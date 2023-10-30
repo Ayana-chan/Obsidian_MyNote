@@ -69,3 +69,37 @@ trap.S是唯一涉及地址空间变换的代码段，因此将其放入按4K对
 # 2023/10/29
 
 stvec依旧要以内核的形式设置trap入口，因为它是CPU使用的，是直接进入到对应的物理地址，也正对应着direct映射的内核虚拟地址。
+
+每个地址空间都有一个页表，而这些页表共用一个物理地址分片器。
+
+# 2023/10/30
+
+对`translated_byte_buffer`相关功能做了进一步封装：
+```rust
+/// 将数据写入到buffer里面
+pub fn write_byte_buffer<T>(ans: T, target: *mut T){
+    let t_size = core::mem::size_of::<T>();
+    let ans_slice = unsafe{
+        core::slice::from_raw_parts(&ans as *const T as *const u8, t_size)
+    };
+    let aims = translated_byte_buffer(crate::task::current_user_token(),
+        target as *const u8, t_size);
+    
+    let mut index: usize = 0;
+    for _sub in aims{
+        for aim_byte in _sub{
+            *aim_byte = ans_slice[index];
+            index += 1;
+        }
+    }
+}
+```
+
+在内核初始化完毕之后会创建一个进程——即 **用户初始进程** (Initial Process) ，它是目前在内核中以硬编码方式创建的唯一一个进程。其他所有的进程都是通过一个名为 `fork` 的系统调用来创建的。
+
+
+
+
+
+
+
