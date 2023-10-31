@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "rCore/学习笔记.md"
+                "file": "rCore/Daily Record.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "rCore/学习笔记.md",
+                "file": "rCore/Daily Record.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "rCore/学习笔记.md",
+                "file": "rCore/Daily Record.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -229,13 +229,15 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "9c467b59e0bbb34c",
+  "active": "d7bc361c56af0214",
   "lastOpenFiles": [
-    "rCore/Daily Record.md",
     "rCore/学习笔记.md",
+    "rCore/Daily Record.md",
+    "Rust.md",
+    "pa/笔记.md",
+    "Git.md",
     "rCore/assets/uTools_1698653983411.png",
     "rCore/assets/uTools_1698653431932.png",
-    "Rust.md",
     "rCore/assets/uTools_1698489927144.png",
     "rCore/assets/uTools_1698489911870.png",
     "rCore/assets/uTools_1698489899995.png",
@@ -246,8 +248,6 @@
     "cs杂记.md",
     "杂记.md",
     "rCore/assets/uTools_1698385100594.png",
-    "Git.md",
-    "pa/笔记.md",
     "Cpp.md",
     "算法.md",
     "15-418 并行体系结构与编程/课堂笔记.md",

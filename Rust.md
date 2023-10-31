@@ -2621,6 +2621,24 @@ fn main() {
 ## 将一段连续内存视为某一个类型的切片
 
 core::slice::from_raw_parts
+
+## 克隆`Option<Arc<T>>`
+
+```rust
+pub fn get_t_ref(&self) -> Option<Arc<T>> {
+	self.t_var.as_ref().map(Arc::clone)
+}
+```
+
+## 花式指定self类型
+
+```rust
+pub fn spawn(self: &Arc<Self>, elf_data: &[u8]) -> Arc<Self> {
+	...
+}
+```
+
+
 # 模块系统
 
 按层级从高到低为：
