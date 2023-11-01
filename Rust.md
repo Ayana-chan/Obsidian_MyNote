@@ -1324,6 +1324,10 @@ entry(key)方法可以返回一个枚举Entry，是key对应的值的入口，�
 
 默认的HashMap安全但不是最快的，可以替换hasher。
 
+## BTreeMap
+
+使用B树实现的Map，是cpp的红黑树map的替代品，可以通过next和next_back来迅速访问最小值和最大值。
+
 ## 泛型
 
 `<T>`中的T是**类型参数**。在**编译时**会被替换为具体的类型，这个过程称为**单态化（monomorphyzation)**。
@@ -1602,6 +1606,63 @@ impl Add<Meters> for Millimeters {
 }
 ```
 
+Map的Key若想要取消去重机制，只要在Ord实现里面不出现Order::Equal即可：
+```rust
+extern crate alloc;  
+  
+use core::cmp::Ordering;  
+use core::ops::AddAssign;  
+use alloc::collections::BTreeMap;  
+  
+pub static HALF_BIG_STRIDE: u8 = 127;  
+  
+#[derive(Clone, Copy, Debug)]  
+pub struct Stride(pub u8);  
+  
+impl PartialOrd for Stride {  
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {  
+        if self.0 >= other.0 && self.0 - other.0 <= HALF_BIG_STRIDE  
+            || self.0 < other.0 && other.0 - self.0 > HALF_BIG_STRIDE{  
+            Some(Ordering::Less)  
+        }else{  
+            Some(Ordering::Greater)  
+        }  
+    }  
+}  
+  
+impl PartialEq for Stride {  
+    fn eq(&self, other: &Self) -> bool {  
+        let _ = other;  
+        false    }  
+}  
+  
+impl Eq for Stride{}  
+  
+impl Ord for Stride{  
+    fn cmp(&self, other: &Self) -> Ordering {  
+        self.partial_cmp(&other).unwrap()  
+    }  
+}  
+  
+impl AddAssign<u8> for Stride{  
+    fn add_assign(&mut self, other: u8) {  
+        self.0 += other;  
+    }  
+}  
+  
+fn main() {  
+    let mut map = BTreeMap::new() ;  
+    map.insert(Stride(1),1);  
+    map.insert(Stride(1),1);  
+    map.insert(Stride(2),2);  
+    map.insert(Stride(2),2);  
+    map.insert(Stride(3),2);  
+    map.insert(Stride(2),6);  
+    println!("{:?}", map);  
+}
+```
+
+
 ### 完全限定语法
 
 如果结构体Human实现了Pilot trait，也实现了Wizard trait，且Human自己、两个trait内都实现了不同的fly方法，则：
@@ -1758,6 +1819,22 @@ next方法本质是对迭代器的消耗（因为不能遍历第二遍）。
 Iterator trait中有一些带默认实现的方法，如果方法实现里面调用了next，就称为**消耗型适配器**，如sum方法。还有些方法将迭代器转化为不同的迭代器，称为**迭代器适配器**，如map方法。
 
 如果next不配调用（或者说没有消耗型适配器被调用）的话，迭代器**不会做任何事**，包括调用的迭代器适配器。
+
+可以使用`next_back`反向迭代：
+```rust
+let numbers = vec![1, 2, 3, 4, 5, 6];
+
+let mut iter = numbers.iter();
+
+assert_eq!(Some(&1), iter.next());
+assert_eq!(Some(&6), iter.next_back());
+assert_eq!(Some(&5), iter.next_back());
+assert_eq!(Some(&2), iter.next());
+assert_eq!(Some(&3), iter.next());
+assert_eq!(Some(&4), iter.next());
+assert_eq!(None, iter.next());
+assert_eq!(None, iter.next_back());
+```
 
 [Iterator in std::iter - Rust](https://doc.rust-lang.org/std/iter/trait.Iterator.html)
 
@@ -2339,6 +2416,8 @@ let r2 = &num as *mut i32;
 let slice: &mut [i32] = ...;
 let r3 = slice.as_mut_ptr();
 ```
+
+#### 原始指针转为`&'static mut`
 
 当原始指针作为结果时，可以将其转化为`&'static mut`，这样就不需要unsafe也能使用该数据：
 ```rust

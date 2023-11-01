@@ -121,6 +121,27 @@ exec是直接对正在执行中的进程进行操作。执行完后由于context
 
 spawn就是用类似exec的方式读取elf的数据+初始化上下文，用类似fork的方式新建进程，但其中被exec指定的数据就使用exec的。切忌用self的数据（父进程数据）来传给exec操作！
 
+因为`STRIDE_MAX – STRIDE_MIN <= BigStride / 2`，所以若使用8bits存储stride、BigStride为255（8bit的最大值），则255/2 = 127，如果`a>b`但`a-b>127`的话，`Stride(a)<Stride(b)`。
+
+Stride的Ord等实现中之所以不能有Equal出现，是为了防止被BTreeMap等数据结构去重。
+
+
+# 2023/11/1
+
+目录的r是访问，w是创建&删除，x是“通过”。与常规文件不同的是，用户无法 **直接** 修改目录的内容，只能通过创建/删除它下面的文件或子目录才能间接做到这一点。
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
