@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "rCore/学习笔记.md",
+                "file": "rCore/其他.md",
                 "mode": "source",
                 "source": false
               }
@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Temp.md"
+                "file": "rCore/其他.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Temp.md",
+                "file": "rCore/其他.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Temp.md",
+                "file": "rCore/其他.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,7 +212,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -229,23 +230,26 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "7468f25875a5715b",
+  "active": "9c467b59e0bbb34c",
   "lastOpenFiles": [
+    "rCore/assets/uTools_1698846969922.png",
+    "rCore/assets/uTools_1698846931565.png",
+    "rCore/assets/uTools_1698846854905.png",
+    "rCore/assets/uTools_1698846805068.png",
+    "rCore/assets/uTools_1698846701386.png",
+    "rCore/assets/uTools_1698846574864.png",
+    "rCore/学习笔记.md",
+    "rCore/其他.md",
+    "Temp.md",
     "Rust.md",
     "pa/笔记.md",
     "rCore/Daily Record.md",
-    "rCore/学习笔记.md",
     "rCore/assets/uTools_1698763933027.png",
     "Git.md",
     "rCore/assets/uTools_1698653983411.png",
     "rCore/assets/uTools_1698653431932.png",
     "rCore/assets/uTools_1698489927144.png",
     "rCore/assets/uTools_1698489911870.png",
-    "rCore/assets/uTools_1698489899995.png",
-    "rCore/assets/uTools_1698463840690.png",
-    "rCore/assets/uTools_1698460828504.png",
-    "rCore/assets/uTools_1698459210513.png",
-    "rCore/assets/uTools_1698458625782.png",
     "cs杂记.md",
     "杂记.md",
     "Cpp.md",
@@ -262,7 +266,6 @@
     "cs144 计算机网络",
     "15-418 并行体系结构与编程",
     "MIT6.824 分布式系统/lab随想QA.md",
-    "Temp.md",
     "CMU15445/lab1.md",
     "日语/学习笔记.md",
     "Shell.md",
@@ -273,7 +276,6 @@
     "密码学.md",
     "Web前端/vue3.md",
     "Web前端/css.md",
-    "Web前端/js.md",
     "pa",
     "third/设计模式/2.剩余四大创建型模式.pdf",
     "未命名.canvas",
