@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "rCore/其他.md",
+                "file": "rCore/学习笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "rCore/其他.md"
+                "file": "rCore/学习笔记.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "rCore/其他.md",
+                "file": "rCore/学习笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "rCore/其他.md",
+                "file": "rCore/学习笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,8 +212,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -232,24 +231,24 @@
   },
   "active": "9c467b59e0bbb34c",
   "lastOpenFiles": [
+    "rCore/assets/uTools_1698913237470.png",
+    "rCore/Daily Record.md",
+    "rCore/学习笔记.md",
+    "rCore/其他.md",
+    "Rust.md",
     "rCore/assets/uTools_1698846969922.png",
     "rCore/assets/uTools_1698846931565.png",
     "rCore/assets/uTools_1698846854905.png",
     "rCore/assets/uTools_1698846805068.png",
     "rCore/assets/uTools_1698846701386.png",
     "rCore/assets/uTools_1698846574864.png",
-    "rCore/学习笔记.md",
-    "rCore/其他.md",
     "Temp.md",
-    "Rust.md",
     "pa/笔记.md",
-    "rCore/Daily Record.md",
     "rCore/assets/uTools_1698763933027.png",
     "Git.md",
     "rCore/assets/uTools_1698653983411.png",
     "rCore/assets/uTools_1698653431932.png",
     "rCore/assets/uTools_1698489927144.png",
-    "rCore/assets/uTools_1698489911870.png",
     "cs杂记.md",
     "杂记.md",
     "Cpp.md",

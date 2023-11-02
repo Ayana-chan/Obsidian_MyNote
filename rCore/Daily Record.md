@@ -131,8 +131,20 @@ Stride的Ord等实现中之所以不能有Equal出现，是为了防止被BTreeM
 目录的r是访问，w是创建&删除，x是“通过”。与常规文件不同的是，用户无法 **直接** 修改目录的内容，只能通过创建/删除它下面的文件或子目录才能间接做到这一点。
 
 
+# 2023/11/2
 
+小块能管理大块的原因是：管理一个块只需要很小的一个数据标识。
 
+每个文件/目录在磁盘上均以一个 `DiskInode` 的形式存储。
+```rust
+pub struct DiskInode {
+    pub size: u32, //对应内容的字节数
+    pub direct: [u32; INODE_DIRECT_COUNT], //索引
+    pub indirect1: u32, //一级索引，指向存在数据块区域的一级索引块，一级索引块指向数据
+    pub indirect2: u32, //二级索引，指向存在数据块区域的二级索引块，二级索引块指向一级索引块
+    type_: DiskInodeType, //File or Directory
+}
+```
 
 
 

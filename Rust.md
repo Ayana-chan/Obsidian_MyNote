@@ -2124,6 +2124,7 @@ fn main() {
 }
 ```
 
+>Arc和Mutex的正确配合可以达到支持多线程安全读写数据对象。如果需要多线程共享所有权的数据对象，则只用Arc即可。如果需要修改 `T` 类型中某些成员变量 `member` ，那直接采用 `Arc<Mutex<T>>` ，并在修改的时候通过 `obj.lock().unwrap().member = xxx` 的方式是可行的，但这种编程模式的同步互斥的粒度太大，可能对互斥性能的影响比较大。为了减少互斥性能开销，其实只需要在 `T` 类型中的**需要被修改的成员变量**上加 `Mutex<_>` 即可。如果成员变量也是一个数据结构，还包含更深层次的成员变量，那应该继续下推到最终需要修改的成员变量上去添加 `Mutex`
 ## 类型转换
 
 >解引用 `Deref` Trait 是 Rust 编译器唯一允许的一种隐式类型转换，而对于其他的类型转换，我们必须手动调用类型转化方法或者是显式给出转换前后的类型。
@@ -2417,13 +2418,20 @@ let slice: &mut [i32] = ...;
 let r3 = slice.as_mut_ptr();
 ```
 
-#### 原始指针转为`&'static mut`
+#### 原始指针转为引用
 
 当原始指针作为结果时，可以将其转化为`&'static mut`，这样就不需要unsafe也能使用该数据：
 ```rust
 fn get_current_mem_set(&self) -> &'static mut MemorySet {
 	let ptr = &mut result as *mut MemorySet;
 	unsafe{&mut *ptr}
+}
+
+pub fn get_ref<T>(&self, offset: usize) -> &T where T: Sized {
+	let type_size = core::mem::size_of::<T>();
+	assert!(offset + type_size <= BLOCK_SZ);
+	let addr = self.addr_of_offset(offset);
+	unsafe { &*(addr as *const T) }
 }
 ```
 #### 原始指针和Box互相转换
