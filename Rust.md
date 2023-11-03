@@ -1281,6 +1281,9 @@ fn main() {
 }
 ```
 
+### swap_remove
+
+通过和最后一个元素交换来实现$O(1)$地删除任意一个元素，但这样会破坏顺序。要保持顺序的话需要用remove，是$O(n)$
 ## HashMap
 
 相当于unordered_map。
