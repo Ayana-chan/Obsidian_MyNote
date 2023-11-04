@@ -146,15 +146,18 @@ pub struct DiskInode {
 }
 ```
 
+# 2023/11/4
 
 
+读取文件的INode信息就是将磁盘中正确的位置上拷贝若干字节拼接成DiskInode放到内存中（使用DiskInode里面的方法），并将**DiskInode的这些方法**进一步封装在INode里，即vfs层；之后os再封装一层OSINode即可。
 
+**每个文件/目录的索引节点在磁盘上均以一个 `DiskInode` 的形式存储**。而INode中调用read_disk_inode就能获取到对应的DiskInode（INode数据结构已经是vfs层了，并不是真实存储的东西）。
 
+切记，目录的数据内容也存在数据区域里面，且存储方式是一堆连续的DirEntry。DiskInode提供了数据区域的block id，用于定位数据区域。
 
-
-
-
-
+硬链接和解硬链接时，需要：
+1. 改文件的DiskInode（索引区）以修改元数据（引用计数）
+2. 改目录的目录项（数据区）以控制目录访问
 
 
 
