@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Git.md",
+                "file": "15-418 并行体系结构与编程/课堂笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Temp.md",
+                "file": "cs杂记.md",
                 "mode": "source",
                 "source": false
               }
@@ -67,8 +67,7 @@
               }
             }
           }
-        ],
-        "currentTab": 3
+        ]
       }
     ],
     "direction": "vertical"
@@ -142,7 +141,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "rCore/学习笔记.md"
+                "file": "15-418 并行体系结构与编程/课堂笔记.md"
               }
             }
           },
@@ -152,7 +151,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "rCore/学习笔记.md",
+                "file": "15-418 并行体系结构与编程/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +168,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "rCore/学习笔记.md",
+                "file": "15-418 并行体系结构与编程/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -229,30 +228,31 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "9c467b59e0bbb34c",
+  "active": "e771fe0f2cb989d4",
   "lastOpenFiles": [
-    "rCore/Daily Record.md",
+    "15-418 并行体系结构与编程/assets/uTools_1699252280741.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699251956629.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699251617976.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699251173848.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699250968532.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699250216958.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699249145780 1.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699249145780.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699249111988.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699249008905.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699238710685.png",
+    "15-418 并行体系结构与编程/课堂笔记.md",
+    "Git.md",
     "rCore/学习笔记.md",
     "Rust.md",
-    "rCore/assets/uTools_1698913237470.png",
-    "rCore/其他.md",
-    "rCore/assets/uTools_1698846969922.png",
-    "rCore/assets/uTools_1698846931565.png",
-    "rCore/assets/uTools_1698846854905.png",
-    "rCore/assets/uTools_1698846805068.png",
-    "rCore/assets/uTools_1698846701386.png",
-    "rCore/assets/uTools_1698846574864.png",
-    "Temp.md",
-    "pa/笔记.md",
-    "rCore/assets/uTools_1698763933027.png",
-    "Git.md",
-    "rCore/assets/uTools_1698653983411.png",
-    "rCore/assets/uTools_1698653431932.png",
     "cs杂记.md",
     "杂记.md",
+    "Temp.md",
+    "rCore/Daily Record.md",
+    "rCore/其他.md",
+    "pa/笔记.md",
     "Cpp.md",
     "算法.md",
-    "15-418 并行体系结构与编程/课堂笔记.md",
     "15-418 并行体系结构与编程/assets",
     "cs144 计算机网络/lab笔记.md",
     "RISC-V/riscv-privileged-20211203.pdf",

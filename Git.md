@@ -233,6 +233,9 @@ git pull --all
 
 [git - GitHub: How to make a fork of public repository private? - Stack Overflow](https://stackoverflow.com/questions/10065526/github-how-to-make-a-fork-of-public-repository-private)
 
+### 强行merge两个历史记录不统一的分支
+
+加上`--allow-unrelated-histories`。
 
 # bug
 
