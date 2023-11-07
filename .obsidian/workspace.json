@@ -25,7 +25,19 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "cs杂记.md",
+                "file": "Git.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "b16eb5b1c16a1fd5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Rust for Linux/笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -61,7 +73,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "rCore/Daily Record.md",
+                "file": "Linux.md",
                 "mode": "source",
                 "source": false
               }
@@ -230,25 +242,31 @@
   },
   "active": "e771fe0f2cb989d4",
   "lastOpenFiles": [
-    "15-418 并行体系结构与编程/assets/uTools_1699252280741.png",
-    "15-418 并行体系结构与编程/assets/uTools_1699251956629.png",
-    "15-418 并行体系结构与编程/assets/uTools_1699251617976.png",
-    "15-418 并行体系结构与编程/assets/uTools_1699251173848.png",
-    "15-418 并行体系结构与编程/assets/uTools_1699250968532.png",
-    "15-418 并行体系结构与编程/assets/uTools_1699250216958.png",
-    "15-418 并行体系结构与编程/assets/uTools_1699249145780 1.png",
-    "15-418 并行体系结构与编程/assets/uTools_1699249145780.png",
-    "15-418 并行体系结构与编程/assets/uTools_1699249111988.png",
-    "15-418 并行体系结构与编程/assets/uTools_1699249008905.png",
-    "15-418 并行体系结构与编程/assets/uTools_1699238710685.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699369900031.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699366497303.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699362066334.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699360486953.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699360223258.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699360143670.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699359669164.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699359365821.png",
+    "Rust for Linux/笔记.md",
+    "Rust for Linux/assets/uTools_1699346967987.png",
+    "Rust for Linux/assets",
     "15-418 并行体系结构与编程/课堂笔记.md",
-    "Git.md",
     "rCore/学习笔记.md",
-    "Rust.md",
+    "Linux.md",
+    "Shell.md",
+    "OS.md",
     "cs杂记.md",
+    "rCore/Daily Record.md",
+    "Git.md",
+    "Rust for Linux",
+    "15-418 并行体系结构与编程/assets/uTools_1699324122730.png",
+    "15-418 并行体系结构与编程/assets/uTools_1699324075283.png",
+    "Rust.md",
     "杂记.md",
     "Temp.md",
-    "rCore/Daily Record.md",
     "rCore/其他.md",
     "pa/笔记.md",
     "Cpp.md",
@@ -266,16 +284,10 @@
     "MIT6.824 分布式系统/lab随想QA.md",
     "CMU15445/lab1.md",
     "日语/学习笔记.md",
-    "Shell.md",
-    "Linux.md",
     "Makefile.md",
     "pa/assets",
     "TODO.md",
     "密码学.md",
-    "Web前端/vue3.md",
-    "Web前端/css.md",
-    "pa",
-    "third/设计模式/2.剩余四大创建型模式.pdf",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]

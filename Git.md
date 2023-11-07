@@ -237,6 +237,9 @@ git pull --all
 
 加上`--allow-unrelated-histories`。
 
+### clone别人仓库的时候不关注他的commit
+
+加上`--depth=1`即可。
 # bug
 
 [Git问题：Git clone 时遇到fatal: protocol ''https'' is not supported问题解决方案\_fatal: protocol ' https' is not supported-CSDN博客](https://blog.csdn.net/jiunian_2761/article/details/100005715)
