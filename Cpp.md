@@ -1326,6 +1326,20 @@ void Demo() {
 int len=sizeof(arr)/sizeof(arr[0]);
 ```
 
+## 重载cout输出
+
+写在头文件中
+```cpp
+friend std::ostream& operator<<(std::ostream& os, const BinarySquareMatrix& matrix) {  
+    for (const auto& row : matrix.data) {  
+        for (const auto& elem : row) {  
+            os << elem << ' ';  
+        }  
+        os << '\n';  
+    }  
+    return os;  
+}
+```
 ## 计算时间间隔
 
 ```cpp

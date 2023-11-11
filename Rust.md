@@ -6,6 +6,8 @@
 [命名规范 - Rust语言圣经(Rust Course)](https://course.rs/practice/naming.html)
 # 安装与起步
 
+[Rust使用国内Crates 源、 rustup源 |字节跳动新的 Rust 镜像源以及安装rust\_rust镜像-CSDN博客](https://blog.csdn.net/inthat/article/details/106742193)
+
 [Rust安装配置\_rust下载到d盘\_Andreby的博客-CSDN博客](https://blog.csdn.net/andrewby/article/details/75139736)
 
 Clion中，安装Rust插件，进行如下配置：

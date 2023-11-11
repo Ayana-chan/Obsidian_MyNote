@@ -46,13 +46,13 @@ Git 中的提交是不可改变的。但这并不代表错误不能被修改，�
 git数据模型的伪代码：
 
 ```python
-// 文件就是一组数据
+# 文件就是一组数据
 type blob = array<byte>
 
-// 一个包含文件和目录的目录
+# 一个包含文件和目录的目录
 type tree = map<string, tree | blob>
 
-// 每个提交都包含一个父辈，元数据和顶层树
+# 每个提交都包含一个父辈，元数据和顶层树
 type commit = struct {
     parent: array<commit>
     author: string
@@ -229,6 +229,20 @@ git fetch --all
 git pull --all
 ```
 
+### fork后跟踪原仓库更新
+
+remote里添加原仓库，这样就能更新了。
+```bash
+git remote add upstream git@github.com:rcore-os/rust-for-linux.git
+```
+
+更新命令：
+```bash
+git fetch upstream
+git checkout master
+git merge upstream/master
+git push origin master
+```
 ### 从别人的公有库创建私有库
 
 [git - GitHub: How to make a fork of public repository private? - Stack Overflow](https://stackoverflow.com/questions/10065526/github-how-to-make-a-fork-of-public-repository-private)
@@ -241,6 +255,8 @@ git pull --all
 
 加上`--depth=1`即可。
 # bug
+
+## clone用http时显示协议错误，ssh时显示无权限
 
 [Git问题：Git clone 时遇到fatal: protocol ''https'' is not supported问题解决方案\_fatal: protocol ' https' is not supported-CSDN博客](https://blog.csdn.net/jiunian_2761/article/details/100005715)
 
