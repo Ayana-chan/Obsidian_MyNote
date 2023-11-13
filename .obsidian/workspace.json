@@ -67,8 +67,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -126,7 +125,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 549.5
+    "width": 282.5
   },
   "right": {
     "id": "3a80decac769ff2d",
@@ -142,7 +141,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "LaTeX/LaTeX.md"
+                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md"
               }
             }
           },
@@ -152,7 +151,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "LaTeX/LaTeX.md",
+                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +168,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "LaTeX/LaTeX.md",
+                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -229,14 +228,20 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "b16eb5b1c16a1fd5",
+  "active": "7468f25875a5715b",
   "lastOpenFiles": [
+    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699866484255.png",
+    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699866359242.png",
+    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699865345962.png",
+    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699864451046.png",
+    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699864194130.png",
+    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699863952912.png",
+    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699862697701.png",
+    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699862473016.png",
+    "LaTeX/LaTeX.md",
     "LaTeX/assets/uTools_1699850328974.png",
     "assets/Pasted image 20230503145907.png",
-    "LaTeX/LaTeX.md",
     "LaTeX/assets/uTools_1699850246663.png",
-    "assets/uTools_1699850246663.png",
-    "assets/uTools_1683096858210.png",
     "LaTeX/assets",
     "LaTeX",
     "Docker.md",
@@ -247,12 +252,6 @@
     "收藏.md",
     "算法.md",
     "Shell.md",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699431707403.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699369900031.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699366497303.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699362066334.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699360486953.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699360223258.png",
     "15-418 Parallel Computer Architecture and Programming/assets",
     "15-418 Parallel Computer Architecture and Programming",
     "Cpp.md",
