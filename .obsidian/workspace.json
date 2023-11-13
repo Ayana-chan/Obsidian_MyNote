@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Linux.md",
+                "file": "LaTeX/LaTeX.md",
                 "mode": "source",
                 "source": false
               }
@@ -67,7 +67,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -125,7 +126,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 227.5
+    "width": 549.5
   },
   "right": {
     "id": "3a80decac769ff2d",
@@ -141,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md"
+                "file": "LaTeX/LaTeX.md"
               }
             }
           },
@@ -151,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "LaTeX/LaTeX.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -168,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "LaTeX/LaTeX.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -228,11 +229,21 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "7468f25875a5715b",
+  "active": "b16eb5b1c16a1fd5",
   "lastOpenFiles": [
+    "LaTeX/assets/uTools_1699850328974.png",
+    "assets/Pasted image 20230503145907.png",
+    "LaTeX/LaTeX.md",
+    "LaTeX/assets/uTools_1699850246663.png",
+    "assets/uTools_1699850246663.png",
+    "assets/uTools_1683096858210.png",
+    "LaTeX/assets",
+    "LaTeX",
+    "Docker.md",
+    "Linux.md",
+    "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
     "Rust for Linux/笔记.md",
     "rCore/学习笔记.md",
-    "Linux.md",
     "收藏.md",
     "算法.md",
     "Shell.md",
@@ -242,11 +253,6 @@
     "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699362066334.png",
     "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699360486953.png",
     "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699360223258.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699359669164.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699359365821.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699324122730.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699324075283.png",
-    "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418 Parallel Computer Architecture and Programming/assets",
     "15-418 Parallel Computer Architecture and Programming",
     "Cpp.md",
@@ -267,15 +273,10 @@
     "RISC-V/riscv-privileged-20211203.pdf",
     "RISC-V/riscv-spec-20191213.pdf",
     "RISC-V",
-    "CS144 Introduction to Computer Networking/assets",
     "MIT6.824 Distributed Systems/lab4.md",
     "Vim.md",
-    "CS144 Introduction to Computer Networking",
     "MIT6.824 Distributed Systems/lab随想QA.md",
     "CMU15445/lab1.md",
-    "日语/学习笔记.md",
-    "Makefile.md",
-    "TODO.md",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
