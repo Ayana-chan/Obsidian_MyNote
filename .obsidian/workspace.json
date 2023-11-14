@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Cpp.md",
+                "file": "杂记.md",
                 "mode": "source",
                 "source": false
               }
@@ -67,8 +67,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -142,7 +141,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Cpp.md"
+                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md"
               }
             }
           },
@@ -152,7 +151,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Cpp.md",
+                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +168,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Cpp.md",
+                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,7 +211,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -229,8 +229,10 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "b16eb5b1c16a1fd5",
+  "active": "7468f25875a5715b",
   "lastOpenFiles": [
+    "杂记.md",
+    "Cpp.md",
     "LaTeX/LaTeX.md",
     "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699866484255.png",
@@ -254,7 +256,6 @@
     "Shell.md",
     "15-418 Parallel Computer Architecture and Programming/assets",
     "15-418 Parallel Computer Architecture and Programming",
-    "Cpp.md",
     "Rust.md",
     "Git.md",
     "15-418/课堂笔记.md",
@@ -263,7 +264,6 @@
     "cs杂记.md",
     "rCore/Daily Record.md",
     "Rust for Linux",
-    "杂记.md",
     "Temp.md",
     "rCore/其他.md",
     "pa/笔记.md",
