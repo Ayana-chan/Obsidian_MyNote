@@ -1312,6 +1312,11 @@ void Demo() {
 
 确定了所有模板参数后即为全特化。全特化已经是个实例，因此要当成普通函数/类来对待。如果要和模板函数/类一起写在头文件的话，要提防重复定义，如手动加上inline。
 
+
+## 异常
+
+[std::exception - cppreference.com](https://en.cppreference.com/w/cpp/error/exception)
+
 # 问题、技巧、解决方案
 
 ## 通用头文件
@@ -1320,7 +1325,10 @@ void Demo() {
 #include<bits/stdc++.h>
 ```
 
-## 获取数组长度
+## vector越界检查
+
+使用at访问数据而非`[]`，可以在越界时抛出异常。
+## 获取c数组长度
 
 ```cpp
 int len=sizeof(arr)/sizeof(arr[0]);
