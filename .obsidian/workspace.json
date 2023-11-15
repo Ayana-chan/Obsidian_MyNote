@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "15-418_cs149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "杂记.md",
+                "file": "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
                 "mode": "source",
                 "source": false
               }
@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "rCore/学习笔记.md",
+                "file": "cs杂记.md",
                 "mode": "source",
                 "source": false
               }
@@ -67,7 +67,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -125,7 +126,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 282.5
+    "width": 248.5
   },
   "right": {
     "id": "3a80decac769ff2d",
@@ -141,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md"
+                "file": "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md"
               }
             }
           },
@@ -151,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -168,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -211,8 +212,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -229,20 +229,25 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "7468f25875a5715b",
+  "active": "b16eb5b1c16a1fd5",
   "lastOpenFiles": [
+    "cs杂记.md",
+    "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
+    "rCore/学习笔记.md",
+    "15-418_cs149 Parallel Computer Architecture and Programming/课堂笔记.md",
+    "Git.md",
+    "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU",
     "杂记.md",
     "Cpp.md",
     "LaTeX/LaTeX.md",
-    "15-418 Parallel Computer Architecture and Programming/课堂笔记.md",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699866484255.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699866359242.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699865345962.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699864451046.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699864194130.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699863952912.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699862697701.png",
-    "15-418 Parallel Computer Architecture and Programming/assets/uTools_1699862473016.png",
+    "15-418_cs149 Parallel Computer Architecture and Programming/assets/uTools_1699866484255.png",
+    "15-418_cs149 Parallel Computer Architecture and Programming/assets/uTools_1699866359242.png",
+    "15-418_cs149 Parallel Computer Architecture and Programming/assets/uTools_1699865345962.png",
+    "15-418_cs149 Parallel Computer Architecture and Programming/assets/uTools_1699864451046.png",
+    "15-418_cs149 Parallel Computer Architecture and Programming/assets/uTools_1699864194130.png",
+    "15-418_cs149 Parallel Computer Architecture and Programming/assets/uTools_1699863952912.png",
+    "15-418_cs149 Parallel Computer Architecture and Programming/assets/uTools_1699862697701.png",
+    "15-418_cs149 Parallel Computer Architecture and Programming/assets/uTools_1699862473016.png",
     "LaTeX/assets/uTools_1699850328974.png",
     "assets/Pasted image 20230503145907.png",
     "LaTeX/assets",
@@ -250,18 +255,15 @@
     "Docker.md",
     "Linux.md",
     "Rust for Linux/笔记.md",
-    "rCore/学习笔记.md",
     "收藏.md",
     "算法.md",
     "Shell.md",
-    "15-418 Parallel Computer Architecture and Programming/assets",
-    "15-418 Parallel Computer Architecture and Programming",
+    "15-418_cs149 Parallel Computer Architecture and Programming/assets",
+    "15-418_cs149 Parallel Computer Architecture and Programming",
     "Rust.md",
-    "Git.md",
     "15-418/课堂笔记.md",
     "Rust for Linux/assets",
     "OS.md",
-    "cs杂记.md",
     "rCore/Daily Record.md",
     "Rust for Linux",
     "Temp.md",
@@ -271,7 +273,6 @@
     "CS144 Introduction to Computer Networking/lab笔记.md",
     "RISC-V/riscv-privileged-20211203.pdf",
     "RISC-V/riscv-spec-20191213.pdf",
-    "RISC-V",
     "MIT6.824 Distributed Systems/lab4.md",
     "Vim.md",
     "MIT6.824 Distributed Systems/lab随想QA.md",

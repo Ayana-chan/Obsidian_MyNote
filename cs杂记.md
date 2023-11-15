@@ -31,6 +31,8 @@ argument: 调用时传入的参数（实参）。
 虚拟机打开`Intel VT-x/EPT`虚拟化。
 
 若显示不支持虚拟化：[此平台不支持虚拟化 Intel-VT-x/EPT 或 AMD-V/RVI\_好奇的菜鸟的博客-CSDN博客](https://blog.csdn.net/qq_29752857/article/details/131409452)
+
+vmware19已解决此问题。
 # 版本号标准
 
 [语义版本号](https://semver.org/)格式：`主版本号.次版本号.补丁号`。规则：
@@ -48,24 +50,14 @@ argument: 调用时传入的参数（实参）。
 - 集成测试：一种“宏观测试”，针对系统的某一大部分进行，测试其不同的特性或组件是否能_协同_工作。
 - 回归测试：一种实现特定模式的测试，用于保证之前引起问题的 bug 不会再次出现。
 - 模拟（Mocking）: 使用一个假的实现来替换函数、模块或类型，屏蔽那些和测试不相关的内容。例如，您可能会“模拟网络连接” 或 “模拟硬盘”。
-# TIPS
-## 端口被占用
+
+# windows 端口被占用
 ```bash
 #查询占用某端口的进程
 netstat -ano|findstr 8080
 
 #杀死一个进程
 taskkill /pid 31601 /f
-```
-# FPGA
-启动软件
-
-```bash
-#初始设置
-source ./settings64.sh
-
-#启动
-ise
 ```
 
 # 一大截端口被占用且不可查
@@ -81,7 +73,21 @@ ise
 即：与模数不互质的数可以放到的位置更少。
 
 
+# linux查询当前CPU的线程信息
 
+```bash
+# 总核数 = 物理CPU个数 X 每颗物理CPU的核数 
+# 总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数
+
+# 查看物理CPU个数
+cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l
+
+# 查看每个物理CPU中core的个数(即核数)
+cat /proc/cpuinfo| grep "cpu cores"| uniq
+
+# 查看逻辑CPU的个数
+cat /proc/cpuinfo| grep "processor"| wc -l
+```
 
 
 
