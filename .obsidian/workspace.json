@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
+                "file": "15-418_cs149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
                 "mode": "source",
                 "source": false
               }
@@ -126,7 +126,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 248.5
+    "width": 297.5
   },
   "right": {
     "id": "3a80decac769ff2d",
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md"
+                "file": "15-418_cs149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
+                "file": "15-418_cs149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
+                "file": "15-418_cs149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -231,10 +231,14 @@
   },
   "active": "b16eb5b1c16a1fd5",
   "lastOpenFiles": [
-    "cs杂记.md",
     "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
-    "rCore/学习笔记.md",
+    "15-418_cs149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
+    "15-418_cs149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up",
+    "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/assets/uTools_1700135302107.png",
+    "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/assets",
     "15-418_cs149 Parallel Computer Architecture and Programming/课堂笔记.md",
+    "cs杂记.md",
+    "rCore/学习笔记.md",
     "Git.md",
     "15-418_cs149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU",
     "杂记.md",
@@ -249,7 +253,6 @@
     "15-418_cs149 Parallel Computer Architecture and Programming/assets/uTools_1699862697701.png",
     "15-418_cs149 Parallel Computer Architecture and Programming/assets/uTools_1699862473016.png",
     "LaTeX/assets/uTools_1699850328974.png",
-    "assets/Pasted image 20230503145907.png",
     "LaTeX/assets",
     "LaTeX",
     "Docker.md",
@@ -271,12 +274,9 @@
     "pa/笔记.md",
     "15-418/assets",
     "CS144 Introduction to Computer Networking/lab笔记.md",
-    "RISC-V/riscv-privileged-20211203.pdf",
-    "RISC-V/riscv-spec-20191213.pdf",
     "MIT6.824 Distributed Systems/lab4.md",
     "Vim.md",
     "MIT6.824 Distributed Systems/lab随想QA.md",
-    "CMU15445/lab1.md",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
