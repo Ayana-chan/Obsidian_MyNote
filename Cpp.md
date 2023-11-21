@@ -1317,6 +1317,12 @@ void Demo() {
 
 [std::exception - cppreference.com](https://en.cppreference.com/w/cpp/error/exception)
 
+## 并发编程
+
+conditional variable的第一个参数是lock，第二个参数是返回bool的函数，是为了让锁来保护函数的参数，避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
+
+unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结束后自动释放锁。千万不要对它们使用unlock，否则会很难debug，特别是在不小心unlock了它们包裹的mutex而不是它们本身的时候。
+
 # 问题、技巧、解决方案
 
 ## 通用头文件
@@ -1363,6 +1369,19 @@ std::cout << elapsed.count() <<"ms" << '\n';
 ## 头文件放什么
 
 >以下所有内容都可以放入头文件中，并且可以多次包含在不同的翻译单元中。   类类型（第9节），枚举类型（7.2），带有外部链接的内联函数（7.1.2），类模板（第14节），非静态函数模板（14.5.5）可以有多个定义，类模板的静态数据成员（14.5.1.3），类模板的成员函数（14.5.1.1），或者在程序中未指定某些模板参数（14.7,14.5.4）的模板特化，前提是每个模板定义出现在不同的翻译单元中，并且定义满足以下要求。 要求基本上归结为每个定义必须相同。请注意，如果您的枚举类型本身没有名称，那么该规则不会涵盖它。另一个翻译单元中的每个定义都定义了一个新的枚举类型，并且不会相互冲突。 将它们放入标题是一个好地方，如果它应该是公开的。将它们放在实现文件中是一个好地方，如果它应该是对该单个文件的私有。在后一种情况下，要么将它们放入未命名的命名空间，要么将它们命名为未命名（就像枚举示例中的情况一样），以便它不会与具有相同名称的另一个枚举冲突。
+
+## 遍历枚举
+
+将枚举的最后一项设为专门用于记录枚举数量，即可使用`N_TASKSYS_IMPLS`对枚举进行for循环遍历：
+```cpp
+enum TaskSystemType {
+    SERIAL,
+    PARALLEL_SPAWN,
+    PARALLEL_THREAD_POOL_SPINNING,
+    PARALLEL_THREAD_POOL_SLEEPING,
+    N_TASKSYS_IMPLS, // This must be in the last position.
+};
+```
 
 # CMake
 

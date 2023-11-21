@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Rust.md",
+                "file": "Cpp.md",
                 "mode": "source",
                 "source": false
               }
@@ -67,7 +67,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -141,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md"
+                "file": "Cpp.md"
               }
             }
           },
@@ -151,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "Cpp.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -168,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "Cpp.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -211,8 +212,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -229,12 +229,14 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "11c372a1f8696678",
+  "active": "173af0fcea462ae7",
   "lastOpenFiles": [
+    "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
+    "Cpp.md",
+    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+    "Rust.md",
     "RISC-V/RISC-V-Reader-Chinese-v2p1.pdf",
     "LaTeX/lshort-zh-cn.pdf",
-    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/assets/uTools_1700135302107.png",
@@ -244,7 +246,6 @@
     "Git.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU",
     "杂记.md",
-    "Cpp.md",
     "LaTeX/LaTeX.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1699866484255.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1699866359242.png",
@@ -265,12 +266,10 @@
     "Shell.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets",
     "15-418_CS149 Parallel Computer Architecture and Programming",
-    "Rust.md",
     "15-418/课堂笔记.md",
     "Rust for Linux/assets",
     "OS.md",
     "rCore/Daily Record.md",
-    "Rust for Linux",
     "Temp.md",
     "rCore/其他.md",
     "pa/笔记.md",
