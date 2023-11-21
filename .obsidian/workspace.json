@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "cs杂记.md",
+                "file": "算法.md",
                 "mode": "source",
                 "source": false
               }
@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Cpp.md"
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Cpp.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Cpp.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,7 +212,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -229,8 +230,10 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "173af0fcea462ae7",
+  "active": "b16eb5b1c16a1fd5",
   "lastOpenFiles": [
+    "算法.md",
+    "cs杂记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
     "Cpp.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
@@ -241,7 +244,6 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/assets/uTools_1700135302107.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/assets",
-    "cs杂记.md",
     "rCore/学习笔记.md",
     "Git.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU",
@@ -262,7 +264,6 @@
     "Linux.md",
     "Rust for Linux/笔记.md",
     "收藏.md",
-    "算法.md",
     "Shell.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets",
     "15-418_CS149 Parallel Computer Architecture and Programming",
