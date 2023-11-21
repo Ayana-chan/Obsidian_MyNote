@@ -1319,7 +1319,7 @@ void Demo() {
 
 ## 并发编程
 
-conditional variable的第一个参数是lock，第二个参数是返回bool的函数，是为了让锁来保护函数的参数，避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
+conditional variable的第一个参数是lock，第二个参数是返回bool的函数。这是为了让锁来保护函数的参数（条件），避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
 
 unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结束后自动释放锁。千万不要对它们使用unlock，否则会很难debug，特别是在不小心unlock了它们包裹的mutex而不是它们本身的时候。
 
