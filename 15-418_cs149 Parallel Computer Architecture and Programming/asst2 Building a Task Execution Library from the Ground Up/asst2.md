@@ -491,7 +491,7 @@ Overall performance results
 [Parallel + Thread Pool + Sleep]        : Perf did not pass all tests
 ```
 
-通过打印发现，某个线程会连续得到很多次start_mu锁，然后才会让给别的线程（即某个线程会连续执行许多次任务，而其他线程闲置）。在yourtest里面测试了一下，如果每个task比较繁重的话，就不会出现这种情况。在实体机上试验发现确实有可能单线程一直占据mutex：
+通过打印发现，某个线程会连续得到很多次start_mu锁，然后才会让给别的线程（即某个线程会连续执行许多次任务，而其他线程闲置）。在yourtest里面测试了一下，如果每个task比较繁重的话，就不会出现这种情况。在实体机上试验发现确实有可能单线程一直占据mutex，并且如果执行任务的时间超过1毫秒了才出现公平调度：
 ```cpp
 int main() {  
     std::mutex mu;  
@@ -506,6 +506,7 @@ int main() {
                 std::cout << "th " << id << " got lock\n";  
                 value++;  
             }  
+            //std::this_thread::sleep_for(std::chrono::microseconds(1000));
             res[id] += value;  
         }  
     };  
