@@ -649,6 +649,8 @@ typename remove_reference<T>::type&& move(T&& param) {
 
 ### forward 完美转发 
 
+forward能还原值的左右值性质，从而触发不同的函数。
+
 能转发：
 ```cpp
 [const] T &[&]
@@ -733,6 +735,11 @@ lvalue overload, n=1
 rvalue overload, n=3
 ```
 
+#### forward_as_tuple
+
+[std::forward\_as\_tuple - cppreference.com](https://en.cppreference.com/w/cpp/utility/tuple/forward_as_tuple)
+
+将参数组成tuple的形式，并且每个参数都被forward了。可以用于全部完美转发地传参数列表。而且如果参数是临时变量的话，不会将其存储（即不会延长生命周期）；如果不在表达式结束前使用完毕，则会造成悬垂引用。
 ## ROV & NROV
 
 两个优化都自动将返回的目标左值作为隐式参数以引用的形式传入到函数中，以减少多余的构造、析构和拷贝。
@@ -1195,6 +1202,12 @@ for (int i=0; i<10; ++i) {
 }
 ```
 
+## piecewise_construct
+
+有的函数参数是用单个tuple接收的。因此，编译器可能不知道应该去匹配tuple为参数的函数，还是单纯有若干个参数（和tuple内部结构一样）的函数。
+
+此时，只要在传参的时候在第一个参数前附上`std::piecewise_construct`，就能显式地匹配单纯有若干个参数的函数。
+
 ## 模板
 
 模板代码本身什么都不能做，它需要被使用后知道要生成哪些实例。并且所有实例都自带inline，不会重复定义。
@@ -1319,7 +1332,7 @@ void Demo() {
 
 ## 并发编程
 
-conditional variable的第一个参数是lock，第二个参数是返回bool的函数。这是为了让锁来保护函数的参数（条件），避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
+conditional variable的第一个参数是lock，第二个参数是返回bool的函数。被notify时，会自动上锁，然后检查函数返回值是否为true，是的话继续执行，不是的话释放锁继续等待。最开始进入wait之前也会检查一次函数返回值。 这是为了让锁来保护函数的参数（条件），避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
 
 unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结束后自动释放锁。千万不要对它们使用unlock，否则会很难debug，特别是在不小心unlock了它们包裹的mutex而不是它们本身的时候。
 
@@ -1383,6 +1396,44 @@ enum TaskSystemType {
 };
 ```
 
+## 将不能copy的对象放入map
+
+只能使用emplace，但似乎由于emplace的普通使用依然会进行拷贝（TODO: 暂时搞不懂为什么不能普通地写，连move都不行）。
+
+先传入`piecewise_construct`，表示分开构造key和value，因此还需要传入两个tuple。使用`forward_as_tuple(0)`构造key，然后使用`forward_as_tuple(10)`真原地构造不可复制的对象。如果参数（如上面的0和10）不需要完美转发的话，直接`make_tuple`也是没问题的，但有弊无利。无参的话直接`tuple<>()`。
+
+```cpp
+class NoCopyClass {  
+    std::mutex mu;  
+public:  
+    NoCopyClass() = default;  
+    explicit NoCopyClass(int value) {} // 构造函数  
+};  
+  
+int main() {  
+    std::unordered_map<int, NoCopyClass> no_copy_map;  
+    // 触发默认构造函数  
+    no_copy_map.emplace(std::piecewise_construct,  
+                        std::forward_as_tuple(0),  
+                        std::tuple<>());  
+    // 以完美转发的形式（此处为右值）  
+    no_copy_map.emplace(std::piecewise_construct,  
+                        std::forward_as_tuple(1),  
+                        std::forward_as_tuple(10));  
+    // 普通地构造tuple传进去，没有完美转发  
+    no_copy_map.emplace(std::piecewise_construct,  
+                        std::make_tuple(2),  
+                        std::make_tuple(10));  
+
+	// no_copy_map.emplace(3, NoCopyClass()); // Error: In template: no matching constructor for initialization of 'std::pair<const int, NoCopyClass>'
+
+	// no_copy_map.insert({3, NoCopyClass()}); // Error: No matching member function for call to 'insert'
+
+	// no_copy_map.emplace(std::piecewise_construct, std::make_tuple(3), std::forward_as_tuple(NoCopyClass())); // Error: In template: call to implicitly-deleted copy constructor of 'NoCopyClass'
+
+    return 0;  
+}
+```
 # CMake
 
 ## CMakeList

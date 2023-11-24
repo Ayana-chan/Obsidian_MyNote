@@ -212,8 +212,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -232,11 +231,11 @@
   },
   "active": "b16eb5b1c16a1fd5",
   "lastOpenFiles": [
+    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+    "Cpp.md",
+    "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
     "算法.md",
     "cs杂记.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
-    "Cpp.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "Rust.md",
     "RISC-V/RISC-V-Reader-Chinese-v2p1.pdf",
     "LaTeX/lshort-zh-cn.pdf",
