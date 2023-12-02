@@ -211,7 +211,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -230,6 +231,8 @@
   },
   "active": "7468f25875a5715b",
   "lastOpenFiles": [
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701496487497.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701496365520.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701495394340.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701495059439.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701494137801.png",
@@ -239,8 +242,6 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1700877545971.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1700877209121.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1700876934211.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1700876868454.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/Pasted image 20231125094452.png",
     "Rust.md",
     "算法.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
