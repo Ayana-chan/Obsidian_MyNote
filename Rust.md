@@ -2714,7 +2714,7 @@ fn main() {
 
 core::slice::from_raw_parts
 
-## 克隆`Option<Arc<T>>`
+## `Option<T>`克隆为`Option<Arc<T>>`
 
 ```rust
 pub fn get_t_ref(&self) -> Option<Arc<T>> {
@@ -2730,6 +2730,14 @@ pub fn spawn(self: &Arc<Self>, elf_data: &[u8]) -> Arc<Self> {
 }
 ```
 
+## 增加API适配度
+
+函数签名里面，某些类型换一种写法能适配更多输入：
+
+- `&Option<T>` -> `Option<&T>`
+- `&String` -> `&str`
+- `&Vec<T>` -> `&[T]`
+- `&Box<T>` -> `&T`
 
 # 模块系统
 
