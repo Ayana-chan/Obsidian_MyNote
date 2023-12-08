@@ -1,3 +1,10 @@
+
+# 安装
+
+[Install Docker Engine on Ubuntu | Docker Docs](https://docs.docker.com/engine/install/ubuntu/)
+
+[docker去掉sudo权限方法\_解除docker sudo权限-CSDN博客](https://blog.csdn.net/jason_src/article/details/87862124)
+
 # Docker基础
 
 >Docker 基于容器这个更为概括的概念。关于容器和虚拟机之间最大的不同是，虚拟机会执行整个的 OS 栈，包括内核（即使这个内核和主机内核相同）。与虚拟机不同，容器避免运行其他内核实例，而是与主机分享内核。在Linux环境中，有LXC机制来实现，并且这能使一系列分离的主机像是在使用自己的硬件启动程序，而实际上是共享主机的硬件和内核。因此容器的开销小于完整的虚拟机。

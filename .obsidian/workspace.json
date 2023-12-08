@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Rust.md",
+                "file": "Docker.md",
                 "mode": "source",
                 "source": false
               }
@@ -61,13 +61,14 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Linux.md",
+                "file": "毕设/IPFS.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -141,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md"
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md"
               }
             }
           },
@@ -151,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -168,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -228,8 +229,17 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "7468f25875a5715b",
+  "active": "b16eb5b1c16a1fd5",
   "lastOpenFiles": [
+    "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
+    "毕设/IPFS.md",
+    "毕设/读论文.md",
+    "Docker.md",
+    "Rust.md",
+    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+    "MIT6.824 Distributed Systems/课堂笔记.md",
+    "毕设",
+    "Linux.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701501335552.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701500180762.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701499998415.png",
@@ -240,11 +250,7 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701496487497.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701496365520.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701495394340.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701495059439.png",
-    "Rust.md",
     "算法.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "Cpp.md",
     "cs杂记.md",
     "RISC-V/RISC-V-Reader-Chinese-v2p1.pdf",
@@ -259,23 +265,18 @@
     "LaTeX/LaTeX.md",
     "LaTeX/assets",
     "LaTeX",
-    "Docker.md",
-    "Linux.md",
     "Rust for Linux/笔记.md",
     "收藏.md",
     "Shell.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets",
     "15-418_CS149 Parallel Computer Architecture and Programming",
     "15-418/课堂笔记.md",
-    "Rust for Linux/assets",
     "OS.md",
     "rCore/Daily Record.md",
     "Temp.md",
     "rCore/其他.md",
     "pa/笔记.md",
     "CS144 Introduction to Computer Networking/lab笔记.md",
-    "MIT6.824 Distributed Systems/lab4.md",
-    "Vim.md",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
