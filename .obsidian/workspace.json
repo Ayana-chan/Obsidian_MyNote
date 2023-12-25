@@ -61,14 +61,14 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "收藏.md",
+                "file": "LaTeX/LaTeX.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "毕设/IPFS.md"
+                "file": "LaTeX/LaTeX.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "毕设/IPFS.md",
+                "file": "LaTeX/LaTeX.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "毕设/IPFS.md",
+                "file": "LaTeX/LaTeX.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -212,8 +212,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -230,18 +229,21 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "173af0fcea462ae7",
+  "active": "d38aed0b7ce5c84b",
   "lastOpenFiles": [
-    "算法.md",
-    "MIT6.824 Distributed Systems/课堂笔记.md",
-    "Docker.md",
     "收藏.md",
     "毕设/IPFS.md",
+    "MIT6.824 Distributed Systems/课堂笔记.md",
+    "Docker.md",
+    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+    "密码学.md",
+    "毕设/assets/Obsidian.lnk",
+    "毕设/assets",
+    "算法.md",
     "Cpp.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
     "毕设/读论文.md",
     "Rust.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "毕设",
     "Linux.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701501335552.png",
@@ -269,15 +271,12 @@
     "LaTeX",
     "Rust for Linux/笔记.md",
     "Shell.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets",
-    "15-418_CS149 Parallel Computer Architecture and Programming",
     "15-418/课堂笔记.md",
     "OS.md",
     "rCore/Daily Record.md",
     "Temp.md",
     "rCore/其他.md",
     "pa/笔记.md",
-    "CS144 Introduction to Computer Networking/lab笔记.md",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
