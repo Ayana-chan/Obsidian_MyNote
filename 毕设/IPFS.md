@@ -16,9 +16,7 @@ merkle DAG中的任意一个结点都可以引出一个子DAG，代表这个节�
 
 断联的两部分IPFS网络连接后似乎会发生数据同步（如去重）
 
-todo确认：file的结构就是实际的Merkle DAG结构。
-
-todo学习DHT Ruslan R, Zailani A S M, Zukri N H M, et al. Routing performance of structured overlay in Distributed Hash Tables (DHT) for P2P[J]. Bulletin of Electrical Engineering and Informatics, 2019, 8(2): 389-395.dht
+todo学习DHT（kademlia）  Ruslan R, Zailani A S M, Zukri N H M, et al. Routing performance of structured overlay in Distributed Hash Tables (DHT) for P2P[J]. Bulletin of Electrical Engineering and Informatics, 2019, 8(2): 389-395.dht
 
 >The CID you will retrieve is actually a folder containing a single image file. The reason for this that when files are added to IPFS, the filename is not stored by default. To retain the filename, it's a common practice to wrap the file in a directory. In such instances, you end up with two CIDs - one for the file and another for the directory containing the file.
 
@@ -54,7 +52,7 @@ pinning service则是一些厂商在收费后提供若干IPFS节点来提供持�
 
 对上传下载的用户友好的界面
 
-todo：kademlia
+
 
 
 
