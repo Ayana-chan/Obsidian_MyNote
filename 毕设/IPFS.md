@@ -52,13 +52,15 @@ pinning service则是一些厂商在收费后提供若干IPFS节点来提供持�
 
 对上传下载的用户友好的界面
 
+Kubo可以用`localhost:5001/webui`来查看ui控制面板，但只能管理存在MFS里的文件。
 
+`ipfs files`带头的命令才能控制MFS。
 
+TODO：如果一个节点是无私贡献者，会不会导致其他节点还不清债？？
 
+>In IPFS, a **block** refers to a single unit of data, identified by its key (hash). A block can be any sort of data, and does not necessarily have any sort of format associated with it. An **object**, on the other hand, refers to a block that follows the Merkle DAG protobuf data format. It can be parsed and manipulated via the `ipfs object` command. Any given hash may represent an object or a block
 
-
-
-
+>When making your own block data, you won't be able to read the data with `ipfs cat`. This is because you are inputting raw data without the UnixFS data format. To read raw blocks, use `ipfs block get` as shown in the example.
 
 
 
