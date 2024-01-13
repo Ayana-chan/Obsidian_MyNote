@@ -61,14 +61,26 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "收藏.md",
+                "file": "Docker.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "6bc9f009e88d4045",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Linux/Linux.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -142,7 +154,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "收藏.md"
+                "file": "毕设/IPFS.md"
               }
             }
           },
@@ -152,7 +164,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "收藏.md",
+                "file": "毕设/IPFS.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +181,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "收藏.md",
+                "file": "毕设/IPFS.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -214,8 +226,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -232,17 +243,24 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "d38aed0b7ce5c84b",
+  "active": "173af0fcea462ae7",
   "lastOpenFiles": [
-    "LaTeX/LaTeX.md",
+    "Rust/Rust.md",
     "毕设/IPFS.md",
+    "Docker.md",
+    "Linux/Linux.md",
+    "cs杂记.md",
+    "Linux/Shell.md",
+    "Linux",
+    "收藏.md",
+    "Rust/assets/Obsidian.lnk",
+    "Rust/assets",
+    "LaTeX/LaTeX.md",
     "毕设/assets/Obsidian 1.lnk",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "Rust/LGR Cheat Sheet.pdf",
     "Rust",
-    "Docker.md",
     "MIT6.824 Distributed Systems/课堂笔记.md",
-    "收藏.md",
     "密码学.md",
     "毕设/assets/Obsidian.lnk",
     "毕设/assets",
@@ -250,9 +268,7 @@
     "Cpp.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
     "毕设/读论文.md",
-    "Rust/Rust.md",
     "毕设",
-    "Linux.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701501335552.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701500180762.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701499998415.png",
@@ -263,17 +279,12 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701496487497.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701496365520.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701495394340.png",
-    "cs杂记.md",
     "RISC-V/RISC-V-Reader-Chinese-v2p1.pdf",
-    "LaTeX/lshort-zh-cn.pdf",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up",
-    "15-418_CS149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/assets",
     "rCore/学习笔记.md",
     "Git.md",
     "杂记.md",
     "Rust for Linux/笔记.md",
-    "Shell.md",
     "15-418/课堂笔记.md",
     "OS.md",
     "rCore/Daily Record.md",

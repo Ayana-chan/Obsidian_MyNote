@@ -316,6 +316,7 @@ firewall-cmd --zone=public --remove-port=3338/tcp --permanent
 systemctl disable firewalld.service
 ```
 
+但Ubuntu22.04似乎不能用firewall-cmd，可能需要用ufw。[Ubuntu 22.04 LTS - 开放端口，删除已经开放的端口\_ufw删除端口-CSDN博客](https://blog.csdn.net/qq_29761395/article/details/124791460)
 ## 开启路由
 路由开启后，当前系统就拥有了路由转发功能，能让一个网卡收集到的信息传递给其他网卡，可以实现如Docker等对外部的连接。
 ```bash
@@ -413,7 +414,21 @@ FUSE 可以用于实现如：一个将所有文件系统操作都使用 SSH 转�
 - [kbfs](https://keybase.io/docs/kbfs)：分布式端到端加密文件系统。在这个文件系统里有私密（private），共享（shared），以及公开（public）三种类型的文件夹
 - [borgbackup](https://borgbackup.readthedocs.io/en/stable/usage/mount.html)：方便用户浏览删除重复数据后的压缩加密备份
 
+## 查询当前CPU的线程信息
 
+```bash
+# 总核数 = 物理CPU个数 X 每颗物理CPU的核数 
+# 总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数
+
+# 查看物理CPU个数
+cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l
+
+# 查看每个物理CPU中core的个数(即核数)
+cat /proc/cpuinfo| grep "cpu cores"| uniq
+
+# 查看逻辑CPU的个数
+cat /proc/cpuinfo| grep "processor"| wc -l
+```
 
 
 # 问题

@@ -278,6 +278,22 @@ fn func2(list: &[i32]){
 }
 ```
 
+### 跳出多层循环
+
+break想要跳出多层循环时，传统的写法要么使用标志变量，要么使用goto，而rust可以通过给循环起名字来选择跳到哪一层。
+
+```rust
+let a = vec![1;5];
+let b = vec![2;6];
+'outer: for i in a {
+	println!("{}", i);
+	'inner: for j in b.iter() {
+		print!("{}", j);
+		break 'outer;   // 跳出外层循环，如果不加标记，默认跳出最内层循环
+	}
+}
+```
+
 ## 结构体
 
 ```rust
@@ -449,6 +465,9 @@ match x {
 	Some(i) => println!("{}",i),
 }
 ```
+
+### &Option(x) Option(&x)
+`&Option(x)`严格弱于`Option(&x)`。使用`as_ref()`来转化。
 
 ### unwrap_or_default()
 
@@ -706,6 +725,10 @@ fn longest(x: &str, y: &str) -> &str {
 
 编译器不看函数内部，而**只看函数签名**来推断返回值的生命周期。
 
+## 静态生命周期
+
+`'static`是特殊的生命周期，表示整个程序的运行时间。如所有字符串字面值都有此生命周期。
+
 ## 函数生命周期标注
 
 `<'a>`为泛型生命周期参数。而生命周期标注（`&'a str`）仅仅用于描述关系，而不**直接**影响生命周期长度。
@@ -786,7 +809,19 @@ fn insert_value<'val>(my_vec: &mut Vec<&'val i32> , value: &'val i32){
 
 ## struct生命周期标注
 
-struct的所有引用变量都要进行生命周期标注。标注后，该变量的生命周期必须要长于struct。标注了生命周期的struct必须在impl的时候在impl后面也标注一个，即`impl<'a> ST<'a>{...}`。
+当struct里面存在需要标注生命周期的东西时（如引用类型的成员变量），要先在struct上以泛型的形式标注生命周期，如`struct MyStruct<'a>`。标注后，该引用变量的有效生命周期必须要长于**struct标注的生命周期**（而非struct本身！）。
+
+由此我们可以得出struct的生命周期标注的两种描述：
+1. 表示了**该struct中的所有引用的最短生命周期**。
+2. 表示了**该struct的最久生存界限**。
+
+理解起来很简单，结构体存活时间不能久到出现悬垂引用，因此**创建结构体的时候指定生命周期标注以划分结构体本身的生命周期与其所有引用的生命周期**。
+
+上面的结论在单个生命周期标注时完全成立，但在多生命周期标注时，其实也就和偏导函数一样各自独立看即可，只要每个标注都满足编译器要求即可成功编译。
+
+struct标注的生命周期在创建其对象的时候确定下来，这也就帮助了该生命周期标注在多个引用和多个结构体之间进行交流协作。
+
+标注了生命周期的struct必须在impl的时候在impl后面也标注一个，即`impl<'a> MyStruct<'a>{...}`。
 
 ```rust
 struct MyStruct<'a> {
@@ -812,17 +847,111 @@ fn main() {
 
 但如果impl里面并没有任何函数要用到生命周期标注的话，可以使用`impl Mystruct<'_>{...}`。其他推荐显式标注生命周期、但完全可以由编译器推导的情况下，也可以使用`'_`。
 
-## 静态生命周期
+## 普通变量继承生命周期（常见于泛型）
 
-`'static`是特殊的生命周期，表示整个程序的运行时间。如所有字符串字面值都有此生命周期。
+一个普通变量（而非引用）继承了一个生命周期，可以看做变量所标注的生命周期(`MyStruct<'a>`的`'a`）继承于此生命周期，即要求变量里面的任何引用都不短于此生命周期。
 
-`<T: 'static>`让T成为`'static`的子类，只有当T为引用的时候才要求必须是`'static`，否则是有所有权的变量的话不做任何要求。
+注意，限制的只有变量内部的引用，而变量本身是可以提前消亡的。
+
+如下面这段代码，当想要将一个泛型转为Box被存入Vector的时候，必须承诺在Box的生命周期期间该泛型内部所有引用保持合法。
+
+```rust
+trait MyTrait {  
+    fn do_something(&self);  
+}  
+  
+struct MyStruct<'a> {  
+    items: Vec<Box<dyn MyTrait + 'a>>,  
+}  
+  
+impl<'a> MyStruct<'a> {  
+    //最暴力的方式是把a换成static，然后去掉其他a标注
+    fn add<T: 'a + MyTrait>(&mut self, item: T) {  
+        self.items.push(Box::new(item));  
+    }  
+}  
+  
+// 实现MyTrait的具体类型  
+struct ConcreteType;  
+impl MyTrait for ConcreteType {  
+    fn do_something(&self) {  
+        println!("Hello");
+    }  
+}  
+  
+fn main() {  
+    let mut my_struct = MyStruct { items: Vec::new() };  
+    my_struct.add(ConcreteType);  
+    for item in &my_struct.items {  
+        item.do_something();  
+    }  
+}
+```
+
+## 多个普通变量间的生命周期标注关系
+
+`MyStructBuilder`里面存在受生命周期约束的变量`items`，build完成后该变量被转交给`MyStruct`，而builder本身消亡。此时就会要求`items`的生命周期标注不短于`MyStruct`的最短引用生命周期。于是可以在build返回`MyStruct`时让其生命周期也被标注为`'a`，这意味着告诉编译器：
+1. `MyStruct`的最短引用生命周期等于`MyStructBuilder`的最短引用生命周期（注意，引用生命周期是协变的，更长的生命周期也能塞进短的）。这很合理，毕竟`MyStruct`是`MyStructBuilder`生出来的，不应当贸然越界。
+2. `items`同时不短于`MyStruct`和`MyStructBuilder`的最短引用生命周期。这就使得其在两者内部可以完全自由使用。
+
+```rust
+trait MyTrait {  
+    fn do_something(&self);  
+}  
+
+struct MyStruct<'a> {  
+    items: Vec<Box<dyn MyTrait + 'a>>,  
+}  
+  
+struct MyStructBuilder<'a> {  
+    items: Vec<Box<dyn MyTrait + 'a>>,  
+}  
+  
+impl<'a> MyStructBuilder<'a> {  
+    fn new() -> Self {  
+        MyStructBuilder { items: Vec::new() }  
+    }  
+  
+    fn add<T: MyTrait + 'a>(&mut self, item: T) {  
+        self.items.push(Box::new(item));  
+    }  
+  
+    fn build(self) -> MyStruct<'a> {  
+        MyStruct { items: self.items }  
+    }  
+}  
+  
+// 实现MyTrait的具体类型  
+struct ConcreteType;  
+impl MyTrait for ConcreteType {  
+    fn do_something(&self) {  
+        // 具体类型的实现  
+    }  
+}  
+  
+fn main() {  
+    let mut builder = MyStructBuilder::new();  
+  
+    // 添加ConcreteType的实例到MyStruct  
+    builder.add(ConcreteType);  
+  
+    // 构建ProStruct  
+    let pro_struct = builder.build();  
+  
+    // 现在可以对ProStruct中的items调用do_something方法  
+    for item in &pro_struct.items {  
+        item.do_something();  
+    }  
+}
+```
 
 ## 型变
 
 [Subtyping and Variance - The Rust Reference](https://doc.rust-lang.org/stable/reference/subtyping.html)
 
-目的：让子可以完全处理父。
+[Subtyping and Variance - The Rustonomicon](https://doc.rust-lang.org/nomicon/subtyping.html)
+
+目的：让子可以完全满足父，或者说用父直接代替子，或者说**把子直接当成父来用**。
 
 若有一个类型构造器`Foo(Class)`，以类型为参数来产生另一个类型。设A是B的父类。
 1. 若`Foo(A)`与`Foo(B)`*无关*，则称为**不变（invariant）**
@@ -836,7 +965,11 @@ fn main() {
 
 >不变实际上是要求A和B必须完全相同才能在转化后兼容。
 
-若A 是B的父类，B是C的父类，则`fn A => C`是`fn B => B`的父类，因为参数为A的函数必然能处理参数B，而返回值为C的函数必然也能返回B（即`fn A => C`无论是入参还是返回值都可以直接在外部视为`fn B => B`）。因此fn类型对参数类型是逆变的，对返回值类型是协变的。
+对生命周期来说，A是B的子类意味着A长于B，即短生命周期的变量可以代理长生命周期变量。
+
+Rust中，泛型T实际上是正经类型+生命周期的组合。因此泛型函数其实都会隐含生命周期标记。另外，下面表格的T也要看做带有生命周期标记a，然后按照前两个的规则进行整个的型变。
+
+若A是B的父类，B是C的父类，则`fn A => C`是`fn B => B`的父类，因为参数为A的函数必然能处理参数B，而返回值为C的函数必然也能返回B（即`fn A => C`无论是入参还是返回值都可以直接在外部视为`fn B => B`）。因此fn类型对参数类型是逆变的，对返回值类型是协变的。
 
 |Type|Variance in `'a`|Variance in `T`|
 |---|---|---|
@@ -855,6 +988,39 @@ fn main() {
 
 如果T不变，但T形如`TypeName<X>`，则X也不变。
 
+对结构体来说，其各个泛型的型变则独立地由其**在每个成员变量中的型变**所决定。比方说成员变量x的类型为`fn(T) -> ()`，那么T在x中逆变。若T的所有出现都是协变，则T在结构体中协变；若都是逆变则是逆变；否则就是不变。
+
+原文：A struct, informally speaking, inherits the variance of its fields. If a struct `MyType` has a generic argument `A` that is used in a field `a`, then MyType's variance over `A` is exactly `a`'s variance over `A`.
+
+However if `A` is used in multiple fields:
+- If all uses of `A` are covariant, then MyType is covariant over `A`
+- If all uses of `A` are contravariant, then MyType is contravariant over `A`
+- Otherwise, MyType is invariant over `A`
+
+```rust
+//成员变量类型决定泛型的型变
+struct MyType<'a, 'b, A: 'a, B: 'b, C, D, E, F, G, H, In, Out, Mixed> {
+    a: &'a A,     // covariant over 'a and A
+    b: &'b mut B, // covariant over 'b and invariant over B
+
+    c: *const C,  // covariant over C
+    d: *mut D,    // invariant over D
+
+    e: E,         // covariant over E
+    f: Vec<F>,    // covariant over F
+    g: Cell<G>,   // invariant over G
+
+    h1: H,        // would also be covariant over H except...
+    h2: Cell<H>,  // invariant over H, because invariance wins all conflicts
+
+    i: fn(In) -> Out,       // contravariant over In, covariant over Out
+
+    k1: fn(Mixed) -> usize, // would be contravariant over Mixed except..
+    k2: Mixed,              // invariant over Mixed, because invariance wins all conflicts
+}
+
+```
+
 ```rust
 struct Bar<'r>{
 	_phantom: PhantomData<fn(&'r ())>, //逆变套协变=逆变
@@ -870,33 +1036,31 @@ fn bar<'short, 'long: 'short>(
 //如果两个参数都改成mut short_bar: &mut Bar<'short>，就会导致short_bar和long_bar互相都不能赋值
 ```
 
-下面是一个比较典型的例子：
+下面是一个比较典型的例子，使用`Manager`来包裹`text`数据，而`Manager`被存储在`List`中。外部不能直接访问`Manager`，而是让`List`使用`Interface`去包装`Manager`以提供接口。
 
 ```rust
+//Manager和List都比较清晰，只规定自己管理的资源的生命周期下限。
 struct Manager<'val>{  
     text: &'val str,
 }
 
-//不好的写法，因为&'a是协变，但<'a>是不变，因此Interface<'a>是不变
-//这导致此结构体没有子类型，无法使其生命周期短于Manager<'a>
-//struct Interface<'a>
-//	manager: &'a mut Manager<'a>
-//}
-
-//好的写法，解耦使'r保持协变，可以让Interface提前消亡而不影响Manager
-struct Interface<'r, 'val>{
-	manager: &'r mut Manager<'val> //隐式定义'val: 'r
-}
-
-//这种解耦可以有效防止出现过长的、不可测的借用
-//因此生命周期标注可以看做是缩短、切割、独立而不是延长、接续、衔接
 struct List<'val>{
 	manager: Manager<'val>,
 }
 
+//好的写法，解耦使'r保持协变
+//可以让Interface提前消亡（即不影响manager引用变量的消亡）
+struct Interface<'r, 'val>{
+	manager: &'r mut Manager<'val> //隐式定义'val: 'r
+}
+
 impl<'val> List<'val>{
-	//解耦了：1.该方法对self的借用；2.self本身（所有权变量）的生命周期
-	//相当于要求这个借用一直持续到Interface消亡（由于'val: 'r所以不用管'val）
+	//解耦了：1.该方法对self的借用；2.self本身（普通变量）的生命周期
+	//外部调用此方法后，在其借用self期间保证资源可用('r)
+	//借用完成即业务完成，Interface和self可以一起消亡
+	//但这一借用全过程不影响'val，即资源的生命周期
+	//从协变角度看，返回值类型对r协变，因此函数对r协变，
+	//或者说外界总可以用更短的r来接受Interface，是符合逻辑的
 	pub fn get_interface<'r>(&'r mut self) -> Interface<'r, 'val> {
 		Interface{
 			manager: &mut self.manager,
@@ -904,6 +1068,9 @@ impl<'val> List<'val>{
 	}
 
 	//也可以省略'r，让编译器自己推断
+	//这里可以换一个视角看，Interface遵循比较正常的生命周期约定
+	//借完就用，用完就同时释放借用，这种经典用法就可以依靠编译器推断
+	//唯一需要限制的是Interface里面的val，要保证其资源可用
 	pub fn get_interface_2(&mut self) -> Interface<'_, 'val> {  
 	    Interface{  
 	        manager: &mut self.manager,  
@@ -928,6 +1095,72 @@ fn main(){
     //let i2 = list.get_interface();
     //println!("1: {}",i1.manager.text);  
     //println!("2: {}",i2.manager.text);
+}
+```
+
+正确的例子直接看没啥，但看看平时很可能写出的错误代码。下面的代码将Interface的两个生命周期标注合并为一个：
+
+```rust
+//错误的Interface写法
+struct Interface<'a>
+	manager: &'a mut Manager<'a>
+}
+```
+
+这使得'a出现在成员变量中的两个地方，其中很显然的是&'a mut T对第一个a协变；虽然Manager对a协变（看Manager结构体，只有&'a一处，因此协变），但是由于&'a mut T对T不变，而第二个'a参与到了T中，使得&'a mut Manager<'a>对第二个a不变（**协变+不变就是不变，很好理解，三种型变就和-1 0 1相乘运算一样可以嵌套推导**）。因此根据规则，Interface对a不变。
+
+这导致manager变量对a没有子类型。从生命周期逻辑上看，这使得Manager的生命周期标注与对Manager的引用生命周期强绑定。这显然是不合理的，Manager想活多久与对其引用持续多久之间只有继承关系，没有强绑定关系。但该分析并没有很直观的方法论，基本是抓瞎、凭感觉，真正的bug需要往后继续分析。
+
+与错误的Interface配套的`get_interface`如下：
+
+```rust
+//配套错误的Interface写法
+pub fn get_interface(&mut self) -> Interface<'val> {  
+    Interface{  
+        manager: &mut self.manager,  
+    }  
+}
+```
+
+编译器会推断出返回的Interface的隐式生命周期标注与self等同，又由于Interface对self不变，因此**只能在self的生命周期为val的时候编译通过**。
+
+实际上，给self标上val确实可以跑（难绷），但这就导致只能用一次get_interface，因为多次使用后，编译器不允许任何一个引用消亡，因为&mut T不变，所以若self引用消亡了的话，就说明List对象已经无法保证引用完全可用了。
+
+比较乐的是，上面的错误代码将mut全部删去，使得a保持协变，然后也给self标上val，那么代码是可以完全正常使用的。目前我的猜测是，这时候任何的借用都永远不会消亡，只不过都是只读借用所以不报错。
+
+```rust
+//错误代码去掉mut后
+struct Manager<'val> {  
+    text: &'val str,  
+}  
+  
+struct List<'val> {  
+    manager: Manager<'val>,  
+}  
+  
+struct Interface<'a> {  
+    manager: &'a Manager<'a>,  
+}  
+  
+impl<'val> List<'val> {  
+    pub fn get_interface(&'val self) -> Interface<'val> {  
+        Interface {  
+            manager: &self.manager,  
+        }  
+    }  
+}  
+  
+fn main() {  
+    let mut list = List {  
+        manager: Manager {  
+            text: "abc",  
+        }  
+    };  
+  
+    let i1 = list.get_interface();  
+    println!("1: {}", i1.manager.text);  
+    let i2 = list.get_interface();  
+    println!("2: {}", i2.manager.text);  
 }
 ```
 
@@ -1016,6 +1249,7 @@ where
 	f(&zero);
 }
 ```
+
 
 
 
@@ -1170,6 +1404,8 @@ let mut str = String::from("abc");
 str.push_str("def");
 let mut str1 = "abc1".parse().unwrap();
 ```
+
+`to_string`、`to_owned`、`into`和`from`应该都是调用的`to_owned`，不发生拷贝。
 
 加法运算合并字符串时，只有第一个参数可以是String：
 ```rust
@@ -2130,6 +2366,55 @@ fn main() {
 ```
 
 >Arc和Mutex的正确配合可以达到支持多线程安全读写数据对象。如果需要多线程共享所有权的数据对象，则只用Arc即可。如果需要修改 `T` 类型中某些成员变量 `member` ，那直接采用 `Arc<Mutex<T>>` ，并在修改的时候通过 `obj.lock().unwrap().member = xxx` 的方式是可行的，但这种编程模式的同步互斥的粒度太大，可能对互斥性能的影响比较大。为了减少互斥性能开销，其实只需要在 `T` 类型中的**需要被修改的成员变量**上加 `Mutex<_>` 即可。如果成员变量也是一个数据结构，还包含更深层次的成员变量，那应该继续下推到最终需要修改的成员变量上去添加 `Mutex`
+
+### RwLock std::sync::RwLock
+
+读写锁，可以允许多个同时读或者单一写。读锁下禁止出现可变借用（内部可变性的变量在内部写时也会出现可变引用）。
+
+```rust
+use std::sync::{Arc, RwLock};
+use std::thread;
+
+fn main() {
+    // 创建一个共享的可变数据
+    let data = Arc::new(RwLock::new(vec![1, 2, 3]));
+
+    // 创建一些读取数据的线程
+    let mut handles = vec![];
+    for i in 0..3 {
+        let data_clone = Arc::clone(&data);
+        let handle = thread::spawn(move || {
+            // 获取读锁
+            let read_lock = data_clone.read().unwrap();
+            println!("Reader {} got the lock: {:?}", i, *read_lock);
+            // 释放读锁
+            drop(read_lock);
+        });
+        handles.push(handle);
+    }
+
+    // 创建一个写入数据的线程
+    let write_handle = thread::spawn(move || {
+        // 获取写锁
+        let mut write_lock = data.write().unwrap();
+        println!("Writer got the lock, adding 4");
+        // 修改数据
+        write_lock.push(4);
+    });
+
+    // 等待所有线程完成
+    for handle in handles {
+        handle.join().unwrap();
+    }
+    write_handle.join().unwrap();
+
+    // 读取最终的数据
+    let final_data = data.read().unwrap();
+    println!("Final data: {:?}", *final_data);
+}
+```
+
+
 ## 类型转换
 
 >解引用 `Deref` Trait 是 Rust 编译器唯一允许的一种隐式类型转换，而对于其他的类型转换，我们必须手动调用类型转化方法或者是显式给出转换前后的类型。
@@ -2577,7 +2862,7 @@ global_asm!(include_str!("entry.asm"));
 ```
 # 问题、技巧、解决方案
 
-## 完整地打印到输出
+## 完整地将结构体数据打印到输出
 
 使用`#[derive(Debug)]`派生宏，使得ST由Debug trait派生；打印时使用`{:?}`即可行内打印，使用`{:#?}`即可换行打印。这样可以完整地打印结构体或枚举。
 
@@ -2602,6 +2887,80 @@ println!("{:#?}",st)
 // }
 ```
 
+## Build设计模式
+
+rust没有变长参数列表，因此会很频繁地使用build设计模式。
+
+```rust
+struct MyStruct {
+    field1: i32,
+    field2: String,
+    field3: bool,
+    field4: f64,
+    field5: Vec<u8>,
+}
+
+struct MyStructBuilder {
+    field1: Option<i32>,
+    field2: Option<String>,
+    field3: Option<bool>,
+    field4: Option<f64>,
+    field5: Option<Vec<u8>>,
+}
+
+impl MyStructBuilder {
+    fn new() -> Self {
+        MyStructBuilder {
+            field1: None,
+            field2: None,
+            field3: None,
+            field4: None,
+            field5: None,
+        }
+    }
+
+    fn field1(mut self, value: i32) -> Self {
+        self.field1 = Some(value);
+        self
+    }
+
+    fn field2(mut self, value: String) -> Self {
+        self.field2 = Some(value);
+        self
+    }
+
+    fn field3(mut self, value: bool) -> Self {
+        self.field3 = Some(value);
+        self
+    }
+
+    fn field4(mut self, value: f64) -> Self {
+        self.field4 = Some(value);
+        self
+    }
+
+    fn field5(mut self, value: Vec<u8>) -> Self {
+        self.field5 = Some(value);
+        self
+    }
+
+    fn build(self) -> MyStruct {
+        MyStruct {
+            field1: self.field1.unwrap_or(0), // Replace 0 with your default value for field1
+            field2: self.field2.unwrap_or_else(|| "default".to_string()), // Replace "default" with your default value for field2
+            field3: self.field3.unwrap_or(false), // Replace false with your default value for field3
+            field4: self.field4.unwrap_or(0.0), // Replace 0.0 with your default value for field4
+            field5: self.field5.unwrap_or_else(|| vec![]), // Replace vec![] with your default value for field5
+        }
+    }
+}
+
+// Usage
+let my_struct = MyStructBuilder::new()
+    .field1(10)
+    .field3(true)
+    .build();
+```
 ## 变量生命周期太长导致其借用太久
 
 适当使用drop来消解这些持久的变量来进行重新借用。
@@ -2739,6 +3098,55 @@ pub fn spawn(self: &Arc<Self>, elf_data: &[u8]) -> Arc<Self> {
 - `&Vec<T>` -> `&[T]`
 - `&Box<T>` -> `&T`
 
+## 层次化的结构体（组合实现OOP）
+
+假设有三层结构体，上层完全包裹下层，则上层的某个成员变量设为下层：
+
+```rust
+#[derive(Debug)]
+struct DivideByZeroError {
+    info: String,
+}
+
+#[derive(Debug)]
+enum RuntimeError {
+    DivideByZero(DivideByZeroError),
+    // other runtime errors
+}
+
+#[derive(Debug)]
+enum AppError {
+    StaticError,
+    RuntimeError(RuntimeError),
+}
+```
+
+也因此，当想要新建下层对象的时候，就需要层层指定类型：
+
+```rust
+fn divide(a: i32, b: i32) -> Result<i32, AppError> {
+    if b == 0 {
+        return Err(AppError::RuntimeError(RuntimeError::DivideByZero(DivideByZeroError {
+            info: String::from("divide by zero"),
+        })));
+    }
+    Ok(a / b)
+}
+```
+
+外部也可能需要层层拆分：
+```rust
+match divide(10, 0) {
+    Ok(result) => println!("Result: {}", result),
+    Err(e) => match e {
+        AppError::StaticError => println!("Static error"),
+        AppError::RuntimeError(runtime_error) => match runtime_error {
+            RuntimeError::DivideByZero(divide_by_zero_error) => println!("Runtime error: Divide by zero, info: {}", divide_by_zero_error.info),
+            // handle other runtime errors
+        },
+    },
+}
+```
 # 模块系统
 
 按层级从高到低为：
@@ -2929,11 +3337,25 @@ members = [
 
 crate之间的依赖需要在crate内的toml的dependencies通过路径指定。
 
+## 生成文档
+
+`cargo doc`: 生成文档（直接使用rustdoc似乎不会考虑依赖）。
+
+使用`cargo doc --no-deps --open`即可不生成依赖项的文档，且构建完后打开页面。
+
+
 ## Build Script
 
 [Build Scripts - The Cargo Book](https://doc.rust-lang.org/cargo/reference/build-scripts.html)
 
-在跟目录下的`build.rs`中的rust代码会在包构建前运行。println出来的字符串会被用于告知cargo。
+在根目录下的`build.rs`中的rust代码会在包构建前运行。println出来的字符串会被用于告知cargo。也可以在cargo里面指定要用的Build Script：
+
+```toml
+[package]
+name = "your_project"
+version = "0.1.0"
+build = "build.rs"
+```
 
 如打印`cargo:rustc-env=VAR=VALUE`就会建立环境变量`VAR`，其值为`VALUE`，可以在程序里使用`std::env::var("TEST_FOO").unwrap();`访问。
 
@@ -2995,6 +3417,7 @@ fn main() {
 ```rust
 #[cfg(test)]
 mod tests {
+	use super::*;
     #[test]
     fn it_works() {
         let result = 2 + 2;
@@ -3086,6 +3509,73 @@ fn main() {
 }
 ```
 
+## tracing
+
+```toml
+[dependencies]  
+tracing = { version = "0.1", features = ["max_level_trace", "release_max_level_info"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+```
+
+可看做log的进化版，用于分布式追踪。
+
+`features = ["max_level_trace", "release_max_level_info"]`可以指定tracing生成的日志的level范围。
+
+[使用 tracing 记录日志 - Rust语言圣经(Rust Course)](https://course.rs/logs/tracing.html)
+
+[Rust 语言的全链路追踪库 tracing - 知乎](https://zhuanlan.zhihu.com/p/593817503)
+
+tracing只是生成日志，但打印、记录还是要交给Collector，如tracing_subscriber。
+
+```rust
+fn main() {  
+    // 设置一个Subscriber  
+    tracing_subscriber::fmt().init();  
+
+	//没有span也行，但不太符合规范
+    let span = info_span!("root");  
+    let _enter = span.enter();  
+    
+    info!("This is a test log message");  
+}
+```
+
+```rust
+tracing_subscriber::fmt()  
+    .with_max_level(tracing::Level::TRACE)  
+    .init();
+```
+
+`fmt()`返回一个`SubscriberBuilder`，可以使用`with`来添加配置。如果使用`finish()`则会生成Subscribe，然后要手动用`registry`挂载到全局；如果使用`init()`则自动挂载到全局，结束配置。
+
+tracing_subscriber在引入`features = ["env-filter"]`后可以通过环境变量来设置日志范围，使用`.with(tracing_subscriber::EnvFilter::from_default_env());`后就会读取`RUST_LOG`环境变量作为其最大（即最低）日志级别。可以用`build.rs`来指定：
+```rust
+fn main() {
+    println!("cargo:rustc-env=RUST_LOG=info");
+}
+```
+
+使用layer实现同时打印到控制台和文件：
+
+```rust
+let console_subscriber = tracing_subscriber::fmt::layer()  
+    .with_writer(std::io::stdout);  
+let log_file = std::fs::File::create("log.txt").unwrap();  
+let file_subscriber = tracing_subscriber::fmt::layer()  
+    .with_writer(log_file)  
+    .with_ansi(false);  
+  
+let subscriber = tracing_subscriber::registry()  
+    .with(console_subscriber)  
+    .with(file_subscriber);  
+  
+tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+```
+
+测试lib crate时可能需要输出日志来debug，因此lib的toml中要在`[dev-dependencies]`下引入tracing_subscriber然后在测试的开头写上:
+```rust
+tracing_subscriber::fmt().with_max_level(tracing::Level::DEBUG).init();
+```
 ## lazy static
 
 当static不可变，但最初的初始化不太简单，是一个运行时执行的语句，就需要lazy static来进行延迟初始化。
@@ -3118,10 +3608,114 @@ bitflags! {
 }
 ```
 
+## tokio
 
+### runtime
 
+[Rust Tokio，运行时以及任务相关API - 知乎](https://zhuanlan.zhihu.com/p/611781411)
 
+tokio的异步代码只能在tokio的运行时中进行。
 
+`runtime.enter()`会生成RAII的guard变量，变量生命周期期间程序处于对应runtime中。block_on会自动调用enter，在block_on调用完成后自动退出runtime。
+
+```rust
+fn main() -> Result<()> {
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?;
+
+    runtime.block_on(async{
+        tokio::spawn(async {
+            tokio::time::sleep(Duration::from_secs(1)).await;
+            println!("Hello World");
+        }).await?;
+    })?;
+
+    Ok(())
+}
+```
+
+```rust
+fn main() -> Result<()> {
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?;
+    let _enter_guard = runtime.enter();
+
+    let _ = tokio::spawn(async {
+        tokio::time::sleep(Duration::from_secs(1)).await;
+        println!("Hello World");
+    });
+
+    thread::sleep(Duration::from_secs(3));
+    Ok(())
+}
+```
+
+### 两种thread
+
+**core thread**: 一开始就会创建默认为CPU核心数量的core线程，即wocker线程，会获取任务进行调度。任务为Future类型。当任务执行到await（相当于yield）的时候，wocker可以进行任务切换。因此，**如果一个任务一直阻塞（或长时间计算）跑不到await的话，它所在的wocker就会无法继续完成其他任务**。
+
+**block thread**: 按需创建，任务独占线程，由闭包生成。和普通的线程差不多意思。也因此可以执行阻塞任务而不影响其他任务。任务结束后默认存活十秒从而可以被复用。
+
+普通线程生成函数`thread::spawn`创建的线程与堵塞线程一样都是独占的，但是`spawn_blocking`返回`tokio::task::JoinHandle`类型实现了`Future`，你可以在一个异步任务中等待它，而`thread::spawn`做不到这点。
+
+### async
+
+async函数调用后会返回Future，从而可以await。async函数会被分配到core thread来调度。
+
+只有async函数才可以调用另一个async函数，因此具有传染性。在异步中调用同步代码可以用block thread解决，而在同步中调用异步代码则要新建tokio运行时：
+
+```rust
+async fn foo1() -> u32 {
+    10
+}
+
+fn foo() {
+	//使用new_current_thread占据当前线程，不另起炉灶
+    let rt = tokio::runtime::Builder::new_current_thread()
+          .enable_all()
+          .build().unwrap();
+  
+    let num = rt.block_on(foo1());  // 调用了此异步函数
+    // 或者像下面这样写
+    //let num = rt.block_on(async {
+    //    foo1().await
+    //});
+    println!("{}", num);
+}
+```
+
+### await
+
+- async函数或代码块需要被.await才会执行。  
+- tokio::spawn和tokio::task::spawn_blocking会立即开始执行，无论它们的JoinHandle是否被.await。  
+- 定时器和延时需要.await来响应它们的完成。
+
+### main宏
+
+使用`#[tokio::main]`即可让main函数自动进入tokio runtime：
+````rust
+#[tokio::main]
+async fn main() {
+    println!("Hello world");
+}
+````
+
+等价于：
+```rust
+fn main() {
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(async {
+            println!("Hello world");
+        })
+}
+```
+
+使用`#[tokio::test]`代替`#[test]`即可让测试自动进入tokio runtime。
 
 
 

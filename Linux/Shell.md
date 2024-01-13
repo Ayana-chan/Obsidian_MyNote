@@ -32,7 +32,7 @@ missing:~$ /bin/echo $PATH
 - 标记: 一般以`-`开头。
 - 选项: 带有值的标记。
 
-![Linux](Linux.md#权限)
+![Linux](Linux/Linux.md#权限)
 
 `ls -l /path`可以更具体地查看路径下的所有文件，列出的格式如下：
 
@@ -71,7 +71,7 @@ cat < hello.txt > hello2.txt
 
 `|`: **管道**，将一个程序的输出和另一个程序的输入连接起来。
 
-![Linux](Linux.md#xargs)
+![Linux](Linux/Linux.md#xargs)
 
 下面的脚本会找到所有`.html`后缀的文件，将它们压缩为一个压缩包：
 
@@ -249,7 +249,7 @@ alias ll
 
 >实际上，很多程序都要求您在 shell 的配置文件中包含一行类似 `export PATH="$PATH:/path/to/program/bin"` 的命令，这样才能确保这些程序能够被 shell 找到。
 
-[Linux 配置文件](Linux.md#配置文件)
+[Linux 配置文件](Linux/Linux.md#配置文件)
 
 ## 远端设备 ssh
 

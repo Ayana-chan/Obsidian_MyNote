@@ -81,6 +81,11 @@ docker exec -it xxx /bin/bash
 进入容器，在使用`exit`退出容器后不会关闭容器。若加上`-i`可解决连接波动的问题。
 
 `-it`：交互式容器。`-id`：守护式容器。
+
+#### 日志查看
+
+`docker logs -f ipfs_host`: 追踪查看日志。
+
 #### 其他
 - `-v 宿主机目录:容器内目录`：设定数据卷。必须是绝对路径。若目录不存在则会自动创建。可以缺省宿主机目录与冒号，此时会自动指定宿主机的一个文件夹（在`/var/lib/docker`里面）参与数据卷。
 - `--volumes-from xx`：令xx成为当前容器的数据卷容器。
@@ -187,11 +192,11 @@ restart: always
 
 ping得通但连接不到时首先考虑端口开没开：
 
-![Linux](Linux.md#开关端口)
+![Linux](Linux/Linux.md#开关端口)
 
 也可能是路由没开放导致Docker无法接触外网：
 
-![Linux](Linux.md#开启路由)
+![Linux](Linux/Linux.md#开启路由)
 ## MySQL
 ### 创建
 以当前目录为数据卷创建mysql：

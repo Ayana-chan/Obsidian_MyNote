@@ -62,6 +62,107 @@ TODO：如果一个节点是无私贡献者，会不会导致其他节点还不�
 
 >When making your own block data, you won't be able to read the data with `ipfs cat`. This is because you are inputting raw data without the UnixFS data format. To read raw blocks, use `ipfs block get` as shown in the example.
 
+到底什么是bootstrap？
+
+也许需要一个IPFS节点作为网关（或客户端）来使用，以测试能否获取数据。
+
+Same-origin policy: 只有当协议、网站名、端口号完全相同的网站之间才能跳转。使用`https://{CID A}.ipfs.{gatewayURL}/{webpage A}`（subdomain gateway）即可利用此机制防止跨CID（跨源）跳转。[Site Unreachable](https://en.wikipedia.org/wiki/Same-origin_policy)
+
+
+```dockerfile
+# 使用Kubo的官方Docker镜像作为基础镜像
+FROM ipfs/kubo:latest
+
+# 安装依赖项和监控工具
+# 这里假设你的监控工具可以通过包管理器安装
+RUN apk add --no-cache <你的监控工具包名>
+
+# 或者，如果你的监控程序是一个二进制文件，你可以这样添加它：
+# COPY path_to_your_monitoring_program /usr/local/bin/your_monitoring_program
+
+# 如果你的监控程序是一个脚本，确保它具有执行权限
+# COPY path_to_your_monitoring_script /usr/local/bin/your_monitoring_script
+# RUN chmod +x /usr/local/bin/your_monitoring_script
+
+# (可选) 如果你的监控程序需要配置文件，可以添加配置文件
+# COPY path_to_your_config_file /path/in/container/config_file
+
+# (可选) 添加启动脚本，如果你需要在启动容器时运行一些初始化命令
+# COPY start.sh /usr/local/bin/start.sh
+# RUN chmod +x /usr/local/bin/start.sh
+
+# 暴露任何需要的端口
+# EXPOSE <你的监控工具端口>
+
+# 设置容器启动时执行的命令
+# 这里假设你的监控程序可以作为后台服务运行
+# CMD ["your_monitoring_program"]
+
+# 或者，如果你有一个启动脚本来启动Kubo和你的监控程序，可以这样设置：
+# CMD ["/usr/local/bin/start.sh"]
+```
+
+```yaml
+version: '3'
+services:
+  kubo:
+    build: .
+    ports:
+      - "4001:4001" # Libp2p
+      - "5001:5001" # API
+      - "8080:8080" # Gateway
+    volumes:
+      - ./data/ipfs:/data/ipfs
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1G
+
+  cadvisor:
+    image: google/cadvisor:latest
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "8081:8080"
+```
+
+`ipfs dag get <root-hash>`可以获取merkle树（真的吗？），然后应该只能手动解析了
+
+也许：api调用get的时候，IPFS会将文件搜索并缓存到其repo中，然后将本地流交给程序。
+
+也许可以使用选举，选出一个节点统筹全部信息？然后各个节点互相协作以调整副本。节点之间如何通信是个大问题。加快响应速度则独立实现网关。看看cluster有没有更合理的东西。
+
+也许可以使用桶，让IPFS节点按照性能均匀分配到各个桶中，每个监控程序管理一个桶；当监控程序数量变化的时候，就可以增删桶并进行负载均衡。
+
+也许可以直接假设只有较少的IPFS节点，用一个监控程序管理。如果要扩展的话，就用完全另一部分监控程序和IPFS节点即可，缺点就是需要额外管理IPFS节点的归属，需要尽力保证IPFS节点的分散程度以求平衡，同时节点迁移的时候代价较大（一个问题：如果一个节点里面都是非pin的数据的话，监控程序能发现吗？）。
+
+>IPFS cluster使用时要关闭gc，防止pin前被删。但裸IPFS会不会也有此问题？： IPFS garbage collection should be disabled while adding. Because blocks are block/put individually, if a GC operation happens while and adding operation is underway, and before the blocks have been pinned, they would be deleted.
+
+unable to connect to agent pipe
+
+```
+docker run -d --name ipfs_host \
+-v $PWD/staging:/export \
+-v $PWD/data:/data/ipfs \
+-p 4001:4001 -p 4001:4001/udp -p 127.0.0.1:8080:8080 -p 127.0.0.1:5001:5001 \
+ipfs/kubo:latest
+```
+
+暴露到外网：
+```
+docker run -d --name ipfs_host \
+-v $PWD/staging:/export \
+-v $PWD/data:/data/ipfs \
+-p 4001:4001 -p 4001:4001/udp -p 8080:8080 -p 5001:5001 \
+ipfs/kubo:latest
+```
+
+看看swarm相关的api
+
 
 
 
