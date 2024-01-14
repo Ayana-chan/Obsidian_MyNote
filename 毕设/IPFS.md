@@ -163,7 +163,7 @@ ipfs/kubo:latest
 
 看看swarm相关的api
 
-
+也许可以只ping不add，做成pinservice
 
 
 

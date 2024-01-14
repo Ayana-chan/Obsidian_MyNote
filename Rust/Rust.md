@@ -1126,7 +1126,7 @@ pub fn get_interface(&mut self) -> Interface<'val> {
 
 实际上，给self标上val确实可以跑（难绷），但这就导致只能用一次get_interface，因为多次使用后，编译器不允许任何一个引用消亡，因为&mut T不变，所以若self引用消亡了的话，就说明List对象已经无法保证引用完全可用了。
 
-比较乐的是，上面的错误代码将mut全部删去，使得a保持协变，然后也给self标上val，那么代码是可以完全正常使用的。目前我的猜测是，这时候任何的借用都永远不会消亡，只不过都是只读借用所以不报错。
+另外，上面的错误代码将mut全部删去，使得a保持协变，那么代码是可以完全正常使用的。注意此时`get_interface`返回的Interface的生命周期是和self借用生命周期等同的，而manager指向的数据是val生命周期，被协变成self的生命周期。甚至给self和Interface都标上val也不会报错，毕竟都是只读借用，数据生命周期内借完不还也不会有事情。
 
 ```rust
 //错误代码去掉mut后
@@ -1143,7 +1143,7 @@ struct Interface<'a> {
 }  
   
 impl<'val> List<'val> {  
-    pub fn get_interface(&'val self) -> Interface<'val> {  
+    pub fn get_interface(&self) -> Interface {  
         Interface {  
             manager: &self.manager,  
         }  
