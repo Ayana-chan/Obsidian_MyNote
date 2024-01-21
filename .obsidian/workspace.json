@@ -66,18 +66,6 @@
                 "source": false
               }
             }
-          },
-          {
-            "id": "6bc9f009e88d4045",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Linux/Linux.md",
-                "mode": "source",
-                "source": false
-              }
-            }
           }
         ],
         "currentTab": 3
@@ -246,8 +234,11 @@
   "active": "9c467b59e0bbb34c",
   "lastOpenFiles": [
     "毕设/IPFS.md",
+    "Web前端/杂项.md",
     "Rust/Rust.md",
     "Docker.md",
+    "Web后端/SpringBoot.md",
+    "Web后端/杂项.md",
     "Linux/Linux.md",
     "cs杂记.md",
     "Linux/Shell.md",
@@ -288,8 +279,6 @@
     "15-418/课堂笔记.md",
     "OS.md",
     "rCore/Daily Record.md",
-    "Temp.md",
-    "rCore/其他.md",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]

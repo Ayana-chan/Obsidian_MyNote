@@ -422,7 +422,7 @@ let direction = Direction::North;
 enum Message {
     Quit,
     ChangeColor(i32, i32, i32),
-    Move { x: i32, y: i32 },
+    Move { x: i32, y: i32 }, //类结构体枚举变体(struct-like enum variant)
     Write(String),
 }
 
@@ -468,6 +468,17 @@ match x {
 
 ### &Option(x) Option(&x)
 `&Option(x)`严格弱于`Option(&x)`。使用`as_ref()`来转化。
+
+### as_deref
+
+可以触发Some内数据的Deref trait，可以让`Option<String>`被转变为`Option<&str>`，否则使用`as_deref`只能变成`Option<&String>`。
+
+```rust
+fn main() {
+    let opt: Option<String> = Some("some value".to_owned());
+    let value = opt.as_deref().unwrap_or("default string");
+}
+```
 
 ### unwrap_or_default()
 
@@ -3306,6 +3317,10 @@ fn main() {
 - `cargo check`: 检查代码保证能过编译，但不会生成可执行文件（比build快）。
 - `cargo test`: 执行项目中的所有测试。
 
+## toml字段
+
+[Cargo.toml 清单详解 - Rust语言圣经(Rust Course)](https://course.rs/cargo/reference/manifest.html)
+
 ## 依赖
 
 `Cargo.toml`是对package或者workspace的description，称为manifast。virtual manifast则是仅仅描述一个workspace，且不包含任何一个package。
@@ -3341,9 +3356,19 @@ crate之间的依赖需要在crate内的toml的dependencies通过路径指定。
 
 `cargo doc`: 生成文档（直接使用rustdoc似乎不会考虑依赖）。
 
+[注释和文档 - Rust语言圣经(Rust Course)](https://course.rs/basic/comment.html)
+
 使用`cargo doc --no-deps --open`即可不生成依赖项的文档，且构建完后打开页面。
 
+[Linking to items by name - The rustdoc book](https://doc.rust-lang.org/nightly/rustdoc/write-documentation/linking-to-items-by-name.html)
+使用`[path]`即可按名字构建文档内超链接。也可以使用`[your_name](path)`以隐藏复杂的path：
+```
+//! Errors for API's response. \  
+//! Use [`api::ApiResponse<T>`](crate::api::ApiResponse) as return type is more convenient, which is declared as `Result<Json<T>, ResponseError>`. \  
+//! Look at [`ResponseError`] for more usage.
+```
 
+文档中的代码段默认为rust，也默认会被编译、运行。使用一些attributes写在语言处即可调整设置：[Documentation tests - Attributes - The rustdoc book](https://doc.rust-lang.org/nightly/rustdoc/write-documentation/documentation-tests.html#attributes)
 ## Build Script
 
 [Build Scripts - The Cargo Book](https://doc.rust-lang.org/cargo/reference/build-scripts.html)
@@ -3443,6 +3468,11 @@ mod tests {
 测试函数也可以改成以Result为返回值，若返回的是Err则测试失败。
 
 使用`#[ignore]`忽略测试。
+
+默认不会输出print的东西，要加个选项才能看到输出：
+```bash
+cargo test -- --nocapture ${test_name}
+```
 
 ## 测试组织
 
@@ -3717,6 +3747,30 @@ fn main() {
 
 使用`#[tokio::test]`代替`#[test]`即可让测试自动进入tokio runtime。
 
+## axum
 
+可以把API做成库，返回Router，然后使用者用merge来同级衔接。
+
+### layer
+
+使用Router.layer来在调用handler前调用一些方法（拦截器）。这里有在进入接口前验证http头中auth的例子：[from\_fn in axum::middleware - Rust](https://docs.rs/axum/latest/axum/middleware/fn.from_fn.html)。此layer函数：
+
+```rust
+async fn auth(  
+    headers: http::HeaderMap,  
+    request: extract::Request,  
+    next: middleware::Next,  
+) -> Result<response::Response, http::StatusCode> {  
+    match get_token(&headers) {  
+        Some(token) if token_is_valid(token) => {  
+            let response = next.run(request).await;  
+            Ok(response)  
+        }  
+        _ => {  
+            Err(http::StatusCode::UNAUTHORIZED)  
+        }  
+    }  
+}
+```
 
 

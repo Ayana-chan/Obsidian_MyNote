@@ -163,7 +163,15 @@ ipfs/kubo:latest
 
 看看swarm相关的api
 
-也许可以只ping不add，做成pinservice
+[axum/examples/cors/src/main.rs at main · tokio-rs/axum · GitHub](https://github.com/tokio-rs/axum/blob/main/examples/cors/src/main.rs)
+
+TODO：外部markdown写crate文档
+
+看看为什么api只能是static
+
+应该只能用逗号隔开！先把其他接口弄好，然后弄个分支
+
+
 
 
 
