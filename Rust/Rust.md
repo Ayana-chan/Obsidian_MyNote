@@ -3437,6 +3437,41 @@ fn main() {
     println!("cargo:{}", your_command);
 }
 ```
+
+## 其它
+
+### 代码内文档转README
+
+其实就是删除每一行的前四个字符`//! `，使用以下工具代码：
+
+```c
+#include <iostream>
+#include <fstream>
+#include <string>
+
+int main() {
+    std::ifstream input("temp.txt");
+    std::ofstream output("output.txt");
+  
+    if (input.is_open() && output.is_open()) {
+        std::string line;
+        while (std::getline(input, line)) {
+            if (line.length() > 4) {
+                output << line.substr(4) << std::endl;
+            } else {
+                output << "" << std::endl;
+            }
+        }
+        input.close();
+        output.close();
+    } else {
+        std::cout << "Unable to open file";
+    }
+  
+    return 0;
+}
+```
+
 # 测试
 
 ```rust
