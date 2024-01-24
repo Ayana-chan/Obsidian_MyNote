@@ -2871,6 +2871,8 @@ global_asm!(include_str!("entry.asm"));
 14    ret
 15}
 ```
+
+
 # 问题、技巧、解决方案
 
 ## 完整地将结构体数据打印到输出
@@ -3504,11 +3506,14 @@ mod tests {
 
 使用`#[ignore]`忽略测试。
 
+## 测试时打印输出
+
 默认不会输出print的东西，要加个选项才能看到输出：
 ```bash
 cargo test -- --nocapture ${test_name}
 ```
 
+但使用日志系统的话直接test就可以看到输出。
 ## 测试组织
 
 - 单元测试: 一次对一个module进行测试，可以测试到private接口。
