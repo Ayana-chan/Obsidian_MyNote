@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "函数式编程/函数式编程.md",
+                "file": "Web前端/ts.md",
                 "mode": "source",
                 "source": false
               }
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "函数式编程/函数式编程.md"
+                "file": "Web前端/ts.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "函数式编程/函数式编程.md",
+                "file": "Web前端/ts.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "函数式编程/函数式编程.md",
+                "file": "Web前端/ts.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -233,10 +233,11 @@
   },
   "active": "9c467b59e0bbb34c",
   "lastOpenFiles": [
+    "函数式编程/函数式编程.md",
+    "Web前端/ts.md",
     "函数式编程/assets/uTools_1706072289006.png",
     "函数式编程/assets",
     "Rust/Rust.md",
-    "函数式编程/函数式编程.md",
     "Docker.md",
     "函数式编程",
     "毕设/IPFS.md",
@@ -272,7 +273,6 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701497087940.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701496487497.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701496365520.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701495394340.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
     "rCore/学习笔记.md",
     "Git.md",
