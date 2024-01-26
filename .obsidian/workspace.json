@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
+                "file": "函数式编程/函数式编程.md",
                 "mode": "source",
                 "source": false
               }
@@ -234,6 +234,7 @@
   "active": "9c467b59e0bbb34c",
   "lastOpenFiles": [
     "函数式编程/函数式编程.md",
+    "MIT6.824 Distributed Systems/课堂笔记.md",
     "Web前端/ts.md",
     "函数式编程/assets/uTools_1706072289006.png",
     "函数式编程/assets",
@@ -256,7 +257,6 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "Rust/LGR Cheat Sheet.pdf",
     "Rust",
-    "MIT6.824 Distributed Systems/课堂笔记.md",
     "密码学.md",
     "毕设/assets/Obsidian.lnk",
     "毕设/assets",
