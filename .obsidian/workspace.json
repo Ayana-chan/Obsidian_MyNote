@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "算法.md",
                 "mode": "source",
                 "source": false
               }
@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "函数式编程/函数式编程.md",
+                "file": "Web前端/vue3.md",
                 "mode": "source",
                 "source": false
               }
@@ -68,7 +68,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Web前端/ts.md"
+                "file": "Web前端/vue3.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Web前端/ts.md",
+                "file": "Web前端/vue3.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Web前端/ts.md",
+                "file": "Web前端/vue3.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -231,18 +231,21 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "9c467b59e0bbb34c",
+  "active": "b16eb5b1c16a1fd5",
   "lastOpenFiles": [
+    "Web前端/ts.md",
+    "Web前端/vue3.md",
+    "Web前端/杂项.md",
+    "算法.md",
+    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "函数式编程/函数式编程.md",
     "MIT6.824 Distributed Systems/课堂笔记.md",
-    "Web前端/ts.md",
     "函数式编程/assets/uTools_1706072289006.png",
     "函数式编程/assets",
     "Rust/Rust.md",
     "Docker.md",
     "函数式编程",
     "毕设/IPFS.md",
-    "Web前端/杂项.md",
     "Web后端/SpringBoot.md",
     "Web后端/杂项.md",
     "Linux/Linux.md",
@@ -254,13 +257,11 @@
     "Rust/assets",
     "LaTeX/LaTeX.md",
     "毕设/assets/Obsidian 1.lnk",
-    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "Rust/LGR Cheat Sheet.pdf",
     "Rust",
     "密码学.md",
     "毕设/assets/Obsidian.lnk",
     "毕设/assets",
-    "算法.md",
     "Cpp.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
     "毕设/读论文.md",
@@ -278,7 +279,6 @@
     "Git.md",
     "杂记.md",
     "Rust for Linux/笔记.md",
-    "15-418/课堂笔记.md",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
