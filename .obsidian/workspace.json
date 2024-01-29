@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "算法.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -67,8 +67,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -142,7 +141,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Web前端/vue3.md"
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md"
               }
             }
           },
@@ -152,7 +151,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Web前端/vue3.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +168,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Web前端/vue3.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -231,16 +230,26 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "b16eb5b1c16a1fd5",
+  "active": "7468f25875a5715b",
   "lastOpenFiles": [
-    "Web前端/ts.md",
-    "Web前端/vue3.md",
-    "Web前端/杂项.md",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706514333732.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706513889355.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706513334659.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706512633160.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706512359123.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706512151462.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706511903138.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706511672890.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706511333285.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706511211909.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706510978511.png",
     "算法.md",
+    "Web前端/vue3.md",
+    "Web前端/ts.md",
+    "Web前端/杂项.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "函数式编程/函数式编程.md",
     "MIT6.824 Distributed Systems/课堂笔记.md",
-    "函数式编程/assets/uTools_1706072289006.png",
     "函数式编程/assets",
     "Rust/Rust.md",
     "Docker.md",
@@ -265,20 +274,10 @@
     "Cpp.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
     "毕设/读论文.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701501335552.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701500180762.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701499998415.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701499456607.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701498335696.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701497838692.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701497087940.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701496487497.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1701496365520.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
     "rCore/学习笔记.md",
     "Git.md",
     "杂记.md",
-    "Rust for Linux/笔记.md",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
