@@ -165,15 +165,37 @@ ipfs/kubo:latest
 
 [axum/examples/cors/src/main.rs at main · tokio-rs/axum · GitHub](https://github.com/tokio-rs/axum/blob/main/examples/cors/src/main.rs)
 
-TODO：外部markdown写crate文档
-
 看看为什么api只能是static
 
-应该只能用逗号隔开！先把其他接口弄好，然后弄个分支
+使用Gateway来get的时候可以使用NoCache来防止IPFS去主动下载。
 
+应该有一个网关直接把控各个IPFS的各种行为，而网站提供的服务则是另外的无状态服务器集群，集群会访问IPFS。
 
+这样设计的话，可能不需要NoCache，让每个IPFS节点作为易失效CSN服务器使用。
 
+但是不能暴露RPC！！
 
+也许，写个web服务将RPC的一部分用于向公网暴露也是不错的！应该还要写个访问控制。这样也是必然造成内存复制，只不过将复制工作分散了。但cluster是不是也是允许复制呢？
+
+cluster的API的add：[ipfs-cluster/adder/adderutils/adderutils.go at master · ipfs-cluster/ipfs-cluster · GitHub](https://github.com/ipfs-cluster/ipfs-cluster/blob/master/adder/adderutils/adderutils.go#L22)。
+
+使用类似于CDN的架构可以帮助选择响应服务器、收集热度信息
+
+可以让文件的上传和下载用一个无状态的网关来进行，相关数据直接存到同一个数据库里面，然后监控程序定期查看数据库以进行决策。节点的选择是个问题，但可以参考nginx。
+
+可以做一个纯粹的pin service，单纯通过监控各节点情况来动态调整副本。热度这种东西，应该是会直接影响节点情况的。不过很难知道特定文件会带给服务器的压力大小，那就很难调整文件的副本量。但是，副本量可以交给用户来规定，规定方式可以参考cluster，毕竟买的时候就应该进行指定来衡量价钱。一个文件带来的压力较小，可能是热度不高，也有可能是外部IPFS节点缓存了很多。实际上，应该只需要保证“旗下集群收到get请求的时候保证可用性”即可。这种情况下对外开放IPFS节点带来的唯一副作用应该是“让访问量的波动因素（规律）变得更为复杂”。
+
+但是，如果不检测节点压力的话，对外开放IPFS节点后，其他IPFS网关会给节点以额外的压力，节点可能检测不到。
+
+由于读>>写，因此只需要注意收集每个文件的相关get请求数量，而add则完全可以交由pin service服务器一起完成。
+
+CDN可以被绕过，那么这里用一个服务来给予访问建议让用户自觉遵守应该没什么问题。但依旧要设网关来管理访问量。
+
+继续找拦截包的方式！
+
+如果pin策略也做成分布式的话，要考虑到策略冲突的问题。无法容忍的情况下才需要CRDT。
+
+每个文件都可以算出访问量，然后就能预测未来热度；于是每个节点的未来热度也就可以被预测了。可以让monitor在开始计算后再收集访问量数据，同时收集节点硬件压力。平时的pin可以使用随机算法，可容纳力越高的节点被分配的概率就越大。（可以在分配节点选完后，对节点硬盘进行查看，塞不下就重新抽）
 
 
 
