@@ -3807,7 +3807,7 @@ fn main() {
 
 ### response
 
-被`axum::Json`处理后的json对象在`into_response()`时如果遇到`cannot move out of dereference of ...`错误，则应该给Json里面的结构体实现`serde::Serialize`。
+若想返回`Json<T>`，则T必须实现`serde::Serialize`，否则会报错`cannot move out of dereference of ...`错误。
 ### layer
 
 使用Router.layer来在调用handler前调用一些方法（拦截器）。这里有在进入接口前验证http头中auth的例子：[from\_fn in axum::middleware - Rust](https://docs.rs/axum/latest/axum/middleware/fn.from_fn.html)。此layer函数：
