@@ -621,7 +621,7 @@ static mut COUNT: u32 = 0;
 - 必须指定类型
 - 存储引用时，生命周期只能是`'static`
 
-即使是可变静态变量，对其的修改也是不安全的，要在unsafe中进行。[Unsafe Rust](Rust.md#Unsafe%20Rust)
+即使是可变静态变量，对其的修改也是不安全的，要在unsafe中进行。
 
 不能直接用RefCell，因为不能保证线程安全（有内部可变性的类型也都受此约束），必须unsafe地实现Sync trait，对其做一层封装。例如：
 ```rust
@@ -3628,18 +3628,20 @@ fn main() {
 使用layer实现同时打印到控制台和文件：
 
 ```rust
-let console_subscriber = tracing_subscriber::fmt::layer()  
-    .with_writer(std::io::stdout);  
-let log_file = std::fs::File::create("log.txt").unwrap();  
-let file_subscriber = tracing_subscriber::fmt::layer()  
-    .with_writer(log_file)  
-    .with_ansi(false);  
+fn config_tracing(){  
+    let console_subscriber = tracing_subscriber::fmt::layer()  
+        .with_writer(std::io::stdout);  
+    let log_file = std::fs::File::create("log.txt").unwrap();  
+    let file_subscriber = tracing_subscriber::fmt::layer()  
+        .with_writer(log_file)  
+        .with_ansi(false);  
   
-let subscriber = tracing_subscriber::registry()  
-    .with(console_subscriber)  
-    .with(file_subscriber);  
+    let subscriber = tracing_subscriber::registry()  
+        .with(console_subscriber)  
+        .with(file_subscriber);  
   
-tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");  
+}
 ```
 
 测试lib crate时可能需要输出日志来debug，因此lib的toml中要在`[dev-dependencies]`下引入tracing_subscriber然后在测试的开头写上:
@@ -3787,10 +3789,25 @@ fn main() {
 
 使用`#[tokio::test]`代替`#[test]`即可让测试自动进入tokio runtime。
 
+## parking_lot
+
+并发库，重新实现了各种锁，效率更高，同时更公平。
+
+使用eventual fairness。[Mutex in parking\_lot - Rust](https://docs.rs/parking_lot/latest/parking_lot/type.Mutex.html#fairness)似乎只是非常暴力地在不公平地霸占0.5ms后强制切换线程。还可以用`unlock_fair`来强制公平，即在解锁后强制进行线程切换。
+
 ## axum
 
 可以把API做成库，返回Router，然后使用者用merge来同级衔接。
 
+### handler
+
+满足要求的函数会自动被实现Handler trait。[axum::handler - Rust](https://docs.rs/axum/latest/axum/handler/index.html#debugging-handler-type-errors)但是很难知道不满足要求的时候哪里出问题了。使用`axum_macros` crate可以看到问题细节。
+
+### extractor
+
+### response
+
+被`axum::Json`处理后的json对象在`into_response()`时如果遇到`cannot move out of dereference of ...`错误，则应该给Json里面的结构体实现`serde::Serialize`。
 ### layer
 
 使用Router.layer来在调用handler前调用一些方法（拦截器）。这里有在进入接口前验证http头中auth的例子：[from\_fn in axum::middleware - Rust](https://docs.rs/axum/latest/axum/middleware/fn.from_fn.html)。此layer函数：
