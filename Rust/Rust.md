@@ -3597,6 +3597,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 tracing只是生成日志，但打印、记录还是要交给Collector，如tracing_subscriber。
 
+### tracing_subscriber
+
 ```rust
 fn main() {  
     // 设置一个Subscriber  
@@ -3648,6 +3650,32 @@ fn config_tracing(){
 ```rust
 tracing_subscriber::fmt().with_max_level(tracing::Level::DEBUG).init();
 ```
+
+### tracing_appender
+
+这是专门用于写日志到文件的库。
+
+```rust
+fn config_tracing(){  
+    let console_subscriber = tracing_subscriber::fmt::layer()  
+        .with_writer(std::io::stdout);  
+  
+    let file_appender = RollingFileAppender::new(  
+        Rotation::HOURLY,  
+        "log",  
+        "ipfs_node_wrapper.log");  
+    let file_subscriber = tracing_subscriber::fmt::layer()  
+        .with_writer(file_appender)  
+        .with_ansi(false);  
+
+    let subscriber = tracing_subscriber::registry()  
+        .with(console_subscriber)  
+        .with(file_subscriber);  
+  
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");  
+}
+```
+
 ## lazy static
 
 当static不可变，但最初的初始化不太简单，是一个运行时执行的语句，就需要lazy static来进行延迟初始化。
@@ -3829,5 +3857,54 @@ async fn auth(
     }  
 }
 ```
+
+### 转发reqwest
+
+可以使用流对reqwest的响应进行转发。官方例子：[axum/examples/reqwest-response/src/main.rs at main · tokio-rs/axum · GitHub](https://github.com/tokio-rs/axum/blob/main/examples/reqwest-response/src/main.rs)。
+
+### trace
+
+可以通过配置tracing layer对所有请求自动生成一个span。使用的是`tower_http` crate。[tower\_http::trace - Rust](https://docs.rs/tower-http/0.1.1/tower_http/trace/index.html)
+
+```rust
+let tracing_layer = tower_http::trace::TraceLayer::new_for_http()  
+    // Create our own span for the request and include the matched path. The matched  
+    // path is useful for figuring out which handler the request was routed to.   
+    .make_span_with(|req: &axum::extract::Request| {  
+        let method = req.method();  
+        let uri = req.uri();  
+  
+        // axum automatically adds this extension.  
+        let matched_path = req  
+            .extensions()  
+            .get::<axum::extract::MatchedPath>()  
+            .map(|matched_path| matched_path.as_str());  
+  
+        tracing::debug_span!("request", %method, %uri, matched_path)  
+    });
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
