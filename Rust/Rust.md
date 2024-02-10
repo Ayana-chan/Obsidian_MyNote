@@ -2576,16 +2576,20 @@ fn main() {
 
 ## 宏 macro
 
-- 使用`macro_rules!`构建的**声明宏（declarative macros）**（弃用）。
+- 使用`macro_rules!`构建的**声明宏（declarative macros）**。
 - 三种**过程宏（procedural macros）**，接收并操作输入的rust代码，然后返回新的rust代码：
 	- 自定义`#[derive]`宏，只能用于struct或enum,可以为其指定随derive属性添加的代码。
 	- 类似属性的宏，在任何条日上添加自定义属性。
 	- 类似函数的宏，看起来像函数调用，对其指定为参数的token进行操作。
 
 宏定义前的代码无法使用此宏，要注意宏定义顺序。
-### macro_rules!
+### Declarative macros (macro_rules!)
 
 用macro_rules!书写的宏的语法类似于match语句。定义时名字不用加感叹号。
+
+用起来很像C语言的宏。
+
+[Macros By Example - The Rust Reference](https://doc.rust-lang.org/reference/macros-by-example.html)
 
 ```rust
 macro_rules! my_macro {
@@ -2649,11 +2653,27 @@ fn main() {
     my_macro!(7777);
 }
 ```
-### derive宏
+
+用例，快速定义特定结构体的静态变量：
+```rust
+macro_rules! define_static_error {  
+    ($name:ident, $code:expr, $message:expr) => {  
+        pub static $name: ResponseErrorStatic = ResponseErrorStatic {  
+            code: $code,  
+            message: $message,  
+        };  
+    };  
+}  
+  
+define_static_error!(NET_COMMUCATION_FAIL, "C0601", "Err communication");  
+define_static_error!(NET_UNKNOWN_ERROR, "C0602", "Err unknown");  
+```
+
+### Derive macros
 
 写出`#[derive(SomeName)]`后，会匹配标注了`#[proc_macro_derive(SomeName)]`的函数，并把`#[derive(SomeName)]`标注的代码段作为输入传入，生成的输出会贴到`#[derive(SomeName)]`所在的地方的下面。
 
-### 类似属性的宏
+### Attribute-like macros
 
 ```rust
 #[route(GET,"/")]
@@ -2669,7 +2689,7 @@ pub fn route(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 和derive一样进行匹配和传参，但会额外传TokenStream,即`GET, "/"`。
 
-### 类似函数的宏
+### Function-like macros
 
 ```rust
 let sql = sql!(SELECT * FROM posts WHERE id=1);
