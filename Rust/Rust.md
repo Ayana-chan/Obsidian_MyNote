@@ -3809,7 +3809,7 @@ fn foo() {
 ### await
 
 - async函数或代码块需要被.await才会执行。  
-- tokio::spawn和tokio::task::spawn_blocking会立即开始执行，无论它们的JoinHandle是否被.await。  
+- tokio::spawn和tokio::task::spawn_blocking会立即开始执行，无论它们的JoinHandle是否被.await。（因此异步任务并不是完全连续的依赖树）
 - 定时器和延时需要.await来响应它们的完成。
 
 ### main宏
