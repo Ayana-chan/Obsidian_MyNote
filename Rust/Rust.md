@@ -3730,6 +3730,10 @@ bitflags! {
 
 ## tokio
 
+一个异步运行时。
+
+rust在语言上提供了异步抽象，但异步怎么跑是要依赖具体的运行时的。也因此，一个库想开发异步逻辑的时候（如scc异步container库），并不需要依赖tokio，只要库使用者使用tokio就行了。
+
 ### runtime
 
 [Rust Tokio，运行时以及任务相关API - 知乎](https://zhuanlan.zhihu.com/p/611781411)
@@ -3904,7 +3908,16 @@ let tracing_layer = tower_http::trace::TraceLayer::new_for_http()
     });
 ```
 
+### 404处理
 
+使用fallback统一处理路径不匹配的请求：[Router in axum::routing - Rust](https://docs.rs/axum/0.7.4/axum/routing/struct.Router.html#method.fallback)。
+
+```rust
+async fn fallback(uri: Uri) -> (StatusCode, String) {  
+    error!("Receive a request but no route match. uri: {}", uri);  
+    (StatusCode::NOT_FOUND, format!("No route for {}", uri))  
+}
+```
 
 
 
