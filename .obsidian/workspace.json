@@ -61,7 +61,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Rust/Rust.md",
+                "file": "并发编程/并发编程.md",
                 "mode": "source",
                 "source": false
               }
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Rust/Rust.md"
+                "file": "并发编程/并发编程.md"
               }
             }
           },
@@ -152,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Rust/Rust.md",
+                "file": "并发编程/并发编程.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Rust/Rust.md",
+                "file": "并发编程/并发编程.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -233,8 +233,10 @@
   },
   "active": "d38aed0b7ce5c84b",
   "lastOpenFiles": [
-    "毕设/IPFS.md",
     "Rust/Rust.md",
+    "并发编程/并发编程.md",
+    "并发编程",
+    "毕设/IPFS.md",
     "函数式编程/函数式编程.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706930271834.png",
@@ -271,7 +273,6 @@
     "Rust",
     "密码学.md",
     "毕设/assets/Obsidian.lnk",
-    "毕设/assets",
     "Cpp.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
     "毕设/读论文.md",

@@ -3117,6 +3117,8 @@ pub fn get_t_ref(&self) -> Option<Arc<T>> {
 ## 花式指定self类型
 
 ```rust
+// 这在需要move self的时候很有用
+// 去掉&的话，self会被消耗
 pub fn spawn(self: &Arc<Self>, elf_data: &[u8]) -> Arc<Self> {
 	...
 }
