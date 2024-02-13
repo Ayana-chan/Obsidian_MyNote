@@ -3504,6 +3504,23 @@ int main() {
 
 # 测试
 
+## 测试组织
+
+- 单元测试: 一次对一个module进行测试，可以测试到private接口。
+- 集成测试: 在整个库的外部，像外部代码一样进行调用，只能测试public接口。
+
+上面的写在代码crate内的`#[cfg(test)]` module就是单元测试。
+
+集成测试文件要写在`tests`文件夹（与src文件夹同级）内。`tests`下的文件夹内的文件不会被视为集成测试文件。每个测试文件都是独立的crate。不用写mod，直接写`#[test]`测试函数即可。只有`cargo test`时才会编译。
+
+`cargo test --test FileName`可以运行某个集成测试文件内的所有测试。
+
+集成测试中如果有些文件只是为了提供帮助而未含有`#[test]`测试函数，则应该将其写到子文件夹里面去，防止出现无意义的空输出pass。
+
+**binary crate意味着独立运行，无法构造集成测试。**
+
+## 单元测试
+
 ```rust
 #[cfg(test)]
 mod tests {
@@ -3534,6 +3551,10 @@ mod tests {
 
 使用`#[ignore]`忽略测试。
 
+## 集成测试
+
+[单元测试和集成测试 - Rust语言圣经(Rust Course)](https://course.rs/test/unit-integration-test.html#%E9%9B%86%E6%88%90%E6%B5%8B%E8%AF%95)
+
 ## 测试时打印输出
 
 默认不会输出print的东西，要加个选项才能看到输出：
@@ -3542,21 +3563,6 @@ cargo test -- --nocapture ${test_name}
 ```
 
 但使用日志系统的话直接test就可以看到输出。
-## 测试组织
-
-- 单元测试: 一次对一个module进行测试，可以测试到private接口。
-- 集成测试: 在整个库的外部，像外部代码一样进行调用，只能测试public接口。
-
-上面的写在代码crate内的`#[cfg(test)]` module就是单元测试。
-
-集成测试文件要写在`tests`文件夹（与src文件夹同级）内。`tests`下的文件夹内的文件不会被视为集成测试文件。每个测试文件都是独立的crate。不用写mod，直接写`#[test]`测试函数即可。只有`cargo test`时才会编译。
-
-`cargo test --test FileName`可以运行某个集成测试文件内的所有测试。
-
-集成测试中如果有些文件只是为了提供帮助而未含有`#[test]`测试函数，则应该将其写到子文件夹里面去，防止出现无意义的空输出pass。
-
-**binary crate意味着独立运行，无法构造集成测试。**
-
 
 # 外部库
 
