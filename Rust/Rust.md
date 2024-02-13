@@ -3182,6 +3182,12 @@ match divide(10, 0) {
     },
 }
 ```
+
+## 引用的Clone
+
+对引用的clone的行为取决于引用的类型有没有实现Clone trait，区别还挺大。
+
+[引用类型的Copy和Clone - Rust入门秘籍](https://rust-book.junmajinlong.com/ch6/06_ref_copy_clone.html)
 # 模块系统
 
 按层级从高到低为：
@@ -3843,6 +3849,18 @@ fn main() {
 
 使用`#[tokio::test]`代替`#[test]`即可让测试自动进入tokio runtime。
 
+### 定制线程数
+
+在builder里面可以用`worker_threads`来指定worker数量。对`new_current_thread`的builder无效。
+
+```rust
+let runtime = tokio::runtime::Builder::new_multi_thread()  
+    .worker_threads(thread_num)  
+    .enable_all()  
+    .build().unwrap();
+```
+### time
+[使用tokio Timer - Rust入门秘籍](https://rust-book.junmajinlong.com/ch100/03_use_tokio_time.html)
 ## parking_lot
 
 并发库，重新实现了各种锁，效率更高，同时更公平。
@@ -3921,7 +3939,13 @@ async fn fallback(uri: Uri) -> (StatusCode, String) {
 }
 ```
 
+## rand
 
+生成随机数，但是库很大。
+
+## fastrand
+
+小型随机数库。
 
 
 
