@@ -1402,13 +1402,13 @@ println!("slice: {} {}",s1,s2);
 
 使用`len()`方法可以获得切片的元素数量。
 
-## 字符串
+## String &str
 
-String是Byte的集合，采用UTF-8编码，是在标准库中的。本质是对`Vec<u8>`的封装。
+String是Byte的集合，采用UTF-8编码，是在标准库中的。本质是对`Vec<u8>`的封装（性能消耗可能更大）。
+
+没有COW机制，clone会进行深拷贝。
 
 字符串字面值（本质是字符串切片，不可变引用）是硬编码的，访问快但本身不可变。其对应的变量就是个字符串切片，是个不可变引用，类型为`&str`。`&str`转String类型要使用`String::from`。
-
-只有`&str`可以转`String`，反之不行。
 
 ```rust
 let mut str = String::from("abc");
@@ -1416,7 +1416,7 @@ str.push_str("def");
 let mut str1 = "abc1".parse().unwrap();
 ```
 
-`to_string`、`to_owned`、`into`和`from`应该都是调用的`to_owned`，不发生拷贝。
+`to_string`、`to_owned`、`into`和`from`应该都是调用的`to_owned`，而且会发生深拷贝。
 
 加法运算合并字符串时，只有第一个参数可以是String：
 ```rust
@@ -1471,6 +1471,13 @@ fn main() {
     string("mY sHiFt KeY iS sTiCkY".to_lowercase()); //大小写替换
 }
 ```
+
+### 函数参数何时用&str，何时用String
+
+&str参数有更高的通用性，因为String转&str是无消耗的，也能让&str直接传进来；如果是String参数的话，如果不想交出所有权，则必须要在传参的时候就复制。因此，如果是要直接消耗字符串的所有权的话，就用String传参；否则就用&str。
+
+使用&str后，内部可能需要转变成String，发生拷贝。但实际上，在不想交出所有权的情况下，却在函数里依然需要生成String，所以这种情形必然会发生拷贝，就算用String当参数也必然要进行一次clone。
+
 ## Vector
 
 ```rust
