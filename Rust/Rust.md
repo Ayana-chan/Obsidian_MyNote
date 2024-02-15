@@ -254,7 +254,7 @@ for (i,&ele) in arr.iter().enumerate(){
 }
 ```
 
-for不仅可以结构，还能通过`&item`接收来进行解引用，可以理解为`&item=&i32`即为`item=i32`。
+for不仅可以解构，还能通过`&item`接收来进行解引用，可以理解为`&item=&i32`即为`item=i32`。
 
 ```rust
 fn func1(list: &[i32]){
@@ -3195,6 +3195,10 @@ match divide(10, 0) {
 对引用的clone的行为取决于引用的类型有没有实现Clone trait，区别还挺大。
 
 [引用类型的Copy和Clone - Rust入门秘籍](https://rust-book.junmajinlong.com/ch6/06_ref_copy_clone.html)
+
+## 数组访问自动安全检查的问题
+
+使用中括号访问数组相当于`.get(index).unwrap_unchecked()` （或`get_mut`），会进行越界检查。要跳过越界检查可以用`get_unchecked(index)`和`get_unchecked_mut`。
 # 模块系统
 
 按层级从高到低为：
@@ -3526,7 +3530,7 @@ int main() {
 
 **binary crate意味着独立运行，无法构造集成测试。**
 
-## 单元测试
+## 单元测试与基本使用
 
 ```rust
 #[cfg(test)]
@@ -3544,7 +3548,7 @@ mod tests {
 
 使用`cargo test`来执行项目中的所有测试。
 
-每个测试都在独立的线程里面。
+每个测试都在独立的线程里面进行并发测试（因此设置了全局变量的话，要保证以肉眼顺序和并发量执行测试也不出问题）。
 
 一个测试panic了（让线程挂掉）则表示其失败。
 
@@ -3553,6 +3557,16 @@ mod tests {
 断言后可以继续加多个参数，使用类似`format!`的形式，作为自定义错误输出。
 
 又是需要检测代码是否能在某个情况下成功触发panic。需要在测试函数（`#[test]`）下面再加上`#[should_panic]`，则panic的时候才算通过。为了防止不正常的panic也导致测试通过，可以使用`#[should_panic(expected = "abc abc")]`来检查panic信息中是否包含expected参数内的字符串，只有当包含了的时候才算测试通过。
+```rust
+#[test]  
+#[should_panic(expected = "Timeout before success")]  
+fn test_once_fail() {  
+    do_async_test(  
+        RuntimeType::MultiThread,  
+        test_once_fail_core(),  
+    );  
+}
+```
 
 测试函数也可以改成以Result为返回值，若返回的是Err则测试失败。
 
@@ -3874,6 +3888,20 @@ let runtime = tokio::runtime::Builder::new_multi_thread()
 ```
 ### time
 [使用tokio Timer - Rust入门秘籍](https://rust-book.junmajinlong.com/ch100/03_use_tokio_time.html)
+
+### spawn内的panic
+
+spawn内的panic不会中断程序，只会打印到stderr。但可以通过分析任务结束后返回的JoinError，若错误原因是panic，就可以通过`std::panic::resume_unwind`让panic生效，以中断程序。
+
+```rust
+while let Some(res) = join_set.join_next().await {  
+    if let Err(e) = res {  
+        if e.is_panic() {  
+            std::panic::resume_unwind(e.into_panic());  
+        }  
+    }  
+}
+```
 ## parking_lot
 
 并发库，重新实现了各种锁，效率更高，同时更公平。
@@ -3960,7 +3988,9 @@ async fn fallback(uri: Uri) -> (StatusCode, String) {
 
 小型随机数库。
 
+## async_trait
 
+>每一次特征中的 `async` 函数被调用时，都会产生一次堆内存分配。对于大多数场景，这个性能开销都可以接受，但是当函数一秒调用几十万、几百万次时，就得小心这块儿代码的性能了！
 
 
 
