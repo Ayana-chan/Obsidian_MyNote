@@ -1949,8 +1949,16 @@ Animal::baby_name(); //Error: 无法确认到底调用哪个函数
 
 即trait的继承，`trait TraitName: SuperTraitName{...}`即可使用SuperTraitName的所有特性。
 
-### 典型trait
-#### deref trait
+### 关联类型
+
+一个trait里面可以定义一个“成员类型”。当一个结构体实现该trait时，就必须指定这个类型是什么。
+
+### 泛型trait
+
+带泛型参数的trait。谨慎使用，因为不同泛型的trait是完全不同的trait，很多时候编译器无法知道到底使用哪个trait。
+
+## 具体trait
+### deref trait
 
 唯一一种隐式转化逻辑。
 
@@ -1962,13 +1970,13 @@ deref trait里面有`fn deref(&self) -> &T`。
 - 当`T:Deref<Target=U>`时，允许`&T`或`&mut T`转换为`&U`。
 - 当`T:DerefMut<Target=U>`时，允许`&mut T`转换为`&mut U`。
 
-#### drop trait
+### drop trait
 
 drop trait里面有`fn drop(&mut self)`。会在变量离开作用域时自动调用，被当做析构函数，可用于释放资源。
 
 不能直接地显式调用，但可以调用`std::mem::drop(value)`，以提前释放变量（调用drop）。
 
-#### Eq & PartialEq
+### Eq & PartialEq
 
 生成相等的相关逻辑。
 
@@ -1976,7 +1984,7 @@ PartialEq不实现反身性，即没有`a == a`。
 
 浮点类型只实现了PartialEq，因为`NaN!=NaN`。
 
-#### Ord & PartialOrd
+### Ord & PartialOrd
 
 生成比大小（Order）的相关逻辑。
 
@@ -1986,7 +1994,7 @@ PartialOrd继承了PartialEq。PartialOrd完成后提供`lt()`，`le()`，`gt()`
 
 Ord继承了Eq和PartialOrd。Ord完成后提供`max()`，`min()`，`clamp()`。
 
-#### Send & Sync
+### Send & Sync
 
 - 实现`Send`的类型可以在线程间安全的传递其所有权
 - 实现`Sync`的类型可以在线程间安全的共享(通过引用)
@@ -2000,14 +2008,6 @@ Ord继承了Eq和PartialOrd。Ord完成后提供`max()`，`min()`，`clamp()`。
 如果一个结构体的引用目标类型没有实现Sync，那么结构体本身就不会Send，这是为了防止结构体Send到多个线程后却使用的是同一个引用变量，使得引用变量可能race。
 
 这两个trait都是自动实现的，如果手动实现的话，相当于一个简单的声明，并且是unsafe的。换句话说，如果一个结构体实现了Send，那么就理应可以任意转移；如果实现了Sync，就理应可以任意共享访问。
-
-### 关联类型
-
-一个trait里面可以定义一个“成员类型”。当一个结构体实现该trait时，就必须指定这个类型是什么。
-
-### 泛型trait
-
-带泛型参数的trait。谨慎使用，因为不同泛型的trait是完全不同的trait，很多时候编译器无法知道到底使用哪个trait。
 
 ## 动态分发与静态分发
 
