@@ -195,19 +195,15 @@ CDN可以被绕过，那么这里用一个服务来给予访问建议让用户�
 
 每个文件都可以算出访问量，然后就能预测未来热度；于是每个节点的未来热度也就可以被预测了。可以让monitor在开始计算后再收集访问量数据，同时收集节点硬件压力。平时的pin可以使用随机算法，可容纳力越高的节点被分配的概率就越大。（可以在分配节点选完后，对节点硬盘进行查看，塞不下就重新抽）
 
-先开发IPFS service吧！！！
-
-有GPT4了的话再问问能不能用RPC来get
-
 wrapper可以记录ipfs节点的延迟。
 
-每个节点一个IPFS是否就可以互相分享配置了！！！
-
-pin居然是同步操作，要等文件下载完毕才能返回。因此要异步地请求
+每个节点一个IPFS是否就可以使用IPNS互相分享配置了！！！
 
 TODO 修改所有&str接口！！！！！！！！！！！多次拼接string时第一个的tostring也是大消耗。
 
+使用[GitHub - koute/bytehound: A memory profiler for Linux.](https://github.com/koute/bytehound)可以用来分析压力、论文作图。
 
+使用server profile可以防止IPFS节点一直寻找其他节点。
 
 
 

@@ -87,6 +87,14 @@ trait: 可视为接口，提供了一些方法，如`rand::Rng`。
 
 T代表所有类型，包括&T和&mut T；而&T和&mut T完全没有交集。
 
+## Move
+
+若一个结构体没有实现Copy trait（标量类型自带实现），那么赋值的时候类似于cpp的`std::move`，会将**所有权**转交出去。
+
+这是rust的一种抽象，相当于让编译器来检测move行为是否规范。
+
+它并不是真正的内存Move，毕竟无法在编译期确定所有的所有权归属，某些地方Move依旧会在内存里面进行Copy，如[深入理解 move - Rust语言圣经(Rust Course)](https://course.rs/profiling/performance/deep-into-move.html)。但是，若是正常地、较合理地使用Move的话，似乎很难出现大型的隐式Copy，因为那些Move所在的代码基本也是Cpp里面的最佳实践，很多都是可以被编译器优化的，不会产生很大的内存复制消耗。
+
 ## shadowing
 
 rust允许定义同名的新变量来shadow（隐藏）旧变量，常用于类型转换。新旧的变量的类型可以完全不同，也可以都是不可变变量。
@@ -1661,6 +1669,11 @@ mod tests {
 }
 ```
 
+### const泛型
+
+泛型前面加上const之后，泛型就可以像常数一样被定义类型和值，这样就可以用来限制数组的尺寸。
+
+[泛型 Generics - Rust语言圣经(Rust Course)](https://course.rs/basic/trait/generic.html#const-%E6%B3%9B%E5%9E%8Brust-151-%E7%89%88%E6%9C%AC%E5%BC%95%E5%85%A5%E7%9A%84%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7)
 
 ## Trait
 
@@ -3057,7 +3070,7 @@ fn main(){
 
 `match xxx {...}` 在`xxx`处的返回结果不会发生拷贝，导致里面的某些引用被延长到match结束。因此复杂的`xxx`取值最好在外面赋给一个变量然后再match。在if等语句中应该都会出现。
 
-## 将结构体的成员变量Move出来
+## 将结构体的成员变量无伤Move出来
 
 有时候一个结构体要销毁了，但它的成员变量还有用，又不好使用智能指针，也不应当clone时，可以考虑将其类型设为`Option<T>`，要Move走时就进行`obj.variable_name.take().unwrap()`将`T`取出。
 
@@ -3220,6 +3233,18 @@ match divide(10, 0) {
 ## 数组访问自动安全检查的问题
 
 使用中括号访问数组相当于`.get(index).unwrap_unchecked()` （或`get_mut`），会进行越界检查。要跳过越界检查可以用`get_unchecked(index)`和`get_unchecked_mut`。
+
+## 生成汇编文件
+
+通过cargo给rustc添加参数以生成汇编文件，文件存储存在`target/deps/name-<hash>.s`。非常长且难读，可以用[Compiler Explorer](https://godbolt.org/)。
+
+```bash
+cargo rustc -- --emit asm
+```
+
+## 传闭包而非值来惰性求值
+
+使用`unwrap_or`时，如果对象是Some，则参数值会完全不被使用。但是，参数里面的求值表达式却无论如何都会被计算。改为使用`unwrap_or_else`，通过传递闭包来防止表达式在没必要的时候被计算。
 # 模块系统
 
 按层级从高到低为：
@@ -3928,6 +3953,20 @@ while let Some(res) = join_set.join_next().await {
 并发库，重新实现了各种锁，效率更高，同时更公平。
 
 使用eventual fairness。[Mutex in parking\_lot - Rust](https://docs.rs/parking_lot/latest/parking_lot/type.Mutex.html#fairness)似乎只是非常暴力地在不公平地霸占0.5ms后强制切换线程。还可以用`unlock_fair`来强制公平，即在解锁后强制进行线程切换。
+
+## serde
+
+序列化与反序列化库。做的工作只是生成token流，具体怎么解析是未定的。具体解析的库有serde_json、serde_qs、serde_urlencoded等。
+
+serde提供一些过程宏来规定结构体的序列化或反序列化规则。
+
+在结构体上derive Serialize或Deserialize就可以赋予类型序列化和反序列化的能力。
+
+结构体上标注`#[serde(rename_all = "PascalCase")]`就可以把所有成员变量在序列化和反序列化的时候变成pascal命名法（大驼峰）。
+
+在成员变量上标注`#[serde(rename = "ID")]`来让该变量被重命名。
+
+在成员变量上标注`#[serde(deserialize_with = "serde::deserialize_vec")]`就可以指定该成员变量的反序列化函数。
 
 ## axum
 
