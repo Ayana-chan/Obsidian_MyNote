@@ -4,7 +4,14 @@ kanban-plugin: basic
 
 ---
 
-## 暑假计划
+## TODO
+
+- [ ] cs149 lab2加速
+
+
+***
+
+## 归档
 
 - [ ] 日本語
 - [ ] 没病走两步
@@ -13,17 +20,6 @@ kanban-plugin: basic
 - [ ] Zizekism & Maoism
 - [ ] Cpp
 - [ ] GC
-
-
-## 备忘录
-
-- [ ] 给cpp笔记用标签标记是cpp11还是啥
-
-
-***
-
-## 归档
-
 - [x] OSS组件改写成vue3
 - [x] 6.824 course
 - [x] Cgroup

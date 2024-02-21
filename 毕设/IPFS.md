@@ -205,7 +205,9 @@ TODO 修改所有&str接口！！！！！！！！！！！多次拼接string�
 
 使用server profile可以防止IPFS节点一直寻找其他节点。
 
+cluster咋负载均衡的？
 
+data为空的时候前端泛型为null
 
 
 

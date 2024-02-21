@@ -8,24 +8,22 @@
         "type": "tabs",
         "children": [
           {
+            "id": "b16eb5b1c16a1fd5",
+            "type": "leaf",
+            "state": {
+              "type": "kanban",
+              "state": {
+                "file": "TODO.md"
+              }
+            }
+          },
+          {
             "id": "d2bbb48800ede7ca",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
                 "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "b16eb5b1c16a1fd5",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Cpp.md",
                 "mode": "source",
                 "source": false
               }
@@ -61,14 +59,14 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "并发编程/并发编程.md",
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -142,7 +140,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Rust/Rust.md"
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md"
               }
             }
           },
@@ -152,7 +150,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Rust/Rust.md",
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +167,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Rust/Rust.md",
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -231,15 +229,16 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "9c467b59e0bbb34c",
+  "active": "d38aed0b7ce5c84b",
   "lastOpenFiles": [
-    "毕设/IPFS.md",
+    "并发编程/并发编程.md",
     "Rust/Rust.md",
+    "TODO.md",
+    "毕设/IPFS.md",
     "Cpp.md",
     "Web前端/vue3.md",
     "函数式编程/函数式编程.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
-    "并发编程/并发编程.md",
     "并发编程",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706930271834.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/temp.md",
@@ -278,7 +277,6 @@
     "毕设/读论文.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst1 Performance Analysis on a Quad-Core CPU/asst1.md",
     "rCore/学习笔记.md",
-    "Git.md",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
