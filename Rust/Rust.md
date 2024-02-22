@@ -1675,6 +1675,23 @@ mod tests {
 
 [泛型 Generics - Rust语言圣经(Rust Course)](https://course.rs/basic/trait/generic.html#const-%E6%B3%9B%E5%9E%8Brust-151-%E7%89%88%E6%9C%AC%E5%BC%95%E5%85%A5%E7%9A%84%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7)
 
+### std::borrow::Borrow 与&String
+
+写模板的时候，可能函数参数为`&T`，而T有可能为`String`，此时只会解析成`&String`，而不能使用`&str`。这种接口通用性很差。
+
+[Borrow in std::borrow - Rust](https://doc.rust-lang.org/std/borrow/trait.Borrow.html)
+
+使用Borrow trait可以解决问题。下面的K、Q的约束一个都不能少。
+```rust
+pub fn get<Q>(&self, k: &Q) -> Option<&V>
+    where
+        K: Borrow<Q>,
+        Q: Hash + Eq + ?Sized
+    {
+        // ...
+    }
+```
+
 ## Trait
 
 trait告诉编译器某种类型有哪些可以与其他类型共享的功能。抽象的定义共享行为。
@@ -2021,6 +2038,12 @@ Ord继承了Eq和PartialOrd。Ord完成后提供`max()`，`min()`，`clamp()`。
 如果一个结构体的引用目标类型没有实现Sync，那么结构体本身就不会Send，这是为了防止结构体Send到多个线程后却使用的是同一个引用变量，使得引用变量可能race。
 
 这两个trait都是自动实现的，如果手动实现的话，相当于一个简单的声明，并且是unsafe的。换句话说，如果一个结构体实现了Send，那么就理应可以任意转移；如果实现了Sync，就理应可以任意共享访问。
+
+### Borrow & AsRef
+
+一个类型`Q`被借用时，可以被视为借用类型`T`，如`String`借用为`str`、`Box<T>`借用为`T`，则需要使用`Borrow` trait来实现。`Q impl Borrow<T>`。[Borrow in std::borrow - Rust](https://doc.rust-lang.org/std/borrow/trait.Borrow.html)
+
+`AsRef` trait与此功能十分相似，但也有区别。[AsRef in std::convert - Rust](https://doc.rust-lang.org/std/convert/trait.AsRef.html)
 
 ## 动态分发与静态分发
 
