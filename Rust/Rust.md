@@ -2962,7 +2962,10 @@ mod tests {
 
 另外，在文档注释中可以使用 Markdown 语法。
 
+[生成文档](Rust/Rust.md#生成文档)。
+
 使用`include_str`来包含markdown文件来作为文档。且上下也能接着写文档（外面的文档可能不太好链接到具体项，这就需要在内部补充）。
+
 ```
 #![doc = include_str ! ("../README.md")]  
   
@@ -2972,6 +2975,15 @@ mod tests {
 //!
 ```
 
+[Linking to items by name - The rustdoc book](https://doc.rust-lang.org/nightly/rustdoc/write-documentation/linking-to-items-by-name.html)
+使用`[path]`即可按名字构建文档内超链接。也可以使用`[your_name](path)`以隐藏复杂的path：
+```
+//! Errors for API's response. \  
+//! Use [`api::ApiResponse<T>`](crate::api::ApiResponse) as return type is more convenient, which is declared as `Result<Json<T>, ResponseError>`. \  
+//! Look at [`ResponseError`] for more usage.
+```
+
+文档中的代码段默认为rust，也默认会被编译、运行。使用一些attributes写在语言处即可调整设置：[Documentation tests - Attributes - The rustdoc book](https://doc.rust-lang.org/nightly/rustdoc/write-documentation/documentation-tests.html#attributes)
 ## 汇编
 
 [Inline assembly - The Rust Reference](https://doc.rust-lang.org/reference/inline-assembly.html)
@@ -3520,15 +3532,7 @@ crate之间的依赖需要在crate内的toml的dependencies通过路径指定。
 
 使用`cargo doc --no-deps --open`即可不生成依赖项的文档，且构建完后打开页面。
 
-[Linking to items by name - The rustdoc book](https://doc.rust-lang.org/nightly/rustdoc/write-documentation/linking-to-items-by-name.html)
-使用`[path]`即可按名字构建文档内超链接。也可以使用`[your_name](path)`以隐藏复杂的path：
-```
-//! Errors for API's response. \  
-//! Use [`api::ApiResponse<T>`](crate::api::ApiResponse) as return type is more convenient, which is declared as `Result<Json<T>, ResponseError>`. \  
-//! Look at [`ResponseError`] for more usage.
-```
 
-文档中的代码段默认为rust，也默认会被编译、运行。使用一些attributes写在语言处即可调整设置：[Documentation tests - Attributes - The rustdoc book](https://doc.rust-lang.org/nightly/rustdoc/write-documentation/documentation-tests.html#attributes)
 ## Build Script
 
 [Build Scripts - The Cargo Book](https://doc.rust-lang.org/cargo/reference/build-scripts.html)
