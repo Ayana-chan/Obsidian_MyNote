@@ -2030,15 +2030,18 @@ Ord继承了Eq和PartialOrd。Ord完成后提供`max()`，`min()`，`clamp()`。
 - 实现`Send`的类型可以在线程间安全的传递其所有权
 - 实现`Sync`的类型可以在线程间安全的共享(通过引用)
 
-若类型`T`的引用`&T`是`Send`，则`T`是`Sync`。
+- 若`&T`是`Send`，则要求`T`是`Sync`。
+- 若`&mut T`是`Send`，则要求`T`是`Send`。（因为mut引用每个瞬间只能被一个线程持有，不存在并发问题）
 
 [基于 Send 和 Sync 的线程安全 - Rust语言圣经(Rust Course)](https://course.rs/advance/concurrency-with-threads/send-sync.html)
 
-只要一个结构体没实现Sync，那么它的同一个对象就无法被多个线程引用（Arc的类型T也要求Sync），也就不会出现race。
+只要一个结构体没实现Sync，那么它的同一个对象就无法被多个线程引用（Arc的类型T若不是Sync的话，Arc就失去了意义，完全可以用Rc替代），也就不会出现race。
 
 如果一个结构体的引用目标类型没有实现Sync，那么结构体本身就不会Send，这是为了防止结构体Send到多个线程后却使用的是同一个引用变量，使得引用变量可能race。
 
 这两个trait都是自动实现的，如果手动实现的话，相当于一个简单的声明，并且是unsafe的。换句话说，如果一个结构体实现了Send，那么就理应可以任意转移；如果实现了Sync，就理应可以任意共享访问。
+
+进一步讲，如果不实现Sync的话，就无法进行并发读。例如，Mutex的话，只要`T`实现了Send，则`Mutex<T>`会实现Send+Sync。但是，读写锁则Send只实现Send、Sync只实现Sync。这是因为Rust的内部可变性使得并发读也有可能出现内存写。因此，Sync是为了声明：这个对象的读操作没有并发安全问题，即保证了要么无内存写，要么所有读写都被并发同步机制保护。
 
 ### Borrow & AsRef
 
@@ -2639,6 +2642,38 @@ fn main() {
 
 对发送方tx进行clone即可建立多个发送方。
 
+## 异步编程
+
+Rust提供了异步抽象，可以在没有异步运行时（如[Tokio](Rust/Rust.md#tokio)）的时候编写异步代码。
+
+被异步调用的Task会实现Future trait。[Future trait - Rust 中的异步编程](https://huangjj27.github.io/async-book/02_execution/02_future.html)
+
+async函数被调用后就会生成匿名的future。对其进行await之后，即可让其被调度执行。
+
+future大部分那时候都是匿名类型，但也可以手动实现Future trait。异步运行时会调用poll函数，从而得知future能否被执行。该函数的参数提供了waker函数的访问入口。如果该waker被调用，就说明当前Future可能可以执行了。往往在Pending的时候将waker函数存入结构体成员变量，让其他task调用它，以形成唤醒链。该类型的对象还必须写在Pin指针里面才行，防止其被Move。
+```rust
+impl Future for AsyncWait {
+    type Output = ();
+
+    #[inline]
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        if let Some(mutex) = self.mutex.as_ref() {
+            if let Ok(mut locked) = mutex.lock() {
+                if locked.0.is_none() {
+                    // The wait queue entry is not associated with any `WaitQueue`.
+                    return Poll::Ready(());
+                }
+                // 把waker放入成员变量
+                locked.1.replace(cx.waker().clone());
+            }
+            Poll::Pending
+        } else {
+            Poll::Ready(())
+        }
+    }
+}
+```
+
 ## 宏 macro
 
 - 使用`macro_rules!`构建的**声明宏（declarative macros）**。
@@ -2926,6 +2961,16 @@ mod tests {
 - 外部文档注释是对它所在的项做注释，与使用 `#![doc="..."]` 是等价的。
 
 另外，在文档注释中可以使用 Markdown 语法。
+
+使用`include_str`来包含markdown文件来作为文档。且上下也能接着写文档（外面的文档可能不太好链接到具体项，这就需要在内部补充）。
+```
+#![doc = include_str ! ("../README.md")]  
+  
+//! # Usage  
+//!  
+//! Just look at the [`AsyncTasksRecorder`](AsyncTasksRecorder).  
+//!
+```
 
 ## 汇编
 
