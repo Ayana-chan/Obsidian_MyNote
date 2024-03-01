@@ -200,6 +200,15 @@ Git 处理这些场景的方法是使用一种叫做 “暂存区（staging area
 
 使用`git check-ignore -v <file-path>`即可查看目标文件是否被ignore，以及相应的gitignore规则。
 
+```gitignore
+# 排除任意目录下的log文件/文件夹
+**/log
+# 排除任意目录下的log文件夹
+**/log/
+# 排除任意目录下的txt后缀文件
+**/*.txt
+```
+
 对于springboot的多模块项目（所有模块被聚合于上级），可以这样写`.gitignore`：
 
 ```gitignore

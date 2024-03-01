@@ -1738,7 +1738,7 @@ impl AppendBar for String {
 }
 ```
 
-可以在某个type上实现某个trait的前提条件是：这个type **或** 这个trait 是**本crate**里定义的。也就是说，无法为外部的类型定义外部的trait。这样可以保证不会出现两个crate分别给同一个struct实现同一个trait的情况。即**孤儿规则（Orphan Rule）**，防止trait的实现是个孤儿（既不属于定义trait的crate，也不属于定义type的crate）。但也因此可能无法做到为某些外部结构体实现Debug、Display，再套一层结构体即可解决：
+可以在某个type上实现某个trait的前提条件是：这个type **或** 这个trait 是**本crate**里定义的。也就是说，无法为外部的类型定义外部的trait。这样可以保证不会出现两个crate分别给同一个struct实现同一个trait的情况。即**孤儿规则（Orphan Rule）**（[孤儿规则](Rust/Rust.md#孤儿规则)），防止trait的实现是个孤儿（既不属于定义trait的crate，也不属于定义type的crate）。但也因此可能无法做到为某些外部结构体实现Debug、Display，再套一层结构体即可解决：
 
 ```rust
 use std::fmt;
@@ -2048,6 +2048,17 @@ Ord继承了Eq和PartialOrd。Ord完成后提供`max()`，`min()`，`clamp()`。
 一个类型`Q`被借用时，可以被视为借用类型`T`，如`String`借用为`str`、`Box<T>`借用为`T`，则需要使用`Borrow` trait来实现。`Q impl Borrow<T>`。[Borrow in std::borrow - Rust](https://doc.rust-lang.org/std/borrow/trait.Borrow.html)
 
 `AsRef` trait与此功能十分相似，但也有区别。[AsRef in std::convert - Rust](https://doc.rust-lang.org/std/convert/trait.AsRef.html)
+
+## 孤儿规则
+
+
+目的：
+- 防止两个库给同一个库进行拓展实现，导致这两个库之间冲突。
+- 防止下游实现破坏上游功能。
+
+[2451-re-rebalancing-coherence - The Rust RFC Book](https://rust-lang.github.io/rfcs/2451-re-rebalancing-coherence.html)
+
+被拓展的孤儿规则允许为外部类型实现外部trait，但要求本地trait出现在泛型参数中（且顺序靠前）。这使得可以为本地类型实现`Into`或`From`外部类型。
 
 ## 动态分发与静态分发
 
@@ -3532,7 +3543,19 @@ crate之间的依赖需要在crate内的toml的dependencies通过路径指定。
 
 使用`cargo doc --no-deps --open`即可不生成依赖项的文档，且构建完后打开页面。
 
+## 条件编译
 
+使用cfg则可以指定条件，只有条件为true时才能进行编译。
+
+一般使用feature来进行条件编译：
+```txt
+#[cfg(feature = "no_gateway")]
+```
+
+如果想要实现“不存在此feature时才编译”，则使用not来反转条件：
+```
+#[cfg(not(feature = "no_gateway"))]
+```
 ## Build Script
 
 [Build Scripts - The Cargo Book](https://doc.rust-lang.org/cargo/reference/build-scripts.html)
@@ -3852,6 +3875,22 @@ fn config_tracing(){
   
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");  
 }
+```
+
+或者更简单的官方例子：
+```rust
+use tracing_subscriber::fmt::writer::MakeWriterExt;
+
+// Log all events to a rolling log file.
+let logfile = tracing_appender::rolling::hourly("/logs", "myapp-logs");
+// Log `INFO` and above to stdout.
+let stdout = std::io::stdout.with_max_level(tracing::Level::INFO);
+
+tracing_subscriber::fmt()
+    // Combine the stdout and log file `MakeWriter`s into one
+    // `MakeWriter` that writes to both
+    .with_writer(stdout.and(logfile))
+    .init();
 ```
 
 ## lazy static
