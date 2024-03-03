@@ -4078,7 +4078,7 @@ serde提供一些过程宏来规定结构体的序列化或反序列化规则。
 
 在结构体上derive Serialize或Deserialize就可以赋予类型序列化和反序列化的能力。
 
-结构体上标注`#[serde(rename_all = "PascalCase")]`就可以把所有成员变量在序列化和反序列化的时候变成pascal命名法（大驼峰）。
+结构体上标注`#[serde(rename_all = "PascalCase")]`就可以把所有成员变量在序列化和反序列化的时候变成pascal命名法（大驼峰）。也可以分别指定序列号和反序列化的命名：`[serde(rename_all(serialize = "...", deserialize = "..."))]`。[Container attributes · Serde](https://serde.rs/container-attrs.html)
 
 在成员变量上标注`#[serde(rename = "ID")]`来让该变量被重命名。
 

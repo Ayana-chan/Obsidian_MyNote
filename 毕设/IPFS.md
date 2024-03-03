@@ -211,7 +211,8 @@ data为空的时候前端泛型为null
 
 最理想的下载文件的方式是直接IPFS下载。看看能不能在这种情况下也能获得文件热度，比如加密后获取？但这样就要求用户有IPFS节点。如果是自己设立gateway的话，那就和直接用类CDN方案一样了。
 
+持久层：cid, status; cid,策略目标节点，对应节点上是否成功了。
 
+一次请求对应一个request id，可以再对应pin cid，status，和GetPinsArgs里面的一些元数据。然后一个pin cid则对应一个决策。
 
-
-
+reqwest使用的hyper过早，无法兼容Body的切换（axum和新版的hyper使用者都用的Body trait，然而reqwest用的Body struct）。
