@@ -4088,6 +4088,8 @@ serde提供一些过程宏来规定结构体的序列化或反序列化规则。
 
 可以把API做成库，返回Router，然后使用者用merge来同级衔接。
 
+axum依赖`hyper v1.2`，但reqwest依赖`hyper v0.14`，因此很多时候并不能直接相通。
+
 ### handler
 
 满足要求的函数会自动被实现Handler trait。[axum::handler - Rust](https://docs.rs/axum/latest/axum/handler/index.html#debugging-handler-type-errors)但是很难知道不满足要求的时候哪里出问题了。使用`axum_macros` crate可以看到问题细节。
@@ -4119,9 +4121,57 @@ async fn auth(
 }
 ```
 
-### 转发reqwest
+### 转发reqwest client的响应
 
 可以使用流对reqwest的响应进行转发。官方例子：[axum/examples/reqwest-response/src/main.rs at main · tokio-rs/axum · GitHub](https://github.com/tokio-rs/axum/blob/main/examples/reqwest-response/src/main.rs)。
+
+### 转发请求到client
+
+参考了axum反向代理的例子[reverse-proxy](https://github.com/tokio-rs/axum/tree/main/examples/reverse-proxy)，使用较底层的hyper客户端`hyper_util::client::legacy::Client<HttpConnector, Body>`来发起请求。可以随意调整uri和headers。
+
+client的返回值类型是`Response<Incoming>`，不能直接读取。将其`into_response`直接返回给前端的话，是可以被读出来的。若想在后端直接读取的话，GPT给出的`0.14`版本的hyper的解决方案是：
+
+```rust
+use hyper::Client;
+use hyper::client::HttpConnector;
+use axum::body::Body;
+use serde_json::from_slice;
+use futures::TryStreamExt; // 提供了 stream 的扩展方法，如 and_then
+use hyper::{Response, StatusCode};
+
+async fn fetch_ipfs_add_response() -> Result<IpfsAddResponse, Box<dyn std::error::Error>> {
+    let client = Client::new();
+    let uri = "http://localhost:5001/api/v0/add".parse()?;
+    let response = client.get(uri).await?;
+
+    match response.status() {
+        StatusCode::OK => {
+            // 将响应体聚合成一个完整的bytes
+            let bytes = hyper::body::to_bytes(response.into_body()).await?;
+            // 将bytes解析为IpfsAddResponse
+            let ipfs_response = from_slice::<IpfsAddResponse>(&bytes)?;
+            Ok(ipfs_response)
+        },
+        _ => Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Failed to fetch"))))
+    }
+}
+```
+
+但在hyper的`1.x`版本里，有些东西被改掉了，个人摸索出来的解决方案是：
+
+```rust
+// read body  
+let res = raw_hyper_client  
+	.request(req)  
+	.await.map_err(|_| http::StatusCode::BAD_REQUEST)?;  
+let body = res.into_body().collect();  
+let body = body.await.unwrap();  
+let body = body.to_bytes();  
+let body: dtos::IpfsAddFileResponse = serde_json::from_slice(body.as_ref()).unwrap();  
+info!("Add file succeed. {:?}", body);  
+}
+```
+
 
 ### trace
 
