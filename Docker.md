@@ -195,6 +195,8 @@ docker bulid -f dockerfile文件路径 -t 镜像名你:版本
 
 # Docker Compose
 
+> 新版的docker中，compose是docker的一个组成部分，因此使用`docker compose`而非`docker-compose`。
+
 Docker Compose是一个编排多容器分布式部署的工具，提供命令集管理容器化应用的完整开发周期，包括服务构建，启动和停止。即使对于单个镜像，也能当成配置文件使用。使用步骤：
 1. 利用Dockerfile定义运行环境镜像
 2. 使用docker-compose,yml定义组成应用的各服务
@@ -237,6 +239,9 @@ docker-compose -f standalone-derby.yaml down
 restart: always
 ```
 
+## 容器间通信
+
+由于docker重启就会改变IP，因此docker compose使用dns进行容器间通信。通常将服务名作为environment参数传给其他容器，这样其他容器就能以dns的形式访问服务了。
 # 其他问题
 
 ## 高硬盘占用
