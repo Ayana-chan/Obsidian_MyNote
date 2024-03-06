@@ -95,6 +95,12 @@ docker exec -it xxx /bin/bash
 ```bash
 sudo docker update ContainerName --restart always
 ```
+
+### 查看实时性能消耗
+
+```sh
+docker stats
+```
 ## 容器转镜像
 ```bash
 #容器变成镜像
@@ -119,7 +125,51 @@ docker load -i 压缩文件名称
 
 安装之后，windows的cmd也能直接用docker命令了。
 # DockerFile
+
+使用一系列命令来构建一个Docker Image。
+
 备忘查询：[Dockerfile 备忘清单 & dockerfile cheatsheet & Quick Reference](http://bbs.laoleng.vip/reference/docs/dockerfile.html)
+
+## 基础
+
+RUN是在构件时运行的命令，而CMD是其被运行时会执行的命令。CMD一般用来启动项目。
+
+[Dockerfile中执行命令的几种方式 - 知乎](https://zhuanlan.zhihu.com/p/684444339)
+
+尽量压缩多个命令一起执行以减少Image层数。
+
+```dockerfile
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get install -y python3.6 && \
+    apt-get clean
+```
+
+每一层都会被缓存。因此，若一层前面的状态都不变，就不会重新跑。这样可以用来避免一些长时间的操作，如下载依赖。
+
+## multi-stage build
+
+[_multi-stage_ build](https://docs.docker.com/develop/develop-images/multistage-build/)
+
+Dockerfile可以有多个FROM，最后一个FROM产生真正的Image，前面的FROM只是过程。
+
+可以使用一个dockerfile来编译，另一个来进行实际运行。这样编译的依赖就不会影响到运行了。
+
+```dockerfile
+FROM rust:latest as builder  
+ARG APP_NAME  
+WORKDIR /usr/src/${APP_NAME}  
+COPY . .  
+RUN cd ./crates/${APP_NAME} && \  
+    cargo build --release  
+  
+FROM debian:buster-slim  
+ARG APP_NAME  
+COPY --from=builder /usr/src/${APP_NAME}/target/release/${APP_NAME} /usr/local/bin/${APP_NAME}  
+CMD ["sh", "-c", "/usr/local/bin/$APP_NAME"]
+```
 
 ## 部署SpringBoot项目
 dockerfile写法如下：
@@ -144,6 +194,7 @@ docker bulid -f dockerfile文件路径 -t 镜像名你:版本
 ```
 
 # Docker Compose
+
 Docker Compose是一个编排多容器分布式部署的工具，提供命令集管理容器化应用的完整开发周期，包括服务构建，启动和停止。即使对于单个镜像，也能当成配置文件使用。使用步骤：
 1. 利用Dockerfile定义运行环境镜像
 2. 使用docker-compose,yml定义组成应用的各服务
@@ -186,6 +237,23 @@ docker-compose -f standalone-derby.yaml down
 restart: always
 ```
 
+# 其他问题
+
+## 高硬盘占用
+
+无用的image以及多次构建产生的Build cache会占用很多的存储空间。
+
+可以使用下面的命令查看硬盘占用情况，加上`-v`可以看更多细节：
+```sh
+docker system df
+```
+
+使用下面的命令来进行尽可能的清理：
+```sh
+docker system prune -a
+```
+
+[如何删除所有 Docker 镜像——Docker 清理指南](https://www.freecodecamp.org/chinese/news/how-to-remove-all-docker-images-a-docker-cleanup-guide/)
 # 具体部署
 ## 问题
 数据卷的宿主机路径都使用了`$PSW`，因此创建容器前一定要注意终端当前目录是什么！
