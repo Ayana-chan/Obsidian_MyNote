@@ -79,7 +79,7 @@ $(patsubst %.c,%.o,x.c.c bar.c)
 
 ## 获取Makefile文件路径
 
-由于默认使用的路径是执行make命令的路径，因此有些相对路径可能会出问题。用一下方法获取Makefile所在路径：
+由于默认使用的路径是执行make命令的路径，而执行的Makefile可以通过-f来指定路径，因此有些相对路径可能会出问题。用以下方法获取Makefile所在路径：
 
 ```Makefile
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))  
