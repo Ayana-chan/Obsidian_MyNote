@@ -75,8 +75,22 @@ $(patsubst <pattern>,<replacement>,<text>)
 $(patsubst %.c,%.o,x.c.c bar.c)
 ```
 
+# 技巧
 
+## 获取Makefile文件路径
 
+由于默认使用的路径是执行make命令的路径，因此有些相对路径可能会出问题。用一下方法获取Makefile所在路径：
+
+```Makefile
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))  
+DIR_ROOT := $(dir $(mkfile_path))
+```
+
+# 其他
+
+## Windows
+
+安装好mingw环境后，就可以使用mingw32-make来跑Makefile。
 
 
 
