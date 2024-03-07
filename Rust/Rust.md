@@ -3237,7 +3237,7 @@ fn main() {
 
 ## 将一段连续内存视为某一个类型的切片
 
-core::slice::from_raw_parts
+`core::slice::from_raw_parts`
 
 ## `Option<T>`克隆为`Option<Arc<T>>`
 
@@ -3256,15 +3256,6 @@ pub fn spawn(self: &Arc<Self>, elf_data: &[u8]) -> Arc<Self> {
 	...
 }
 ```
-
-## 增加API适配度
-
-函数签名里面，某些类型换一种写法能适配更多输入：
-
-- `&Option<T>` -> `Option<&T>`
-- `&String` -> `&str`
-- `&Vec<T>` -> `&[T]`
-- `&Box<T>` -> `&T`
 
 ## 层次化的结构体（组合实现OOP）
 
@@ -3334,13 +3325,95 @@ match divide(10, 0) {
 cargo rustc -- --emit asm
 ```
 
+## Option或Result无法推断完整类型
+
+`Ok::<(), ()>(())`即可表示`Result<(), ()>::Ok(())`。
+
+# Better Code
+
 ## 传闭包而非值来惰性求值
 
 使用`unwrap_or`时，如果对象是Some，则参数值会完全不被使用。但是，参数里面的求值表达式却无论如何都会被计算。改为使用`unwrap_or_else`，通过传递闭包来防止表达式在没必要的时候被计算。
 
-## Option或Result无法推断完整类型
+## 增加API适配度
 
-`Ok::<(), ()>(())`即可表示`Result<(), ()>::Ok(())`。
+函数签名里面，某些类型换一种写法能适配更多输入：
+
+- `&Option<T>` -> `Option<&T>`
+- `&String` -> `&str`
+- `&Vec<T>` -> `&[T]`
+- `&Box<T>` -> `&T`
+
+## 类型作为“参数” (Unit Struct)
+
+有时候一个函数需要指定一个实现了某个trait的类型，从而使用该类型impl的函数来进行操作，以此提供更加通用的接口。
+
+最直接的定义与调用方式是：
+```rust
+fn left_join<E>(self) -> Self
+where
+    E: EntityTrait,
+{
+    // ...
+}
+
+left_join::<MyStruct>()
+```
+
+但是也可以写成：
+```rust
+fn left_join<E>(self, _: E) -> Self
+where
+    E: EntityTrait,
+{
+    // ...
+}
+
+left_join(MyStruct)
+```
+
+这里`MyStruct`是**unit struct**，它不包含任何数据；函数里面的对应参数也是直接丢弃。这样就能把类型当成参数一样去传递。
+
+## Builder 模式 plus
+
+原本：
+```rust
+fn has_many(entity: Entity, from: Column, to: Column);
+
+has_many(cake::Entity, cake::Column::Id, fruit::Column::CakeId)
+```
+
+拆解后：
+```rust
+has_many(cake::Entity).from(cake::Column::Id).to(fruit::Column::CakeId)
+```
+
+也算是一种柯里化。
+
+## 简易函数重载的API优化
+
+有时候，一个函数`func1(v: Struct1)`处理`Struct1`，是核心业务；但是又需要更多种类的接口，比如`func2(v: Struct2)`，会对`Struct2`进行预处理，变成`Struct1`，然后调用`func1`。由于rust不支持原生重载，因此可能会出现繁杂的函数名。
+
+此时可以定义`IntoStruct1` trait：
+
+```rust
+pub trait IntoStruct1 {
+    fn into_struct1(self) -> Struct1;
+}
+```
+
+然后让`Struct1`和`Struct2`都impl `IntoStruct1`。`Struct1`单纯返回原值，而`Struct2`则将原`func2`中的预处理过程写入。这样就能只需要提供单一的函数`func_plus`：
+
+```rust
+pub fn func_plus<A>(a: A)
+where
+    A: IntoStruct1,
+{
+    let a: Struct1 = a.into_struct1();
+    // 原func1的内容
+}
+```
+
 # 模块系统
 
 按层级从高到低为：
@@ -3725,11 +3798,15 @@ fn test_once_fail() {
 ## 测试时打印输出
 
 默认不会输出print的东西，要加个选项才能看到输出：
-```bash
+```sh
 cargo test -- --nocapture ${test_name}
 ```
 
-但使用日志系统的话直接test就可以看到输出。
+```sh
+cargo test -- --show-output ${test_name}
+```
+
+但使用日志系统的话直接test就可以看到输出。日志的capture功能也可以通过[with_test_writer](https://docs.rs/tracing-subscriber/0.3.18/tracing_subscriber/fmt/struct.Layer.html#method.with_test_writer)启用。
 
 # Docker 部署
 
@@ -3929,11 +4006,17 @@ fn config_tracing(){
 }
 ```
 
+#### 测试时输出
+
 测试lib crate时可能需要输出日志来debug，因此lib的toml中要在`[dev-dependencies]`下引入tracing_subscriber然后在测试的开头写上:
 ```rust
-tracing_subscriber::fmt().with_max_level(tracing::Level::DEBUG).init();
+tracing_subscriber::fmt()
+	.with_max_level(tracing::Level::DEBUG)
+	.with_test_writer()
+	.init();
 ```
 
+`with_test_writer`开启了测试中的capture日志的功能。[with_test_writer](https://docs.rs/tracing-subscriber/0.3.18/tracing_subscriber/fmt/struct.Layer.html#method.with_test_writer)
 ### tracing_appender
 
 这是专门用于写日志到文件的库。
