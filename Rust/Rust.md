@@ -4371,6 +4371,19 @@ async fn fallback(uri: Uri) -> (StatusCode, String) {
 }
 ```
 
+## sea-orm
+
+sea-orm是基于sqlx的orm层。
+
+[Index | SeaORM 🐚 An async & dynamic ORM for Rust](https://www.sea-ql.org/SeaORM/docs/index/)
+
+### 查询条件
+
+
+可用的条件：[ColumnTrait in sea\_orm::entity - Rust](https://docs.rs/sea-orm/0.12.14/sea_orm/entity/trait.ColumnTrait.html)
+
+条件拼接：[Conditional Expressions | SeaORM 🐚 An async & dynamic ORM for Rust](https://www.sea-ql.org/SeaORM/docs/advanced-query/conditional-expression/)
+
 ## rand
 
 生成随机数，但是库很大。

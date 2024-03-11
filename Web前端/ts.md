@@ -163,3 +163,6 @@ function liveDangerously(x?: number | null) {
 ```
 
 
+# 规范
+
+[编码规范 | TypeScript手册](https://bosens-china.github.io/Typescript-manual/download/zh/wiki/coding_guidelines.html#%E5%91%BD%E5%90%8D)
