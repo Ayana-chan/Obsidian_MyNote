@@ -3329,6 +3329,20 @@ cargo rustc -- --emit asm
 
 `Ok::<(), ()>(())`即可表示`Result<(), ()>::Ok(())`。
 
+## 临时设置环境变量
+
+在开发时很多时候需要设置环境变量来修改一些配置。除了使用dotenvy crate，还可以使用命令行临时设置：
+
+PowerShell
+```powershell
+$env:RUST_LOG="trace"; cargo run
+```
+
+CMD
+```sh
+set RUST_LOG=trace 
+cargo run
+```
 # Better Code
 
 ## 传闭包而非值来惰性求值
