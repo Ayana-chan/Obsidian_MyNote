@@ -3343,6 +3343,47 @@ CMD
 set RUST_LOG=trace 
 cargo run
 ```
+
+## associated type 二义性问题
+
+```rust
+trait T1 {
+    type Name;
+}
+
+mod private_mod {
+    trait T2 {
+        type Name;
+    }
+}
+
+struct MyStruct {}
+
+impl T1 for MyStruct {
+    type Name = i32;
+}
+
+fn main() {
+    let v: MyStruct::Name = 12;
+}
+```
+
+上面的代码会报错：
+```sh
+   Compiling playground v0.0.1 (/playground)
+error[E0223]: ambiguous associated type
+  --> src/main.rs:19:12
+   |
+19 |     let v: MyStruct::Name = 12;
+   |            ^^^^^^^^^^^^^^ help: use fully-qualified syntax: `<MyStruct as T1>::Name`
+
+For more information about this error, try `rustc --explain E0223`.
+error: could not compile `playground` (bin "playground") due to 1 previous error
+```
+
+T1和T2有同名的associated type，即使T2没有导入，也会在访问该类型时发生二义性报错。
+
+也许要尽量避免在trait的实现外部直接访问关联类型。
 # Better Code
 
 ## 传闭包而非值来惰性求值
@@ -3427,6 +3468,76 @@ where
     // 原func1的内容
 }
 ```
+
+## 尽量只在impl中写泛型约束
+
+如果在定义处写泛型定义的话，那么比方说，我开发的某个lib有如下的结构体：
+```rust
+pub struct AsyncTasksRecorder<K>
+    where K: Eq + Hash + Clone + Send + Sync + 'static {
+    recorder: HashMap<K, u32>,
+}
+
+/// Public interfaces.
+impl<K> AsyncTasksRecorder<K>
+    where K: Eq + Hash + Clone + Send + Sync + 'static {
+    /// Create a completely new `AsyncTasksRecoder`.
+    pub fn new() -> Self {
+        AsyncTasksRecorder {
+            recorder: HashMap::new(),
+        }
+    }
+
+	// Other complex methods ...
+}
+```
+
+由于下面复杂的函数涉及了很多异步操作，于是K不得不满足`Eq + Hash + Clone + Send + Sync + 'static`。那么，一旦有用户想把这个结构体放入自己定义的结构体内，并且使用的其他结构体`OtherStruct`也在定义里面写了泛型，然后刚好这个K保留了泛型的时候：
+
+```rust
+pub struct MyStruct<K>
+    where K: Eq + Hash + Clone + Send + Sync + 'static + A + B + C {
+    lib_recorder: AsyncTasksRecorder<K>,
+    other: OtherStruct<A, B, C>
+}
+```
+
+叠成山了。
+
+但我们完全可以简化`AsyncTasksRecorder`的定义：
+```rust
+pub struct AsyncTasksRecorder<K>{
+    recorder: HashMap<K, u32>,
+}
+
+/// Public interfaces.
+impl<K> AsyncTasksRecorder<K>
+    where K: Eq + Hash + Clone + Send + Sync + 'static {
+    /// Create a completely new `AsyncTasksRecoder`.
+    pub fn new() -> Self {
+        AsyncTasksRecorder {
+            recorder: HashMap::new(),
+        }
+    }
+
+	// Other complex methods ...
+}
+```
+
+这是可以过编译的。标准库HashMap也是在impl里面约束了`Eq + Hash`，但并没有在定义的时候约束。而有个叫做scc的crate提供的`scc::HashMap`却在定义的时候用了`Eq + Hash`，这导致了我使用该库并且将其放在一个三层的struct里面的时候，我不得不在定义里面写三遍`Eq + Hash`！
+
+简化后，MyStruct的定义也更方便了：
+
+```rust
+pub struct MyStruct<K>
+    where K: A + B + C {
+    lib_recorder: AsyncTasksRecorder<K>,
+    other: OtherStruct<A, B, C>
+}
+```
+
+如果OtherStruct是别的库的作者写的话，就不得不给他提个issue了……
+
 
 # 模块系统
 
@@ -3959,7 +4070,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 可看做log的进化版，用于分布式追踪。
 
-`features = ["max_level_trace", "release_max_level_info"]`可以指定tracing生成的日志的level范围。
+`features = ["max_level_trace", "release_max_level_info"]`可以指定tracing生成的日志的level范围，在编译期完成过滤。**似乎不推荐使用**。
 
 [使用 tracing 记录日志 - Rust语言圣经(Rust Course)](https://course.rs/logs/tracing.html)
 
@@ -4018,6 +4129,23 @@ fn config_tracing(){
   
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");  
 }
+```
+
+#### filter
+
+使用EnvFilter以进行日志过滤。
+
+`"debug,my_crate_name=trace,hyper=debug"`意思是全局默认过滤到debug以上，`my_crate_name`过滤到trace，`hyper`过滤到debug。
+
+使用`try_from_env`可以实现“如果环境变量有则用环境变量的，否则用`unwrap_or_else`中的”。比如下面的代码可以设置环境变量`APP_LOG`为`"trace,hyper=debug"`以覆盖默认变量。
+
+```rust
+let env_filter = EnvFilter::try_from_env("APP_LOG")  
+    .unwrap_or_else(|_| EnvFilter::new("debug,ipfs_node_wrapper=trace,hyper=debug"));  
+  
+let console_subscriber = tracing_subscriber::fmt::layer()  
+    .with_writer(std::io::stdout)  
+    .with_filter(env_filter);
 ```
 
 #### 测试时输出
@@ -4108,7 +4236,7 @@ bitflags! {
 
 一个异步运行时。
 
-rust在语言上提供了异步抽象，但异步怎么跑是要依赖具体的运行时的。也因此，一个库想开发异步逻辑的时候（如scc异步container库），并不需要依赖tokio，只要库使用者使用tokio就行了。
+rust在语言上提供了异步抽象，但异步怎么跑是要依赖具体的运行时的。也因此，一个库想开发异步逻辑的时候（如scc异步container库），并不需要依赖tokio，只要库使用者使用tokio就行了。不过，很多库要使用`tokio::spawn`来创建完全解耦的task，也因此可能不得不依赖tokio。
 
 ### runtime
 
@@ -4243,6 +4371,7 @@ while let Some(res) = join_set.join_next().await {
     }  
 }
 ```
+
 ## parking_lot
 
 并发库，重新实现了各种锁，效率更高，同时更公平。
@@ -4275,6 +4404,7 @@ axum依赖`hyper v1.2`，但reqwest依赖`hyper v0.14`，因此很多时候并�
 
 ### extractor
 
+`Query` extractor本质是调用`serde_urlencode` crate来对query参数进行解析。
 ### response
 
 若想返回`Json<T>`，则T必须实现`serde::Serialize`，否则会报错`cannot move out of dereference of ...`错误。
@@ -4306,9 +4436,11 @@ async fn auth(
 
 ### 转发请求到client
 
+这里的原理是使用hyper库的Body trait进行转发。不过reqwest不兼容。
+
 参考了axum反向代理的例子[reverse-proxy](https://github.com/tokio-rs/axum/tree/main/examples/reverse-proxy)，使用较底层的hyper客户端`hyper_util::client::legacy::Client<HttpConnector, Body>`来发起请求。可以随意调整uri和headers。
 
-client的返回值类型是`Response<Incoming>`，不能直接读取。将其`into_response`直接返回给前端的话，是可以被读出来的。若想在后端直接读取的话，GPT给出的`0.14`版本的hyper的解决方案是：
+client的返回值类型是`Response<Incoming>`，不能直接读取。将其`into_response`直接返回给前端的话，是可以被前端读出来的。若想在后端直接读取的话，GPT给出的`0.14`版本的hyper的解决方案是：
 
 ```rust
 use hyper::Client;
@@ -4348,7 +4480,6 @@ let body = body.await.unwrap();
 let body = body.to_bytes();  
 let body: dtos::IpfsAddFileResponse = serde_json::from_slice(body.as_ref()).unwrap();  
 info!("Add file succeed. {:?}", body);  
-}
 ```
 
 
@@ -4398,6 +4529,28 @@ sea-orm是基于sqlx的orm层。
 
 条件拼接：[Conditional Expressions | SeaORM 🐚 An async & dynamic ORM for Rust](https://www.sea-ql.org/SeaORM/docs/advanced-query/conditional-expression/)
 
+### 错误处理
+
+[Error Handling | SeaORM 🐚 An async & dynamic ORM for Rust](https://www.sea-ql.org/SeaORM/docs/advanced-query/error-handling/)
+
+数据库约束的错误都是`SqlErr` [SqlErr in sea\_orm::error - Rust](https://docs.rs/sea-orm/0.12.14/sea_orm/error/enum.SqlErr.html#variant.UniqueConstraintViolation)，可以在`DbErr`对象上调用`sql_err()`进行转化（不需要`DbErr`的所有权）。因此可以将重复键检测封装成函数：
+```rust
+pub fn check_duplicate_key_error(e: DbErr) -> Result<String, DbErr> {  
+    let sql_err = e.sql_err();  
+    match sql_err {  
+        Some(sql_err) => {  
+            if let SqlErr::UniqueConstraintViolation(msg) = sql_err {  
+                return Ok(msg);  
+            }  
+            Err(e)  
+        },  
+        None => {  
+            Err(e)  
+        }  
+    }  
+}
+```
+
 ## rand
 
 生成随机数，但是库很大。
@@ -4415,7 +4568,13 @@ sea-orm是基于sqlx的orm层。
 通过宏标注规定测试的互斥关系。在设计压测以及涉及到外部文件等无法共用的东西的时候很好用。缺点是想让一个测试彻底与其他所有测试互斥的话就不得不给所有测试进行标注。
 
 
+# 工具
 
+## cargo-expand
+
+可以展开代码中的宏，输出结果代码。
+
+[cargo-expand](https://crates.io/crates/cargo-expand)
 
 
 

@@ -216,3 +216,56 @@ data为空的时候前端泛型为null
 一次请求对应一个request id，可以再对应pin cid，status，和GetPinsArgs里面的一些元数据。然后一个pin cid则对应一个决策。
 
 reqwest使用的hyper过早，无法兼容Body的切换（axum和新版的hyper使用者都用的Body trait，然而reqwest用的Body struct）。
+
+```rust
+/// Pin object
+pub struct Pin {  
+    /// Content Identifier (CID) to be pinned recursively  
+    pub cid: String,  
+    /// Optional name for pinned data; can be used for lookups later  
+    pub name: Option<String>,  
+    /// A list of known sources (providers) of the data.  
+    /// Sent by a client in a pin request.    
+    /// Pinning service will try to connect to them to speed up data transfer. \
+    /// Addresses provided in origins list are relevant only during the initial pinning,    
+    /// and don't need to be persisted by the pinning service.    #[serde(rename = "origins")]  
+    pub origins: Option<Vec<String>>,  
+    /// Optional metadata for pin object  
+    pub meta: Option<std::collections::HashMap<String, String>>,  
+}
+
+/// Response used for listing pin objects matching request  
+pub struct PinResults {  
+    /// The total number of pin objects that exist for passed query filters  
+    pub count: u32,  
+    /// An array of PinStatus results  
+    pub results: Vec<PinStatus>,  
+}
+
+/// Pin object with status  
+pub struct PinStatus {  
+    /// Globally unique identifier of the pin request; can be used to check the status of ongoing pinning, or pin removal  
+    pub requestid: String,  
+    pub status: Status,  
+    /// Immutable timestamp indicating when a pin request entered a pinning service; can be used for filtering results and pagination  
+    pub created: chrono::DateTime::<chrono::Utc>,  
+    pub pin: Pin,  
+    /// A list of temporary destination (retrievers) for the data.  
+    /// Returned by pinning service in a response for a pin request.    
+    /// These peers are provided by a pinning service for the purpose of fetching data about to be pinned.
+    pub delegates: Vec<String>,  
+    /// Optional info for PinStatus response  
+    pub info: Option<std::collections::HashMap<String, String>>,  
+}
+
+/// Status a pin object can have at a pinning service.
+pub enum Status {  
+    Queued,  
+    Pinning,  
+    Pinned,  
+    Failed,  
+}
+```
+
+
+
