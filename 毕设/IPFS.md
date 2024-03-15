@@ -267,5 +267,18 @@ pub enum Status {
 }
 ```
 
+---
 
+advice API 返回`目标wrapper的url/timestamp/md5/rand/cid`，rand是随机生成（无需存储）的，timestamp是advice的生成时间，cid是目标文件的cid。md5则通过
+```python
+sstring = "URL-CID-Timestamp-Rand-PrivateKey"
+```
+算出来。PrivateKey是所有wrapper和manager拥有的key。这样就能保证`URL-CID-Timestamp-Rand`不能被篡改。
 
+wrapper收到此请求后，如果从时间戳看出过期了，则拒绝；如果rand已经**请求成功**过了，则拒绝；如果md5校验不对，则拒绝。
+
+[鉴权方式A说明\_CDN(CDN)-阿里云帮助中心](https://help.aliyun.com/zh/cdn/user-guide/type-a-signing?spm=a2c4g.11186623.0.0.47775c9bKsohqx)
+
+---
+
+将[kubo/docs/config.md at master · ipfs/kubo · GitHub](https://github.com/ipfs/kubo/blob/master/docs/config.md#discoverymdns)设为false即可禁止IPFS主动发现节点。bootstrap约15秒之后才会更新列表。TODO：bootstrap后直接使用swarm connect连接master以进行加速。再加一个节点试试swarm connect会不会帮助介绍、bootstrap会不会自动介绍。
