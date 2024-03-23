@@ -283,5 +283,5 @@ wrapper收到此请求后，如果从时间戳看出过期了，则拒绝；如�
 
 将[kubo/docs/config.md at master · ipfs/kubo · GitHub](https://github.com/ipfs/kubo/blob/master/docs/config.md#discoverymdns)设为false即可禁止IPFS主动发现节点。bootstrap约15秒之后才会更新列表。TODO：bootstrap后直接使用swarm connect连接master以进行加速。再加一个节点试试swarm connect会不会帮助介绍、bootstrap会不会自动介绍。
 
-
+FaceBook的两种memcache法可以加入到讨论：可以根据key的hash来将其分配到不同的memcache上（partition法），也可以让**一个**前端服务器固定使用**一个**memcache（replication法）。
 

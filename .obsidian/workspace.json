@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "分布式知识/分布式知识.md",
                 "mode": "source",
                 "source": false
               }
@@ -237,7 +237,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -256,10 +257,11 @@
   },
   "active": "b16eb5b1c16a1fd5",
   "lastOpenFiles": [
-    "Linux/Linux.md",
+    "分布式知识/分布式知识.md",
+    "MIT6.824 Distributed Systems/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "毕设/IPFS.md",
-    "分布式知识/分布式知识.md",
+    "Linux/Linux.md",
     "分布式知识",
     "Web前端/ts.md",
     "Rust/Rust.md",
@@ -270,7 +272,6 @@
     "TODO.md",
     "Makefile",
     "Git.md",
-    "MIT6.824 Distributed Systems/课堂笔记.md",
     "杂记.md",
     "并发编程/并发编程.md",
     "Cpp.md",
