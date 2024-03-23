@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Linux/Linux.md",
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -61,7 +61,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Web前端/ts.md",
+                "file": "分布式知识/分布式知识.md",
                 "mode": "source",
                 "source": false
               }
@@ -91,8 +91,7 @@
               }
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -166,7 +165,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "毕设/IPFS.md"
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md"
               }
             }
           },
@@ -176,7 +175,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "毕设/IPFS.md",
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -193,7 +192,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "毕设/IPFS.md",
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -255,14 +254,16 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "173af0fcea462ae7",
+  "active": "b16eb5b1c16a1fd5",
   "lastOpenFiles": [
-    "Rust/Rust.md",
-    "毕设/IPFS.md",
-    "Docker.md",
-    "Web前端/ts.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "Linux/Linux.md",
+    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+    "毕设/IPFS.md",
+    "分布式知识/分布式知识.md",
+    "分布式知识",
+    "Web前端/ts.md",
+    "Rust/Rust.md",
+    "Docker.md",
     "Web前端/组件库.md",
     "Makefile/Makefile.md",
     "未命名.canvas",
@@ -302,8 +303,6 @@
     "LaTeX/LaTeX.md",
     "毕设/assets/Obsidian 1.lnk",
     "Rust/LGR Cheat Sheet.pdf",
-    "Rust",
-    "密码学.md",
     "SPM/User-Story Mapping.canvas"
   ]
 }
