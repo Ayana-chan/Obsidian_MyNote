@@ -1269,7 +1269,22 @@ where
 }
 ```
 
+# 签名优先机制
 
+（“签名优先机制”这名字是乱编的，找不到官方命名）
+
+Rust不会进行跨函数体的互相推导，一切都以函数签名为准。函数签名确定下来后，其函数体内的类型错误则归咎于函数体；此函数的使用者函数体的类型错误则归咎于使用者的函数体。这使得：
+1. 可以**防止推导跨度过大**，防止微小的修改影响**远距离**的代码，使得编译报错更易定位。
+2. 使得编译器可以**以函数为单位独立地推导是否正确**，然后所有部分拼起来以验证整个程序是否正确。
+3. 程序员可以清晰的定义函数的功能，从而简易、解耦地开发实现部分与使用部分。
+
+Rust的生命周期也基本是靠推导得到的（如果不是`'static`的话），那么签名优先机制首先就防止了极难debug的代码（修改一个函数的使用方式不会影响上下文的生命周期定义）；其次，复杂的生命周期关系可以以函数为单位推导，从而使得**全局分析生命周期合法性**成为可能。
+
+生命周期标注本质是**将生命周期写入签名当中**，使得函数使用方可以通过生命周期标注来进一步推导上层函数的生命周期关系；同时该函数的函数体也要直接保证生命周期的合法性，因为rust不会结合其使用情况来判断函数体是否合法，而只看此函数的签名。
+
+生命周期的推导验证是通过**型变**来实现的，满足型变要求的生命周期关系就是合法的（即borrow checker）。首先验证每个函数内部的生命周期是否合法，然后就能验证函数的使用者的生命周期是否合法，一直验证到整个程序。
+
+而**一切**的生命周期标注都是**对引用的规定**，因此可以说：**签名优先机制使得所有引用之间的关系被模块化的推导验证了。**
 
 
 # 库与语法
@@ -3346,6 +3361,8 @@ cargo run
 
 ## associated type 二义性问题
 
+多个trait之间有同名的associated type时，就会出现奇怪的问题，即使它们不相关，甚至没有一起导入。
+
 ```rust
 trait T1 {
     type Name;
@@ -3370,7 +3387,6 @@ fn main() {
 
 上面的代码会报错：
 ```sh
-   Compiling playground v0.0.1 (/playground)
 error[E0223]: ambiguous associated type
   --> src/main.rs:19:12
    |
@@ -3378,12 +3394,14 @@ error[E0223]: ambiguous associated type
    |            ^^^^^^^^^^^^^^ help: use fully-qualified syntax: `<MyStruct as T1>::Name`
 
 For more information about this error, try `rustc --explain E0223`.
-error: could not compile `playground` (bin "playground") due to 1 previous error
 ```
 
 T1和T2有同名的associated type，即使T2没有导入，也会在访问该类型时发生二义性报错。
 
-也许要尽量避免在trait的实现外部直接访问关联类型。
+使用`rustc --explain E0223`后，发现官方解释：
+>Due to internal limitations of the current compiler implementation we cannot simply use `Struct::X`.
+
+也许目前要尽量避免在trait的实现外部直接访问关联类型。
 # Better Code
 
 ## 传闭包而非值来惰性求值

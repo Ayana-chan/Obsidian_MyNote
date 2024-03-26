@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "分布式知识/分布式知识.md",
+                "file": "MIT6.824 Distributed Systems/Lab2.md",
                 "mode": "source",
                 "source": false
               }
@@ -61,7 +61,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "分布式知识/分布式知识.md",
+                "file": "并发编程/并发编程.md",
                 "mode": "source",
                 "source": false
               }
@@ -91,7 +91,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -165,7 +166,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MIT6.824 Distributed Systems/课堂笔记.md"
+                "file": "Rust/Rust.md"
               }
             }
           },
@@ -175,7 +176,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
+                "file": "Rust/Rust.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -192,7 +193,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
+                "file": "Rust/Rust.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -237,8 +238,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -255,9 +255,13 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "b16eb5b1c16a1fd5",
+  "active": "9c467b59e0bbb34c",
   "lastOpenFiles": [
+    "并发编程/并发编程.md",
     "分布式知识/分布式知识.md",
+    "MIT6.824 Distributed Systems/Lab2.md",
+    "MIT6.824 Distributed Systems/Lab1.md",
+    "MIT6.824 Distributed Systems/杂项.md",
     "MIT6.824 Distributed Systems/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "毕设/IPFS.md",
@@ -273,7 +277,6 @@
     "Makefile",
     "Git.md",
     "杂记.md",
-    "并发编程/并发编程.md",
     "Cpp.md",
     "Web前端/vue3.md",
     "函数式编程/函数式编程.md",
@@ -296,12 +299,9 @@
     "Web后端/SpringBoot.md",
     "Web后端/杂项.md",
     "cs杂记.md",
-    "Linux/Shell.md",
     "Linux",
-    "收藏.md",
     "Rust/assets/Obsidian.lnk",
     "Rust/assets",
-    "LaTeX/LaTeX.md",
     "毕设/assets/Obsidian 1.lnk",
     "Rust/LGR Cheat Sheet.pdf",
     "SPM/User-Story Mapping.canvas"
