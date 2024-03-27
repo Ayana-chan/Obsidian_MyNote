@@ -1,7 +1,7 @@
 
 lab3对心跳密度解禁，因此每次start时都可以心跳一次来及时发送请求，在网络情况较好的时候可以在很短时间内完成一次操作。
 
-各个RPC直接不能互相信任，一个可能可以连续到达很多次，另一个可能连续到不了很多次，看起来就像是有一个走后门了一样。
+各个RPC之间不能互相信任，一个可能可以连续到达很多次，另一个可能连续到不了很多次，看起来就像是有一个走后门了一样。
 ## A
 
 - Put() replaces the value for a particular key in the database
@@ -31,7 +31,7 @@ It's OK to assume that a client will make only one call into a Clerk at a time.
 
 一个操作可能会被commit多次，但应当只执行一次。即使发现重复了，也不应该返回失败，而是返回成功但不执行。因此，去重的逻辑不应该写在请求上，而应该写在监听applyCh的应用处。这样即使服务器重启，重走这么多commit也不会出问题。（此时等待的channel里面塞什么似乎不重要？）（但是压缩时可能会出问题）
 
-发送方不应该主动关channel，那就删除channel对应的map的key，让其不可达，并且可自然gc。（删map索引等价于删channel。
+发送方不应该主动关channel，那就删除channel对应的map的key，让其不可达，并且可自然gc。（删map索引等价于删channel）。
 
 可能有这样的及其刁钻的情况：判断超时，但尚未获得锁以删掉channel，于是applyCh的东西也会被加入到这个channel当中。但此时完全可以判定其为超时，不会影响任何东西。此时**带缓存的channel**的作用就凸显出来了，applyCh加入时不会阻塞，加完后可以带着数据被gc。
 
@@ -68,9 +68,9 @@ InstallSnapshot的lastIncludeIndex如果不比commitIndex大则直接丢弃。
 
 kv层的apply拿到Snapshot后，如果它的lastIncludeIndex不大于lastappliedIndex则也丢掉。
 
-installSnapshot传给kv的之前，可能有比lastIncludeIndex还靠后的log插队地apply到kv层，直接Snapshot覆盖的话超过lastIncludeIndex的log就可能丢失，但丢弃Snapshot的话会少东西。因此kv的apply接收也要注意顺序。而在raft层，只有Snapshot带来的日志操作完成后，才有可能正常进行后面的日志操作；因此，在Snapshot到达的瞬间，commitIndex也不会超过Snapshot的lastIncludeIndex。
-
-上面这段没有真正使用，而是单纯在kv接收apply的时候强制要求`kv.lastAppliedIndex+1 == applyMsg.CommandIndex`有序。
+installSnapshot传给kv的之前，可能有比lastIncludeIndex还靠后的log（raft层完成snapshot后获取到的新log）插队地apply到kv层，直接Snapshot覆盖的话超过lastIncludeIndex的log就可能丢失，但丢弃Snapshot的话会少东西。因此kv的apply接收也要注意顺序。因此，在kv接收apply的时候强制要求`kv.lastAppliedIndex+1 == applyMsg.CommandIndex`有序。
+- 丢掉比Snapshot旧的日志不可能有问题
+- 丢掉比Snapshot新的日志会出问题，因此raft层在向kv层通知完snapshot后，重新设置rf.lastApplied = args.LastIncludedIndex，来重新apply。
 
 InstallSnapshot之后要改不少状态，如commitIndex、logOffset，如果有需要还要重置lastApplied。
 

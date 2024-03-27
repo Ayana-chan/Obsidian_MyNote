@@ -86,7 +86,14 @@ start之间理论上是可以互相插队的，因此config在日志中可能是
 
 ---
 
+为什么要一个一个config做完而不能一步到位：主要是无法知道谁还保留了shard，因为所以服务器间可能保留了任意的config num；而如果各config num对不上就不进行操作的话，那就和一个一个config做完全一样了。
+
 似乎可以保证一个分片只能归属于一个group，且不会有log丢失问题。不会出现online变成pulling或者offline变成pushing。--但是，如果一个服务器重启，其Snapshot中可能又把shard读了回来！因此，config的num也要像raft的term一样管理。
+
+- 一个shard在一个config num中只会且必然会属于一个group。
+- 如果一个group在一个config里面丢弃或需要某个数据的话，直到数据操作完成前都不会进一步更新config num。
+
+设计成主动push的理由：拥有数据就拥有话语权，要留出一定的空间，防止迁移失败了却不小心删除了数据。
 
 >（已否决）只有发送方是主动的，接收方来者不拒。也许可以让接收方根本不等待？但这样的话有别人要一个shard自己又没有该怎么办？有可能一辈子都拿不到这个shard！
 
@@ -123,11 +130,11 @@ You can send an entire map in an RPC request or reply, which may help keep the c
 Challenge1：成功迁移后，将对应的shard设为gcing状态，再对其进行删除，删完后状态设为offline。并且不断检测处于gcing的shard，对其进行删除。这样，重启之后也能及时删除不属于自己的shard，并且不会在迁移完成之前删掉shard。
 
 综上，或许不能直接用config里面的有无来判断是否接收一个请求，应当给每个shard赋予一个状态机：
-- 被删除的shard，从Online变成Pushing，迁移完成后变成GCing，删除完成后变成Offline。
-- 被添加的shard，从Offline变成Pulling，接收完成后变成Installing，安装完成后变成Online。（后来设计为接收时必须要求安装完成，因此跳过install状态）。
+- 被删除的shard，从Online变成Pushing（会不断触发迁移函数，发起迁移的RPC），迁移完成后变成GCing（会触发GC函数，让整个集群进行删除操作），删除完成后变成Offline。
+- 被添加的shard，从Offline变成Pulling（无实际意义），接收并安装完成后变成Online。
 所有的shard都变成online或者offline后，config才算完成。
 
-对于Follower来说，会直接从push变成offline，因为它的gc是被leader直接指示的。
+对于Follower来说，会直接从push变成offline，因为它的gc是被leader直接指示的。为了保证没GC完就更换了leader也能正常进行gc，因此push成功后再次调用迁移函数时要能够返回success。
 
 TestChallenge2Partial也因此自然得到满足。
 
@@ -143,7 +150,7 @@ TestChallenge2Partial也因此自然得到满足。
 1. 连续不断地start直到发生标志性变化
 2. 等待apply
 
-如果要让push成功之后不再重复发送，就不能保证发送完后百分百完成gc。或许有另一种消耗比较大的解决方法，让push可以重复发送，在gc原子操作完毕后停止。（这种方法消耗真的大吗？好像并没有大多少。只是要注意别发出gc后的数据，不然对方服务器重启后尚未接收到正常的installShard的log，就提前收到了非法的MigrateShard。另外，如果对方服务器成功后宕机，可能导致本地重启后无法gc，有点不合理）
+如果让push成功之后不再重复发送，就不能保证发送完后百分百完成gc。或许有另一种消耗比较大的解决方法，让push可以重复发送，在gc原子操作完毕后停止。（这种方法消耗真的大吗？好像并没有大多少。只是要注意别发出gc后的数据，不然对方服务器重启后尚未接收到正常的installShard的log，就提前收到了非法的MigrateShard。另外，如果对方服务器响应成功后宕机，此时本服务器应当无论何时都可以继续gc，但此时如果本服务器重启的话，由于无法重新push成功，于是无法gc，这有点不合理）
 
 实际操作database时要极为谨慎，如果config和state中途变换，可能让正在操作中的database开始接收服务，导致race。
 
@@ -153,20 +160,9 @@ TestChallenge2Partial也因此自然得到满足。
 
 请求时对config相关的检查也要在apply时重做一遍，因为谁也不知道start之前发生了什么事。
 
-由于client会不断更新configNum，因此如果client在上个config进行了一次操作，在下一个config还能再进行操作。而由于对所有group来说，requestId都是单调递增的，因此迁移的时候直接发送requestId、取大覆盖是没有任何问题的。
+应该不需要在client请求时检查config num！！！因为一个分片在一个瞬间只有0或1个group为真正的online状态。而一次请求被提交时，必须要求提交的瞬间处于online状态，此时对此请求来说就是“真正的online”，因为没有剩余的待恢复config。
 
-gc删除map元素要这样写：
-```go
-var toDeleteKey []string  
-for k := range kv.database {  
-   if key2shard(k) == shard {  
-      toDeleteKey = append(toDeleteKey, k)  
-   }  
-}  
-for _, k := range toDeleteKey {  
-   delete(kv.database, k)  
-}
-```
+由于client会不断更新configNum，因此如果client在上个config进行了一次操作，在下一个config还能再进行操作。而由于对所有group来说，requestId都是单调递增的，因此迁移的时候直接发送requestId、取大覆盖是没有任何问题的。
 
 由于Follower不会去push，因此它不知道什么时候该gc。因此把gc写入日志是上策。
 
