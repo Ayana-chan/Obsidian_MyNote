@@ -1692,22 +1692,34 @@ mod tests {
 
 ### std::borrow::Borrow 与&String
 
-写模板的时候，可能函数参数为`&T`，而T有可能为`String`，此时只会解析成`&String`，而不能使用`&str`。这种接口通用性很差。
+一个函数的参数为`&T`，而T有可能为`String`，此时只会解析成`&String`，而不能使用`&str`。这种接口通用性很差。
 
-[Borrow in std::borrow - Rust](https://doc.rust-lang.org/std/borrow/trait.Borrow.html)
-
-使用Borrow trait可以解决问题。下面的K、Q的约束一个都不能少。
 ```rust
-pub fn get<Q>(&self, k: &Q) -> Option<&V>
+pub fn get<K>(&self, k: &K) -> Option<&V>
     where
-        K: Borrow<Q>,
-        Q: Hash + Eq + ?Sized
+        K: OtherTrait,
     {
         // ...
     }
 ```
 
-副作用是会干扰传参时使用`into()`的自动推断。
+使用[Borrow trait](Rust/Rust.md#Borrow%20AsRef)可以解决问题。
+
+```rust
+pub fn get<Q>(&self, k: &Q) -> Option<&V>
+    where
+        K: Borrow<Q>,
+        Q: ?Sized + OtherTrait
+    {
+        // ...
+    }
+```
+
+`K: Borrow<Q>`使得对K的借用等价为对Q的借用。如果上下文推导出`K`为`String`，则`Q`就可以是`str`，从而得到`&str`类型的函数参数。
+
+这也要求目标`Q`要满足`OtherTrait`。
+
+副作用是会传参时使用`into()`不能很好地自动推断。
 ## Trait
 
 trait告诉编译器某种类型有哪些可以与其他类型共享的功能。抽象的定义共享行为。
@@ -2060,7 +2072,9 @@ Ord继承了Eq和PartialOrd。Ord完成后提供`max()`，`min()`，`clamp()`。
 
 ### Borrow & AsRef
 
-一个类型`Q`被借用时，可以被视为借用类型`T`，如`String`借用为`str`、`Box<T>`借用为`T`，则需要使用`Borrow` trait来实现。`Q impl Borrow<T>`。[Borrow in std::borrow - Rust](https://doc.rust-lang.org/std/borrow/trait.Borrow.html)
+借用类型`Q`时，可以被视为借用类型`T`，如`String`借用变为`str`借用、`Box<T>`借用变为`T`借用。这需要使用`Borrow` trait来实现。`Q impl Borrow<T>`。[Borrow in std::borrow - Rust](https://doc.rust-lang.org/std/borrow/trait.Borrow.html)
+
+[编写参数为泛型且有可能为&str时非常有用](Rust/Rust.md#std%20borrow%20Borrow%20与%20String)。
 
 `AsRef` trait与此功能十分相似，但也有区别。[AsRef in std::convert - Rust](https://doc.rust-lang.org/std/convert/trait.AsRef.html)
 
@@ -2641,6 +2655,43 @@ fn main() {
 }
 ```
 
+### 条件变量 Condvar
+
+可以使用`wait_timeout`来进行带超时机制的等待。
+
+#### 封装等待Condvar的函数
+
+`MutexGuard`有生命周期参数，`Condvar`等待前后的`MutexGuard`生命周期参数是相同的。
+
+```rust
+fn wait_pop_cond_var<'g>(&self, inner: MutexGuard<'g, DataCoreInner<K, T>>, timeout: Option<Duration>) -> Result<MutexGuard<'g, DataCoreInner<K, T>>, ()> {  
+    match timeout {  
+        Some(timeout) => {  
+            match self.pop_cond_var.wait_timeout(inner, timeout) {  
+                Ok(res) => {  
+                    if res.1.timed_out() {  
+                        return Err(());  
+                    }  
+                    return Ok(res.0);  
+                }  
+                Err(e) => {  
+                    panic!("Cond var poison: {e:?}");  
+                }  
+            }  
+        }  
+        None => {  
+            match self.pop_cond_var.wait(inner) {  
+                Ok(res) => {  
+                    return Ok(res);  
+                }  
+                Err(e) => {  
+                    panic!("Cond var poison: {e:?}");  
+                }  
+            }  
+        }  
+    }  
+}
+```
 ### channel
 
 使用`std::sync::mpsc::channel()`即可创建一个channel，返回元组`(发送端tx,接收端rx)`。
@@ -2867,7 +2918,18 @@ let r3 = slice.as_mut_ptr();
 
 #### 原始指针转为引用
 
-当原始指针作为结果时，可以将其转化为`&'static mut`，这样就不需要unsafe也能使用该数据：
+当原始指针作为一个safe函数的结果时，由于safe不能解引用，因此使用起来不方便。
+
+可以将其转化为引用，这样就不需要unsafe也能使用该数据。当然也可以通过指定生命周期参数（或自动推导）来创建非static的引用。
+
+核心思想就是使用unsafe来获取指针指向的数据的左值，然后对其取引用。这样的左值不会被Borrow checker管理。
+
+>下面例子取自**rCore**。
+
+例子的`get_current_mem_set`中，先获取了result的可变原始指针，然后在unsafe里面重新获取其左值并且进行static的可变引用。这样就实现了“对一个局部变量进行static的可变引用”。这种引用的功能是最强的，没有任何使用限制。
+
+例子的`get_ref`中，addr是一个简单的数值，是一个地址的值。先将其转为`*const T`，即指向类型T的不可变指针；这样就能通过`*(addr as *const T)`得到类型T的数据（左值），对其取引用就得到了其不可变引用。
+
 ```rust
 fn get_current_mem_set(&self) -> &'static mut MemorySet {
 	let ptr = &mut result as *mut MemorySet;
@@ -2882,6 +2944,8 @@ pub fn get_ref<T>(&self, offset: usize) -> &T where T: Sized {
 }
 ```
 #### 原始指针和Box互相转换
+
+官方提供了转换的函数，不过Safety依然需要手动管理。
 
 ```rust
 /// # Safety
@@ -2993,7 +3057,7 @@ mod tests {
 使用`include_str`来包含markdown文件来作为文档。且上下也能接着写文档（外面的文档可能不太好链接到具体项，这就需要在内部补充）。
 
 ```
-#![doc = include_str ! ("../README.md")]  
+#![doc = include_str!("../README.md")]  
   
 //! # Usage  
 //!  
@@ -3175,7 +3239,7 @@ fn main(){
 
 ## 引用存活时间被意外延长
 
-`match xxx {...}` 在`xxx`处的返回结果不会发生拷贝，导致里面的某些引用被延长到match结束。因此复杂的`xxx`取值最好在外面赋给一个变量然后再match。在if等语句中应该都会出现。
+`match xxx {...}` 在`xxx`处的返回结果不会发生赋值但也不会立刻消亡，导致里面的某些引用被延长到match结束。因此复杂的`xxx`取值最好在外面复制给一个变量然后再match。在if等语句中应该都会出现。
 
 ## 将结构体的成员变量无伤Move出来
 
@@ -3403,6 +3467,119 @@ T1和T2有同名的associated type，即使T2没有导入，也会在访问该�
 
 也许目前要尽量避免在trait的实现外部直接访问关联类型。
 # Better Code
+
+## 规范限制
+
+```rust
+#![cfg_attr(not(feature = "on_dev"),
+    deny(
+        // The following are allowed by default lints according to
+        // https://doc.rust-lang.org/rustc/lints/listing/allowed-by-default.html
+        absolute_paths_not_starting_with_crate,
+        // box_pointers, async trait must use it
+        // elided_lifetimes_in_paths,  // allow anonymous lifetime
+        explicit_outlives_requirements,
+        keyword_idents,
+        macro_use_extern_crate,
+        meta_variable_misuse,
+        missing_abi,
+        missing_copy_implementations,
+        missing_debug_implementations,
+        missing_docs,
+        // must_not_suspend, unstable
+        non_ascii_idents,
+        // non_exhaustive_omitted_patterns, unstable
+        noop_method_call,
+        pointer_structural_match,
+        rust_2021_incompatible_closure_captures,
+        rust_2021_incompatible_or_patterns,
+        rust_2021_prefixes_incompatible_syntax,
+        rust_2021_prelude_collisions,
+        single_use_lifetimes,
+        trivial_casts,
+        trivial_numeric_casts,
+        unreachable_pub,
+        unsafe_code,
+        unsafe_op_in_unsafe_fn,
+        unstable_features,
+        // unused_crate_dependencies, the false positive case blocks us
+        unused_extern_crates,
+        unused_import_braces,
+        unused_lifetimes,
+        unused_qualifications,
+        unused_results,
+        variant_size_differences,
+        warnings, // treat all wanings as errors
+        clippy::all,
+        clippy::pedantic,
+        clippy::cargo,
+        // The followings are selected restriction lints for rust 1.57
+        clippy::as_conversions,
+        clippy::clone_on_ref_ptr,
+        clippy::create_dir,
+        clippy::dbg_macro,
+        clippy::decimal_literal_representation,
+        // clippy::default_numeric_fallback, too verbose when dealing with numbers
+        clippy::disallowed_script_idents,
+        clippy::else_if_without_else,
+        clippy::exhaustive_enums,
+        clippy::exhaustive_structs,
+        clippy::exit,
+        clippy::expect_used,
+        clippy::filetype_is_file,
+        clippy::float_arithmetic,
+        clippy::float_cmp_const,
+        clippy::get_unwrap,
+        clippy::if_then_some_else_none,
+        // clippy::implicit_return, it's idiomatic Rust code.
+        clippy::indexing_slicing,
+        // clippy::inline_asm_x86_att_syntax, stick to intel syntax
+        clippy::inline_asm_x86_intel_syntax,
+        clippy::arithmetic_side_effects,
+        // clippy::integer_division, required in the project
+        clippy::let_underscore_must_use,
+        clippy::lossy_float_literal,
+        clippy::map_err_ignore,
+        clippy::mem_forget,
+        clippy::missing_docs_in_private_items,
+        clippy::missing_enforced_import_renames,
+        clippy::missing_inline_in_public_items,
+        // clippy::mod_module_files, mod.rs file is used
+        clippy::modulo_arithmetic,
+        clippy::multiple_inherent_impl,
+        // clippy::panic, allow in application code
+        // clippy::panic_in_result_fn, not necessary as panic is banned
+        clippy::pattern_type_mismatch,
+        clippy::print_stderr,
+        clippy::print_stdout,
+        clippy::rc_buffer,
+        clippy::rc_mutex,
+        clippy::rest_pat_in_fully_bound_structs,
+        clippy::same_name_method,
+        clippy::self_named_module_files,
+        // clippy::shadow_reuse, it’s a common pattern in Rust code
+        // clippy::shadow_same, it’s a common pattern in Rust code
+        clippy::shadow_unrelated,
+        clippy::str_to_string,
+        clippy::string_add,
+        clippy::string_to_string,
+        clippy::todo,
+        clippy::unimplemented,
+        clippy::unnecessary_self_imports,
+        clippy::unneeded_field_pattern,
+        // clippy::unreachable, allow unreachable panic, which is out of expectation
+        clippy::unwrap_in_result,
+        clippy::unwrap_used,
+        // clippy::use_debug, debug is allow for debug log
+        clippy::verbose_file_reads,
+        clippy::wildcard_enum_match_arm,
+    ),
+    allow(
+        clippy::panic, // allow debug_assert, panic in production code
+        clippy::multiple_crate_versions, // caused by the dependency, can't be fixed
+    )
+)]
+```
 
 ## 传闭包而非值来惰性求值
 
