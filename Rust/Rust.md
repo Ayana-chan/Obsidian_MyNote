@@ -2015,6 +2015,12 @@ Animal::baby_name(); //Error: 无法确认到底调用哪个函数
 
 带泛型参数的trait。谨慎使用，因为不同泛型的trait是完全不同的trait，很多时候编译器无法知道到底使用哪个trait。
 
+### Object Safe
+
+Object safe的trait才能通过trait object访问内容。
+
+[trait object - 知乎](https://zhuanlan.zhihu.com/p/23791817)
+
 ## 具体trait
 ### deref trait
 

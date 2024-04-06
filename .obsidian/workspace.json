@@ -92,7 +92,7 @@
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -166,7 +166,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md"
+                "file": "Rust/Rust.md"
               }
             }
           },
@@ -176,7 +176,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "Rust/Rust.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -193,7 +193,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "Rust/Rust.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -255,8 +255,10 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "b1b4da5295d0c0b6",
+  "active": "9c467b59e0bbb34c",
   "lastOpenFiles": [
+    "毕设/IPFS.md",
+    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712147652580.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712146367402.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712145460138.png",
@@ -266,8 +268,6 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712139242952.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712135069098.png",
     "Rust/Rust.md",
-    "毕设/IPFS.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "MIT6.824 Distributed Systems/课堂笔记.md",
     "rCore/学习笔记.md",
     "并发编程/并发编程.md",
@@ -297,7 +297,6 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706930271834.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/temp.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706852697383.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706851891879.png",
     "算法.md",
     "函数式编程/assets",
     "函数式编程",
