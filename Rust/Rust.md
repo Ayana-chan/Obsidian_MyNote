@@ -2017,7 +2017,11 @@ Animal::baby_name(); //Error: 无法确认到底调用哪个函数
 
 ### Object Safe
 
-Object safe的trait才能通过trait object访问内容。
+Object safe的trait才能通过trait object（虚表）（包括`dyn &TraitName`）访问内容。
+
+如果trait定义的函数包含impl（例如impl Future）的话，那么此函数的返回值是具体的实现此trait的类型所决定的，因此不能通过trait object直接访问。
+
+trait object可以看做一个非Sized的类型。如果给trait的某个函数标记了Sized的话，则该函数无法被trait object访问；如果给trait本体标上Sized的话，那么就直接禁止使用trait object。
 
 [trait object - 知乎](https://zhuanlan.zhihu.com/p/23791817)
 
