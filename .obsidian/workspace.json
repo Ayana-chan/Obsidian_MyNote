@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Rust/Rust.md",
+                "file": "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -166,7 +166,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Rust/Rust.md"
+                "file": "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md"
               }
             }
           },
@@ -176,7 +176,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Rust/Rust.md",
+                "file": "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -193,7 +193,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Rust/Rust.md",
+                "file": "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -257,6 +257,10 @@
   },
   "active": "9c467b59e0bbb34c",
   "lastOpenFiles": [
+    "Rust/Rust.md",
+    "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
+    "哲学",
+    "Docker.md",
     "毕设/IPFS.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712147652580.png",
@@ -267,7 +271,6 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712139378821.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712139242952.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712135069098.png",
-    "Rust/Rust.md",
     "MIT6.824 Distributed Systems/课堂笔记.md",
     "rCore/学习笔记.md",
     "并发编程/并发编程.md",
@@ -282,7 +285,6 @@
     "Linux/Linux.md",
     "分布式知识",
     "Web前端/ts.md",
-    "Docker.md",
     "Web前端/组件库.md",
     "Makefile/Makefile.md",
     "未命名.canvas",
@@ -302,7 +304,6 @@
     "函数式编程",
     "Linux",
     "Rust/assets/Obsidian.lnk",
-    "Rust/assets",
     "SPM/User-Story Mapping.canvas"
   ]
 }
