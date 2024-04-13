@@ -2017,11 +2017,13 @@ Animal::baby_name(); //Error: 无法确认到底调用哪个函数
 
 ### Object Safe
 
-Object safe的trait才能通过trait object（虚表）（包括`dyn &TraitName`）访问内容。
+Object safe的trait才能通过trait object（虚表）（如`Box<dyn &TraitName>.func()`）访问内容。
 
-如果trait定义的函数包含impl（例如impl Future）的话，那么此函数的返回值是具体的实现此trait的类型所决定的，因此不能通过trait object直接访问。
+如果trait定义的函数包含impl（例如impl Future）的话，那么此函数的返回值是具体的实现此trait的类型所决定的，因此不能通过trait object直接访问。换句话说，开发通用的接口、但又想让接口内部在编译期根据具体的类型调整时，可能就需要使用额外的堆分配，从而产生额外的性能代价。
 
 trait object可以看做一个非Sized的类型。如果给trait的某个函数标记了Sized的话，则该函数无法被trait object访问；如果给trait本体标上Sized的话，那么就直接禁止使用trait object。
+
+不满足Object safe的方法往往都是只能通过实现了该trait的具体类型来调用（如`CertainStructName.func()`），而完全不会使用类似`Box<dyn &TraitName>.func()`的方式来调用。Size就是为了区分这两种方法。
 
 [trait object - 知乎](https://zhuanlan.zhihu.com/p/23791817)
 
@@ -4756,6 +4758,24 @@ pub fn check_duplicate_key_error(e: DbErr) -> Result<String, DbErr> {
 }
 ```
 
+### Partial Select
+
+可以使用`select_only`清空要查询的列，然后使用`column`和`columns`来逐步添加要查询的列。
+
+如果被忽略的列是not null的话，整个查询都只会返回`Query(SqlxError(ColumnNotFound("peer_id")))`。
+
+使用`into_partial_model`，结合实现了`DerivePartialModel`的struct来进行partial select，不需要手动`select_only`了：
+```rust
+#[derive(DerivePartialModel, FromQueryResult)]  
+#[sea_orm(entity = "Node")]  
+#[allow(dead_code)]
+struct PartialNode {  
+    pub rpc_address: String,  
+}  
+let models = Node::find_by_id(node_id)  
+    .into_partial_model::<PartialNode>()  
+    .one(&db_conn).await?;
+```
 ## rand
 
 生成随机数，但是库很大。
