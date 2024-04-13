@@ -2019,7 +2019,9 @@ Animal::baby_name(); //Error: 无法确认到底调用哪个函数
 
 Object safe的trait才能通过trait object（虚表）（如`Box<dyn &TraitName>.func()`）访问内容。
 
-如果trait定义的函数包含impl（例如impl Future）的话，那么此函数的返回值是具体的实现此trait的类型所决定的，因此不能通过trait object直接访问。换句话说，开发通用的接口、但又想让接口内部在编译期根据具体的类型调整时，可能就需要使用额外的堆分配，从而产生额外的性能代价。
+如果trait定义的方法包含impl（例如impl Future）或者存在非首个参数的类型为Self、或者返回值为Self、或者存在泛型参数的话，那么此方法的签名（尺寸）是具体的实现此trait的类型所决定的，因此不能通过trait object直接访问。换句话说，开发通用的接口、但又想让接口内部在编译期根据具体的类型调整时，可能就需要使用额外的堆分配，从而产生额外的性能代价。
+
+而函数完全不能通过虚表调用，因为调用时完全体现不出要用什么具体类型的实现。
 
 trait object可以看做一个非Sized的类型。如果给trait的某个函数标记了Sized的话，则该函数无法被trait object访问；如果给trait本体标上Sized的话，那么就直接禁止使用trait object。
 
@@ -2762,6 +2764,194 @@ impl Future for AsyncWait {
     }
 }
 ```
+
+### async trait
+
+#### 有代价Async Trait
+
+`async-trait` crate是一种有代价的async trait。[其官网](https://crates.io/crates/async-trait)直接就提到，这个crate是为了让存在async的方法的trait可以以dyn Trait的形式访问，即令其Object Safe。
+
+首先定义一个`CostAsyncTrait`，使用`#[async-trait]`宏令其可以定义async方法；然后定义`ImplCostAsyncTraitStruct`实现该trait：
+
+```rust
+#[async_trait]
+trait CostAsyncTrait {
+    async fn example_func(&self) -> usize;
+}
+
+struct ImplCostAsyncTraitStruct {}
+
+#[async_trait]
+impl CostAsyncTrait for ImplCostAsyncTraitStruct {
+    async fn example_func(&self) -> usize {
+        99
+    }
+}
+```
+
+对此代码使用cargo expand工具，得到（非常繁杂的展开代码）：
+```rust
+trait CostAsyncTrait {
+    #[must_use]
+    #[allow(clippy::type_complexity, clippy::type_repetition_in_bounds)]
+    fn example_func<'life0, 'async_trait>(
+        &'life0 self,
+    ) -> ::core::pin::Pin<
+        Box<
+            dyn ::core::future::Future<
+                Output = usize,
+            > + ::core::marker::Send + 'async_trait,
+        >,
+    >
+    where
+        'life0: 'async_trait,
+        Self: 'async_trait;
+}
+
+struct ImplCostAsyncTraitStruct {}
+
+impl CostAsyncTrait for ImplCostAsyncTraitStruct {
+    #[allow(
+        clippy::async_yields_async,
+        clippy::diverging_sub_expression,
+        clippy::let_unit_value,
+        clippy::no_effect_underscore_binding,
+        clippy::shadow_same,
+        clippy::type_complexity,
+        clippy::type_repetition_in_bounds,
+        clippy::used_underscore_binding
+    )]
+    fn example_func<'life0, 'async_trait>(
+        &'life0 self,
+    ) -> ::core::pin::Pin<
+        Box<
+            dyn ::core::future::Future<
+                Output = usize,
+            > + ::core::marker::Send + 'async_trait,
+        >,
+    >
+    where
+        'life0: 'async_trait,
+        Self: 'async_trait,
+    {
+        Box::pin(async move {
+            if let ::core::option::Option::Some(__ret) = ::core::option::Option::None::<
+                usize,
+            > {
+                #[allow(unreachable_code)] return __ret;
+            }
+            let __self = self;
+            let __ret: usize = { 99 };
+            #[allow(unreachable_code)] __ret
+        })
+    }
+}
+```
+
+简化一下，暂时忽略次要的东西，得到：
+```rust
+trait CostAsyncTrait {
+    fn example_func(&self) -> Pin<Box<dyn Future<Output = usize>>>;
+}
+
+struct ImplCostAsyncTraitStruct {}
+
+impl CostAsyncTrait for ImplCostAsyncTraitStruct {
+    fn example_func(&self) -> Pin<Box<dyn Future<Output = usize>>> {
+        Box::pin(async move {
+            99
+        })
+    }
+}
+```
+
+返回值类型要套这么多层，是因为：
+1. 异步函数返回的是一个impl Future trait的匿名类型，同时当具体的函数实现不同时，返回的类型大小也完全不同（状态机大小不同），所以没办法直接写出来，因此要么用dyn要么用impl；而以前的Rust编译器禁止在trait定义里面使用impl，所以只能用dyn。
+2. Pin要求内部大小在编译期确定，因此不得不再用Box中介一层。
+
+> 这里只阐述单个方面，实际上还有更多其他怪异问题，比如Send trait bound和生命周期问题（毕竟使用了&self作为输入，该引用很容易被Future使用）。详见[官方文章](https://smallcultfollowing.com/babysteps/blog/2019/10/26/async-fn-in-traits-are-hard/)
+
+通过这样的嵌套，`CostAsyncTrait`便可以是Object Safe。但代价是，每次调用该异步方法，都需要在堆区创建`Pin<Box<dyn Future<Output = usize>>>`这样的数据。回过头看，在平时进行非常单纯的（无嵌套的）async、await异步开发的时候，其状态机大小在编译期就确定，在一开始就会直接申请好所有的内存（并且是连续的）。由此来看，这种async trait有额外的、难以忽视的开销，但又极难避免。
+
+#### 无代价的Async Trait
+
+##### 特性介绍
+
+新版本的Rust（应该是1.75）中，同时支持了**trait中的impl**和**原生的、无代价的Async Trait**。
+
+新版本的Async Trait是这样写的：
+```rust
+trait NoCostAsyncTrait {
+    async fn example_func(&self) -> usize;
+}
+```
+
+将其展开后，便是这样子：
+```rust
+trait RealNoCostAsyncTrait {
+	// 注意，async消失了
+    fn example_func(&self) -> impl Future<Output=usize>;
+}
+```
+
+可见，新版本的原生Async Trait使用的是impl在编译期确定异步函数的返回值大小。这使得在编译期该异步函数的状态机大小就被确定下来，也就使得使用者调用该函数时的代价**完全等价于调用普通的async函数**。
+
+调用示例（完整代码）：
+```rust
+#[tokio::main]
+async fn main() {
+    let s = ImplNoCostAsyncTraitStruct{};
+    let v = s.example_func().await;
+    println!("result: {v}");
+}
+
+trait NoCostAsyncTrait {
+    async fn example_func(&self) -> usize;
+}
+
+struct ImplNoCostAsyncTraitStruct{}
+
+impl NoCostAsyncTrait for ImplNoCostAsyncTraitStruct{
+    async fn example_func(&self) -> usize {
+        99
+    }
+}
+```
+
+##### Object Safe 问题
+
+上面的示例是通过实现了该Trait的具体struct来调用目标方法。但是，如果修改一下main函数，变成通过trait object来调用目标方法的话：
+
+```rust
+#[tokio::main]
+async fn main() {
+    let s = ImplNoCostAsyncTraitStruct {};
+    let tb: Box<dyn NoCostAsyncTrait> = Box::new(s);
+    let v = tb.example_func().await;
+    println!("result: {v}");
+}
+```
+
+就会连续获得四个：
+```rust
+error[E0038]: the trait `NoCostAsyncTrait` cannot be made into an object
+```
+
+因为使用了`impl`，因此`example_func`的大小是由其具体实现类型决定的，而trait object是没有办法得知其尺寸的，也就无法将其加入虚表。然而这种需求很常见，比如一个库定义了一个trait，库使用者就可以给一个struct实现此trait，然后将struct的实例存到库中的某个类型的成员变量里面去；库就可以自由调用这个实例的方法。因此，想要实现这种需求，可能就不得不用`async-trait` crate，也就不得不注意额外的性能消耗。
+
+注意，下面这个魔改版是无法通过编译的，理由见`async-trait` crate相关说明：
+
+```rust
+trait RealCostAsyncTrait {
+    async fn example_func(&self) -> Pin<impl Future<Output=usize>>;
+}
+```
+
+##### public trait中的asycn fn带来的warning
+
+[这里](https://blog.rust-lang.org/2023/12/21/async-fn-rpit-in-traits.html#async-fn-in-public-traits)有相关的例子。
+
+简单来说，public trait被库使用者使用时，会关注其返回的Future是不是Send（不是Send的话没办法在多线程异步运行时里使用），然而官方的Async Trait作为一个impl的语法糖，没办法直接写`ReturnType + Send`，而必须脱糖写成`impl Future<Output=ReturnType> + Send`（记得去掉fn前的async）。
 
 ## 宏 macro
 
