@@ -92,7 +92,7 @@
             }
           }
         ],
-        "currentTab": 6
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -166,7 +166,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "影视作品评价/影视作品评价.md"
+                "file": "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md"
               }
             }
           },
@@ -176,7 +176,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "影视作品评价/影视作品评价.md",
+                "file": "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -193,7 +193,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "影视作品评价/影视作品评价.md",
+                "file": "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -238,7 +238,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -255,14 +256,15 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "94cd4535617719ba",
+  "active": "9c467b59e0bbb34c",
   "lastOpenFiles": [
+    "影视作品评价/影视作品评价.md",
+    "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
     "影视作品评价",
     "并发编程/并发编程.md",
     "Docker.md",
     "Rust/Rust.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
-    "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
     "哲学",
     "毕设/IPFS.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712147652580.png",
@@ -303,7 +305,6 @@
     "函数式编程/assets",
     "函数式编程",
     "Linux",
-    "Rust/assets/Obsidian.lnk",
     "SPM/User-Story Mapping.canvas"
   ]
 }
