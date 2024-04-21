@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "rCore/学习笔记.md",
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -38,18 +38,6 @@
               "type": "markdown",
               "state": {
                 "file": "毕设/IPFS.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "9c467b59e0bbb34c",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,14 +73,14 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "影视作品评价/影视作品评价.md",
+                "file": "Linux/Shell.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -166,7 +154,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md"
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md"
               }
             }
           },
@@ -176,7 +164,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -193,7 +181,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
+                "file": "MIT6.824 Distributed Systems/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -238,8 +226,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -256,17 +243,19 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "9c467b59e0bbb34c",
+  "active": "d2bbb48800ede7ca",
   "lastOpenFiles": [
+    "rCore/学习笔记.md",
+    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+    "毕设/IPFS.md",
+    "Linux/Shell.md",
     "影视作品评价/影视作品评价.md",
+    "Rust/Rust.md",
     "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
     "影视作品评价",
     "并发编程/并发编程.md",
     "Docker.md",
-    "Rust/Rust.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "哲学",
-    "毕设/IPFS.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712147652580.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712146367402.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712145460138.png",
@@ -276,7 +265,6 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712139242952.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712135069098.png",
     "MIT6.824 Distributed Systems/课堂笔记.md",
-    "rCore/学习笔记.md",
     "Rust/wyfcyx_rust-async-new.pdf",
     "Rust/rust-async-new.pdf",
     "MIT6.824 Distributed Systems/lab4.md",
@@ -300,7 +288,6 @@
     "函数式编程/函数式编程.md",
     "并发编程",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706930271834.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/temp.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706852697383.png",
     "函数式编程/assets",
     "函数式编程",
