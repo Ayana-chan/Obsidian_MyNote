@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "影视作品评价/影视作品评价.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "mode": "source",
                 "source": false
               }
@@ -154,7 +154,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "影视作品评价/影视作品评价.md"
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md"
               }
             }
           },
@@ -164,7 +164,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "影视作品评价/影视作品评价.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -181,7 +181,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "影视作品评价/影视作品评价.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -226,7 +226,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -243,8 +244,22 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "173af0fcea462ae7",
+  "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1719978658328.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1719978454395.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1719977729457.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1719977247575.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1719976920362.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1719976748029.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1719976112313.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1719975243575.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1719974659975.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1719974436429.png",
+    "legacy/协议工程/lab3.md",
+    "legacy/协议工程/lab2.md",
+    "legacy/协议工程/lab1.md",
+    "影视作品评价/影视作品评价.md",
     "毕设/IPFS.md",
     "Docker.md",
     "Rust/wyfcyx_rust-async-new.pdf",
@@ -253,19 +268,11 @@
     "MIT6.824 Distributed Systems/课堂笔记.md",
     "rCore/学习笔记.md",
     "Linux/Shell.md",
-    "影视作品评价/影视作品评价.md",
     "哲学/张一兵 走向新世界观的起点——《关于费尔巴哈的提纲》的探究 笔记.md",
     "影视作品评价",
     "并发编程/并发编程.md",
     "哲学",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712147652580.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712146367402.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712145460138.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712145135380.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712140324261.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712139378821.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712139242952.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1712135069098.png",
     "Rust/rust-async-new.pdf",
     "MIT6.824 Distributed Systems/lab4.md",
     "MIT6.824 Distributed Systems/lab3.md",
@@ -282,12 +289,7 @@
     "TODO.md",
     "Makefile",
     "Git.md",
-    "杂记.md",
-    "Cpp.md",
-    "Web前端/vue3.md",
     "并发编程",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706930271834.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1706852697383.png",
     "函数式编程/assets",
     "函数式编程",
     "Linux",
