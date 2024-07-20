@@ -765,6 +765,16 @@ fn longest<'a>(s1: &'a str, s2: &'a str) -> &'a str {
     }
 }
 
+// 等价于这个函数。一般来说都会写这个函数而不是上面那个
+fn longest_plus<'a>(s1: &'a str, s2: &'b str) -> &'c str  
+where 'a: 'c , 'b: 'c{  
+    if s1.len() > s2.len() {  
+        s1  
+    } else {  
+        s2  
+    }  
+}
+
 //正常的代码
 fn main() {
     let string1 = String::from("long string is long");
