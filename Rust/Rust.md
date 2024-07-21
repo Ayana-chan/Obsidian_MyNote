@@ -974,13 +974,15 @@ fn main() {
 }
 ```
 
-## 型变
+## 型变 Variance
 
 [Subtyping and Variance - The Rust Reference](https://doc.rust-lang.org/stable/reference/subtyping.html)
 
 [Subtyping and Variance - The Rustonomicon](https://doc.rust-lang.org/nomicon/subtyping.html)
 
-目的：让子可以完全满足父，或者说用父直接代替子，或者说**把子直接当成父来用**。
+[Fetching Title#55xk](https://rust-lang.github.io/rfcs/0738-variance.html)
+
+目的：让子可以完全满足父，或者说用父直接代替（表示）子，或者说**把子直接当成父来用**。
 
 若有一个类型构造器`Foo(Class)`，以类型为参数来产生另一个类型。设A是B的父类。
 1. 若`Foo(A)`与`Foo(B)`*无关*，则称为**不变（invariant）**
@@ -1048,6 +1050,20 @@ struct MyType<'a, 'b, A: 'a, B: 'b, C, D, E, F, G, H, In, Out, Mixed> {
     k2: Mixed,              // invariant over Mixed, because invariance wins all conflicts
 }
 
+```
+
+下面的例子，a是协变，b是不变：
+```rust
+struct SimpleRefCell<'a> {
+    pub inner: &'a i32,
+}
+
+struct VarienceExample<'a, 'b> {
+    pub inner1: &'a i32,
+    pub inner2: &'a mut char,
+    pub inner3: SimpleRefCell<'a>,
+    pub inner4: &'a mut SimpleRefCell<'b>,
+}
 ```
 
 ```rust
@@ -1124,6 +1140,44 @@ fn main(){
     //let i2 = list.get_interface();
     //println!("1: {}",i1.manager.text);  
     //println!("2: {}",i2.manager.text);
+}
+```
+
+简洁版+命名优化：
+```rust
+// 物理数据存储  
+struct DataStorage<'val> {  
+    data: &'val str,  
+}  
+  
+// 对物理数据进行结构化的管理  
+struct FileSystem<'val> {  
+    storage: DataStorage<'val>,  
+}  
+  
+// 定制的访问数据的接口  
+struct CertainDataReader<'r, 'val> {  
+    storage: &'r mut DataStorage<'val>,  
+}  
+  
+impl<'val> FileSystem<'val> {  
+    pub fn get_reader<'r>(&'r mut self) -> CertainDataReader<'r, 'val> {  
+        CertainDataReader {  
+            storage: &mut self.storage,  
+        }  
+    }   
+}  
+  
+fn main() {  
+    let mut list = FileSystem {  
+        storage: DataStorage {  
+            data: "aaaa",  
+        }  
+    };  
+    let r1 = list.get_reader();  
+    println!("1: {}", r1.storage.data); // 访问数据  
+    let r2 = list.get_reader();  
+    println!("2: {}", r2.storage.data); // 访问数据  
 }
 ```
 
