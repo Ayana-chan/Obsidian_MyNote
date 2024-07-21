@@ -1002,20 +1002,24 @@ Rust中，泛型T实际上是正经类型+生命周期的组合。因此泛型�
 
 若A是B的父类，B是C的父类，则`fn A => C`是`fn B => B`的父类，因为参数为A的函数必然能处理参数B，而返回值为C的函数必然也能返回B（即`fn A => C`无论是入参还是返回值都可以直接在外部视为`fn B => B`）。因此fn类型对参数类型是逆变的，对返回值类型是协变的。
 
-|Type|Variance in `'a`|Variance in `T`|
-|---|---|---|
-|`&'a T`|covariant|covariant|
-|`&'a mut T`|covariant|invariant|
-|`*const T`||covariant|
-|`*mut T`||invariant|
-|`[T]` and `[T; n]`||covariant|
-|`fn() -> T`||covariant|
-|`fn(T) -> ()`||**contravariant**|
-|`std::cell::UnsafeCell<T>`||invariant|
-|`std::marker::PhantomData<T>`||covariant|
-|`dyn Trait<T> + 'a`|covariant|invariant|
+| Type                          | Variance in `'a` | Variance in `T`   |
+| ----------------------------- | ---------------- | ----------------- |
+| `&'a T`                       | covariant        | covariant         |
+| `&'a mut T`                   | covariant        | invariant         |
+| `*const T`                    |                  | covariant         |
+| `*mut T`                      |                  | invariant         |
+| `[T]` and `[T; n]`            |                  | covariant         |
+| `fn() -> T`                   |                  | covariant         |
+| `fn(T) -> ()`                 |                  | **contravariant** |
+| `std::cell::UnsafeCell<T>`    |                  | invariant         |
+| `std::marker::PhantomData<T>` |                  | covariant         |
+| `dyn Trait<T> + 'a`           | covariant        | invariant         |
 
 可见只有函数参数是逆变的；涉及可变的类型（而非生命周期）基本都是不变；剩下都是协变。
+
+`&mut T`对T不变的原因非常复杂。一个对T的可变引用相当于元素类型为T、长度为1、可读可写的数组。因此该问题等价于：[一道 Java 面试题](https://www.yinwang.org/blog-cn/2020/02/13/java-type-system)。
+
+> 在简单的情况下，一般只写是协变，只读是逆变，可读可写就是不变。
 
 如果T不变，但T形如`TypeName<X>`，则X也不变。
 
