@@ -4003,7 +4003,11 @@ pub struct MyStruct<K>
 
 如果OtherStruct是别的库的作者写的话，就不得不给他提个issue了……
 
+## Extension Traits 模式
 
+Rust允许为外部库的类型实现内部库的Trait，通过这种方式能直接给外部类型添加一个内部方法，以增强其功能。例如对HTTP请求结构体增加`is_arch_linux_user`方法，以直接封装对用户类型的判断，简化代码。
+
+平时有可能要写一个工具函数来处理一个外部类，比如`fn tool_func(ExternalType)`，那么完全可以定义一个`ExternalTypeExt` Trait，内部包含`fn tool_method(self)`；令`ExternalType`实现此Trait，就可以直接`external_type.tool_method()`了。
 # 模块系统
 
 按层级从高到低为：
