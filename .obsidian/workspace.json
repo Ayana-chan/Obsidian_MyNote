@@ -67,8 +67,7 @@
               }
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -142,7 +141,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Rust/Rust.md"
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md"
               }
             }
           },
@@ -152,7 +151,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Rust/Rust.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +168,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Rust/Rust.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -234,18 +233,19 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1721963680792.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1721962486325.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1721962085256.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1721961513663.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1721961021109.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1721960634951.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1721960484782.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1721959986000.png",
     "Linux/Shell.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1720842057098.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1720841391203.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1720841009463.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1720840899138.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1720840617426.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1720840565127.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1720840008389.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1720839072951.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1720838851702.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1720838070886.png",
     "Docker.md",
     "数学/线性代数.md",
     "数学/assets",
