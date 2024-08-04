@@ -54,6 +54,18 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "8813a7d1299823a2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "cs杂记.md",
+                "mode": "source",
+                "source": false
+              }
+            }
           }
         ]
       }
@@ -219,8 +231,10 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "b16eb5b1c16a1fd5",
   "lastOpenFiles": [
+    "cs杂记.md",
+    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1722762933950.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1722762809939.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1722762711245.png",
@@ -228,12 +242,10 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1722761785125.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1722761976084 1.png",
     "数学/线性代数.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1722761593466.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1722761562654.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1722657482182.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1722657199182.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1722656944783.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
     "Linux/Shell.md",
     "Docker.md",

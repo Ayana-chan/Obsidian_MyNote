@@ -72,7 +72,9 @@ taskkill /pid 31601 /f
 
 即：与模数不互质的数可以放到的位置更少。
 
+# Windows时不时卡顿
 
+关闭exploit protection里的所有东西，卡顿大幅减少。
 
 
 
