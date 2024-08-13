@@ -1355,7 +1355,7 @@ Rust的生命周期也基本是靠推导得到的（如果不是`'static`的话�
 而**一切**的生命周期标注都是**对引用的规定**，因此可以说：**签名优先机制使得所有引用之间的关系被模块化的推导验证了。**
 
 
-# 库与语法
+# 语法与特性
 
 ## expect
 
@@ -3353,6 +3353,42 @@ mod tests {
 }
 ```
 
+## 内存布局
+
+[Fetching Title#4428](https://rustmagazine.github.io/rust_magazine_2021/chapter_6/ant-rust-data-layout.html)
+
+[浅聊 Rust 程序内存布局 - Rust语言中文社区](https://rustcc.cn/article?id=98adb067-30c8-4ce9-a4df-bfa5b6122c2e)
+## 汇编
+
+[Inline assembly - The Rust Reference](https://doc.rust-lang.org/reference/inline-assembly.html)
+
+`include_str!`可以将一个文件的内容给复制粘贴（如c语言的include）进来；而`global_asm!`可以嵌入全局汇编代码。
+
+```rust
+use core::arch::global_asm;
+global_asm!(include_str!("entry.asm"));
+```
+
+相比 `global_asm!` ， `asm!` 宏可以获取上下文中的变量信息并允许嵌入的汇编代码对这些变量进行操作。由于编译器的能力不足以判定插入汇编代码这个行为的安全性，所以我们需要将其包裹在 unsafe 块中自己来对它负责。
+
+```rust
+ 2use core::arch::asm;
+ 3fn syscall(id: usize, args: [usize; 3]) -> isize {
+ 4    let mut ret: isize;
+ 5    unsafe {
+ 6        asm!(
+ 7            "ecall",
+ 8            inlateout("x10") args[0] => ret,
+ 9            in("x11") args[1],
+10            in("x12") args[2],
+11            in("x17") id
+12        );
+13    }
+14    ret
+15}
+```
+
+
 ## 文档注释
 
 文档注释也分为单行注释和块注释，但又有内外之分：
@@ -3392,37 +3428,6 @@ mod tests {
 ```
 
 文档中的代码段默认为rust，也默认会被编译、运行。使用一些attributes写在语言处即可调整设置：[Documentation tests - Attributes - The rustdoc book](https://doc.rust-lang.org/nightly/rustdoc/write-documentation/documentation-tests.html#attributes)
-## 汇编
-
-[Inline assembly - The Rust Reference](https://doc.rust-lang.org/reference/inline-assembly.html)
-
-`include_str!`可以将一个文件的内容给复制粘贴（如c语言的include）进来；而`global_asm!`可以嵌入全局汇编代码。
-
-```rust
-use core::arch::global_asm;
-global_asm!(include_str!("entry.asm"));
-```
-
-相比 `global_asm!` ， `asm!` 宏可以获取上下文中的变量信息并允许嵌入的汇编代码对这些变量进行操作。由于编译器的能力不足以判定插入汇编代码这个行为的安全性，所以我们需要将其包裹在 unsafe 块中自己来对它负责。
-
-```rust
- 2use core::arch::asm;
- 3fn syscall(id: usize, args: [usize; 3]) -> isize {
- 4    let mut ret: isize;
- 5    unsafe {
- 6        asm!(
- 7            "ecall",
- 8            inlateout("x10") args[0] => ret,
- 9            in("x11") args[1],
-10            in("x12") args[2],
-11            in("x17") id
-12        );
-13    }
-14    ret
-15}
-```
-
-
 # 问题、技巧、解决方案
 
 ## 完整地将结构体数据打印到输出
@@ -4342,7 +4347,7 @@ fn main() {
 
 ## 其它
 
-### 代码内文档转README
+### 工具：代码内文档转README
 
 其实就是删除每一行的前四个字符`//! `，使用以下工具代码：
 
