@@ -4,6 +4,10 @@
 [Rust语言圣经(Rust Course)](https://course.rs/about-book.html)
 
 [命名规范 - Rust语言圣经(Rust Course)](https://course.rs/practice/naming.html)
+
+[The Rustonomicon](https://doc.rust-lang.org/nomicon/)
+
+[Introduction - Learning Rust With Entirely Too Many Linked Lists](https://rust-unofficial.github.io/too-many-lists/)
 # 安装与起步
 
 [Rust使用国内Crates 源、 rustup源 |字节跳动新的 Rust 镜像源以及安装rust\_rust镜像-CSDN博客](https://blog.csdn.net/inthat/article/details/106742193)
@@ -3361,7 +3365,7 @@ mod tests {
 
 ## 内存布局
 
-[Fetching Title#4428](https://rustmagazine.github.io/rust_magazine_2021/chapter_6/ant-rust-data-layout.html)
+[蚂蚁集团 ｜ Rust 数据内存布局 - Rust精选](https://rustmagazine.github.io/rust_magazine_2021/chapter_6/ant-rust-data-layout.html)
 
 [浅聊 Rust 程序内存布局 - Rust语言中文社区](https://rustcc.cn/article?id=98adb067-30c8-4ce9-a4df-bfa5b6122c2e)
 ## 汇编

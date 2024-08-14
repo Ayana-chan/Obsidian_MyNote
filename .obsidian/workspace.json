@@ -32,6 +32,16 @@
             }
           },
           {
+            "id": "3d6bd2f0bfd77a9a",
+            "type": "leaf",
+            "state": {
+              "type": "meld-encrypted-file-content-view",
+              "state": {
+                "file": "收藏1/收藏1.mdenc"
+              }
+            }
+          },
+          {
             "id": "4ac328f381783e6a",
             "type": "leaf",
             "state": {
@@ -68,7 +78,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -142,7 +152,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Rust/Rust.md"
+                "file": "收藏1/收藏1.mdenc"
               }
             }
           },
@@ -152,7 +162,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Rust/Rust.md",
+                "file": "收藏1/收藏1.mdenc",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +179,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Rust/Rust.md",
+                "file": "收藏1/收藏1.mdenc",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -229,11 +239,18 @@
       "daily-notes:打开/创建今天的日记": false,
       "templates:插入模板": false,
       "command-palette:打开命令面板": false,
-      "table-editor-obsidian:Advanced Tables Toolbar": false
+      "table-editor-obsidian:Advanced Tables Toolbar": false,
+      "meld-encrypt:New encrypted note": false,
+      "meld-encrypt:Convert to or from an Encrypted note": false,
+      "meld-encrypt:Encrypt/Decrypt": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "3d6bd2f0bfd77a9a",
   "lastOpenFiles": [
+    "收藏1/收藏1.mdenc",
+    "Rust/Rust.md",
+    "收藏1",
+    "Untitled 20240814 071814.mdenc",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723263659104.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723261156655.png",
@@ -245,7 +262,6 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723086810396.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723086601469.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723086393806.png",
-    "Rust/Rust.md",
     "cs杂记.md",
     "数学/线性代数.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
@@ -277,9 +293,6 @@
     "Web前端/组件库.md",
     "未命名.canvas",
     "Makefile",
-    "并发编程",
-    "函数式编程/assets",
-    "函数式编程",
     "SPM/User-Story Mapping.canvas"
   ]
 }
