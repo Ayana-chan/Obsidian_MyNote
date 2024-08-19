@@ -1361,6 +1361,9 @@ Rust的生命周期也基本是靠推导得到的（如果不是`'static`的话�
 
 # 语法与特性
 
+## const
+
+Rust中的const像是cpp的constexpr。const值在编译期就知道内容，且在使用的时候是inline的。const函数用于生成const值。
 ## expect
 
 可能失败的方法会返回Result，是个枚举类，为`Ok(val)`或`Err(_)`，可以交由expect处理（`result.expect(msg)`）。若Result为Ok，则返回Result中存储的结果值val；否则，打印expect的参数msg并停止程序。
@@ -3440,7 +3443,7 @@ global_asm!(include_str!("entry.asm"));
 文档中的代码段默认为rust，也默认会被编译、运行。使用一些attributes写在语言处即可调整设置：[Documentation tests - Attributes - The rustdoc book](https://doc.rust-lang.org/nightly/rustdoc/write-documentation/documentation-tests.html#attributes)
 # 问题、技巧、解决方案
 
-## 完整地将结构体数据打印到输出
+## 打印
 
 使用`#[derive(Debug)]`派生宏，使得ST由Debug trait派生；打印时使用`{:?}`即可行内打印，使用`{:#?}`即可换行打印。这样可以完整地打印结构体或枚举。
 
@@ -3457,13 +3460,47 @@ let st = ST{
 };
 println!("{:?}",st)
 println!("{:#?}",st)
-//输出：
+
+// 输出：
 // ST { v1: 1, v2: 3.5 }  
 // ST {  
 //     v1: 1,  
 //     v2: 3.5,  
 // }
 ```
+
+`dbg!`宏可以在打印的时候输出代码所在行编号，以及被打印的表达式本身。没有`format!`相关语法，只能打印完整的一个表达式。会获得表达式的所有权，因此必要时可以通过传引用。
+
+```rust
+dbg!(12 + 13);
+
+// 输出：
+// [src\main.rs:17] 12 + 13 = 25
+```
+
+## 获取类型相关信息（std::any）
+
+使用`std::any::type_name_of_val`即可获取类型名。可获取的类型名必然是编译期能推导出来的，所以该函数实际上是const函数。该函数是unstable的。
+
+该函数的标准库定义：
+```rust
+pub const fn type_name_of_val<T: ?Sized>(_val: &T) -> &'static str {  
+    type_name::<T>()  
+}
+```
+
+用例：
+```rust
+#![feature(type_name_of_val)]
+  
+fn main() {  
+    let val = 12;  
+    let name = std::any::type_name_of_val(&val);  
+    println!("name: {name}");  
+}
+```
+
+导入`std::any::Any` Trait之后，就可以使用`a.type_id()`获取变量`a`的类型的唯一对应的编号了。
 
 ## Build设计模式
 
@@ -3799,6 +3836,122 @@ T1和T2有同名的associated type，即使T2没有导入，也会在访问该�
 >Due to internal limitations of the current compiler implementation we cannot simply use `Struct::X`.
 
 也许目前要尽量避免在trait的实现外部直接访问关联类型。
+
+## 函数类型唯一性与编译器优化理论
+
+### 函数类型唯一性
+
+每个函数都有不同的函数类型，并且这种类型无法在代码中表示（unnamable）。例如下面的代码，即使f和g从签名到实现都完全相同，也被认为是不同类型：
+```rust
+fn f(x: i32) -> i32 {  
+    x + x  
+}  
+  
+fn g(x: i32) -> i32 {  
+    x + x  
+}  
+  
+fn main() {  
+    let mut local = f;  
+    local = g;  
+}
+```
+
+报错：
+```txt
+error[E0308]: mismatched types
+  --> src\main.rs:11:13
+   |
+10 |     let mut local = f;
+   |                     - expected due to this value
+11 |     local = g;
+   |             ^ expected fn item, found a different fn item
+   |
+   = note: expected fn item `fn(_) -> _ {f}`
+              found fn item `fn(_) -> _ {g}`
+   = note: different fn items have unique types, even if their signatures are the same
+   = help: consider casting both fn items to fn pointers using `as fn(i32) -> i32`
+```
+
+正确写法：
+```rust
+// 这两个`i32`都能写成`_`来自动推断。
+let mut local: fn(i32) -> i32 = f;
+```
+
+这种写法引入了indirection（间接性），将不同的函数都表示为一个函数指针。
+
+闭包也有类似错误：
+```rust
+let mut local = |x: i32| x;  
+local = |x| x;
+```
+
+报错：
+```txt
+error[E0308]: mismatched types
+  --> src\main.rs:24:13
+   |
+23 |     let mut local = |x: i32| x;
+   |                     -------- the expected closure
+24 |     local = |x| x;
+   |             ^^^^^ expected closure, found a different closure
+   |
+   = note: expected closure `{closure@src\main.rs:23:21: 23:29}`
+              found closure `{closure@src\main.rs:24:13: 24:16}`
+   = note: no two closures, even if identical, have the same type
+   = help: consider boxing your closure and/or using it as a trait object
+```
+
+暴力解决方式就是将其视为函数指针，但这种方式不能用于带捕获的闭包（因为函数指针是单纯跳转，无法识别捕获的上下文）。正常解决方式就是使用Trait Object来做动态分发（`dyn Fn(i32) -> i32`）。
+```rust
+let mut local: fn(_) -> _ = |x: i32| x;  
+local = |x| x;
+```
+
+### 编译器优化以函数为参数的函数
+
+假设有calculate函数可以接收实现了FnMut的函数（闭包），它会进行静态推导以实例化。在cpp中表示的话，则是一个模板函数（因为要兼容函数指针和闭包匿名类型）。
+```rust
+pub fn calculate<F>(f: F) -> i32  
+where  
+    F: FnMut(i32) -> i32,  
+{  
+    (0..5).map(f).sum()  
+}
+```
+
+在cpp里面，给calculate传递函数名f时，它会实例化，其中F推导出f对应的函数指针类型，这使得calculate被实例化成了**可以接收任意同函数指针类型**的函数，而完全与原来的f函数名无关。因为在cpp中，函数指针不能指出它究竟是什么函数，而只能表示函数签名。此时，要进行两层调用，要调用calculate和f。
+```cpp
+calculate(f);
+```
+
+但是在cpp中，每个闭包都有**不一样**的匿名类型：
+```cpp
+#include <iostream>
+#include <typeinfo>
+
+int main() {
+  auto f = [](){};
+  auto g = [](){};
+  auto h = [](){};
+  std::cout << "f: " << typeid(f).name() << std::endl;
+  std::cout << "g: " << typeid(g).name() << std::endl;
+  std::cout << "h: " << typeid(h).name() << std::endl;
+}
+
+// 输出：
+// f: Z4mainEUlvE_
+// g: Z4mainEUlvE0_
+// h: Z4mainEUlvE1_
+```
+
+因此，如果calculate里面传递的是一个调用了f的闭包的话，情况会有所不同。此时calculate的实例化直接指向了具体的闭包，因此能直接探知闭包的内容，并且又能知道它调用的是确切的函数f。于是编译器进行优化，调用链被折叠、内联，整个代码都变成了单纯的执行f内部的逻辑（如果f里面的逻辑还能接着优化的话就会更加简洁），不进行函数调用，在汇编代码中各函数的定义也直接消失。这提升了性能。
+```cpp
+calculate([] (int i) { return f(i); })
+```
+
+在Rust中，无论是传函数还是闭包，最终效果都和cpp传闭包的情况一样，即都可以进行函数调用的追溯。这是因为Rust的每个函数都有自己的类型，即使传函数名，也能够直接连接具体函数，从而进行统一的优化（cpp可能还得故意套个闭包来照顾编译器）。
 # Better Code
 
 ## 规范限制

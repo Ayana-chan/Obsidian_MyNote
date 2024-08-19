@@ -67,7 +67,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -141,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md"
+                "file": "Rust/Rust.md"
               }
             }
           },
@@ -151,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "Rust/Rust.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -168,7 +169,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "Rust/Rust.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -236,22 +237,21 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "Rust/assets/Pasted image 20240819230936.png",
+    "Rust/Rust.md",
+    "Rust/assets/Pasted image 20240819230947.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723952319937.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723952302090.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723951960795.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723950825259.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723950479738.png",
     "收藏1/收藏1.mdenc",
-    "Rust/Rust.md",
     "收藏1",
     "Untitled 20240814 071814.mdenc",
-    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723263659104.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723261156655.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723260343450.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723259817814.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723092781346.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723089981388.png",
     "cs杂记.md",
     "数学/线性代数.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
