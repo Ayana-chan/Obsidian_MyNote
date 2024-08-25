@@ -3952,6 +3952,52 @@ calculate([] (int i) { return f(i); })
 ```
 
 在Rust中，无论是传函数还是闭包，最终效果都和cpp传闭包的情况一样，即都可以进行函数调用的追溯。这是因为Rust的每个函数都有自己的类型，即使传函数名，也能够直接连接具体函数，从而进行统一的优化（cpp可能还得故意套个闭包来照顾编译器）。
+
+## 函数变参的一种实现方式
+
+思路就是使用impl trait作为参数限定，然后让目标闭包类型实现此trait。trait只能进行一次含类型参数的实现以保证不存在类型可以拥有多个符合要求的实现，因此要给trait添加泛型参数使其对每个闭包都不同，把参数tuple塞进去即可。不过这也要求目标闭包不能包含未确定的类型参数。
+
+下面的实现使得用户可以在使用单u8参数的函数功能时，又可以使用u8、f64双参数的函数功能。函数功能逻辑要写在trait实现里面。
+
+```rust
+trait Executable<T> {  
+    fn exec(self) -> i32;  
+}  
+  
+impl<F> Executable<u8> for F  
+where  
+    F: Fn(u8) -> i32,  
+{  
+    fn exec(self) -> i32 {  
+        self(3u8)  
+    }  
+}  
+  
+impl<F> Executable<(u8, f64)> for F  
+where  
+    F: Fn(u8, f64) -> i32,  
+{  
+    fn exec(self) -> i32 {  
+        self(3u8, 1.9)  
+    }  
+}  
+  
+fn my_function<A>(func: impl Executable<A>) {  
+    let ans = func.exec();  
+    println!("get: {ans}");  
+}  
+  
+fn main() {  
+    my_function(|a1: u8| {  
+        a1 as i32 * 2  
+    });  
+    my_function(|a1: u8, a2: f64| {  
+        (a1 as f64 * 2f64 + a2) as i32  
+    });  
+}
+```
+
+
 # Better Code
 
 ## 规范限制
