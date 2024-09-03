@@ -79,8 +79,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "vertical"
@@ -154,7 +153,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "算法.md"
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md"
               }
             }
           },
@@ -164,7 +163,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "算法.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -181,7 +180,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "算法.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -246,8 +245,13 @@
       "meld-encrypt:Encrypt/Decrypt": false
     }
   },
-  "active": "17654b1ee7426ee4",
+  "active": "b16eb5b1c16a1fd5",
   "lastOpenFiles": [
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1725344211375.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1725343724090.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1725343321747.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1725342579270.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1725342414186.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "Rust/Rust.md",
     "cs杂记.md",
@@ -260,13 +264,9 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723952302090.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723951960795.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723950825259.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723950479738.png",
     "收藏1/收藏1.mdenc",
     "收藏1",
     "Untitled 20240814 071814.mdenc",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723263659104.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723261156655.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723260343450.png",
     "数学/线性代数.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
     "Linux/Shell.md",
@@ -293,7 +293,6 @@
     "MIT6.824 Distributed Systems/杂项.md",
     "Linux/Linux.md",
     "分布式知识",
-    "Web前端/ts.md",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
   ]
