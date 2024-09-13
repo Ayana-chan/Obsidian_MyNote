@@ -226,8 +226,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -247,7 +246,7 @@
       "meld-encrypt:Encrypt/Decrypt": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "a6ba4746f5dfb6a1",
   "lastOpenFiles": [
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "Rust/Rust.md",
