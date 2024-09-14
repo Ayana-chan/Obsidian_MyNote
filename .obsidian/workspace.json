@@ -79,8 +79,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "vertical"
@@ -154,7 +153,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "算法.md"
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md"
               }
             }
           },
@@ -164,7 +163,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "算法.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -181,7 +180,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "算法.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -226,7 +225,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -246,24 +246,25 @@
       "meld-encrypt:Encrypt/Decrypt": false
     }
   },
-  "active": "a6ba4746f5dfb6a1",
+  "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726282787291.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726282282641.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726281002865.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726280821768.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726280261364.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726279619934.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726279079245.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726278550871.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726278440814.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "Rust/Rust.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1725344211375.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1725343724090.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1725343321747.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1725342579270.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1725342414186.png",
     "cs杂记.md",
     "ECS (Entity-Component-System)/ECS (Entity-Component-System).md",
     "ECS (Entity-Component-System)",
     "ECS.md",
-    "Rust/assets/Pasted image 20240819230936.png",
-    "Rust/assets/Pasted image 20240819230947.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723952319937.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723952302090.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1723951960795.png",
     "收藏1/收藏1.mdenc",
     "收藏1",
     "Untitled 20240814 071814.mdenc",
