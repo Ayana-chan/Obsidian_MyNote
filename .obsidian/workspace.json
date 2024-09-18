@@ -79,8 +79,7 @@
               }
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "vertical"
@@ -154,7 +153,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "算法.md"
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md"
               }
             }
           },
@@ -164,7 +163,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "算法.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -181,7 +180,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "算法.md",
+                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -249,6 +248,9 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726657140926.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726656652183.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726655921749.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726282787291.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726282282641.png",
@@ -258,9 +260,7 @@
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726279619934.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726279079245.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726278550871.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726278440814.png",
     "Rust/Rust.md",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/uTools_1725344211375.png",
     "cs杂记.md",
     "ECS (Entity-Component-System)/ECS (Entity-Component-System).md",
     "ECS (Entity-Component-System)",
