@@ -61,7 +61,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "cs杂记.md",
+                "file": "Cpp.md",
                 "mode": "source",
                 "source": false
               }
@@ -248,20 +248,21 @@
   },
   "active": "e1408d9ff635f3bd",
   "lastOpenFiles": [
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726907159899.png",
+    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726905049819.png",
+    "Cpp.md",
+    "cs杂记.md",
+    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726657140926.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726656652183.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726655921749.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726282787291.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726282282641.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726281002865.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726280821768.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726280261364.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726279619934.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726279079245.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726278550871.png",
     "Rust/Rust.md",
-    "cs杂记.md",
     "ECS (Entity-Component-System)/ECS (Entity-Component-System).md",
     "ECS (Entity-Component-System)",
     "ECS.md",
@@ -292,7 +293,6 @@
     "分布式知识/分布式知识.md",
     "MIT6.824 Distributed Systems/Lab1.md",
     "MIT6.824 Distributed Systems/杂项.md",
-    "Linux/Linux.md",
     "分布式知识",
     "未命名.canvas",
     "SPM/User-Story Mapping.canvas"
