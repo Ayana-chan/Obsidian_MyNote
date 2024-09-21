@@ -63,3 +63,10 @@ strong > em > mark,
   color: var(--text-normal) !important;
   font-style: normal !important;
 }
+
+/* 禁用图片的 hover 效果 */
+img,
+img:hover {
+  opacity: 1 !important;
+  transition: none !important;
+}
