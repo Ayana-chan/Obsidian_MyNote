@@ -121,7 +121,7 @@ rust允许定义同名的新变量来shadow（隐藏）旧变量，常用于类�
 | 32-bit  | i32    | u32      |
 | 64-bit  | i64    | u64      |
 | 128-bit | i128   | u128     |
-| arch    | isize  | usize    | 
+| arch    | isize  | usize    |
 
 isize和usize由计算机架构决定，64位计算机就是64bit。主要用于对某种集合进行索引操作。
 
@@ -135,7 +135,7 @@ isize和usize由计算机架构决定，64位计算机就是64bit。主要用于
 | Hex             | 0xff        |
 | Octal           | 0077        |
 | Binary          | 0b1111_0000 |
-| Byte(u8 only)   | b'A'            |
+| Byte(u8 only)   | b'A'        |
 
 除Byte以外都能加类型后缀，如57u8。
 
@@ -3595,7 +3595,7 @@ let chars = vec!['H', 'e', 'l', 'l', 'o'];
 let string: String = chars.into_iter().collect();
 ```
 
-不要使用String的push，因为String每次push都会重新分配内存，而vector的容量是指数倍增长的，重新分配的次数少。
+不要使用String的push，因为String每次push都会重新分配内存，而vector的容量是指数倍增长的，重新分配的次数少。 
 
 ## 函数传递多个参数
 

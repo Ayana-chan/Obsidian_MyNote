@@ -3,10 +3,13 @@
   "translucency": false,
   "theme": "obsidian",
   "enabledCssSnippets": [
-    "mycss"
+    "spread-elements",
+    "mystyle"
   ],
   "baseFontSize": 14,
   "accentColor": "",
   "monospaceFontFamily": "JetBrains Mono",
-  "textFontFamily": "iA Writer Quattro S,苹方"
+  "textFontFamily": "iA Writer Quattro S,苹方",
+  "baseFontSizeAction": true,
+  "showViewHeader": true
 }

@@ -1,5 +1,5 @@
 {
-  "showInlineTitle": false,
+  "showInlineTitle": true,
   "pdfExportSettings": {
     "pageSize": "Letter",
     "landscape": false,
@@ -10,5 +10,7 @@
   "useMarkdownLinks": true,
   "newLinkFormat": "relative",
   "spellcheck": false,
-  "alwaysUpdateLinks": true
+  "alwaysUpdateLinks": true,
+  "showRibbon": true,
+  "trashOption": "local"
 }

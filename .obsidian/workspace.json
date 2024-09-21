@@ -79,7 +79,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -153,7 +154,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md"
+                "file": "Rust/Rust.md"
               }
             }
           },
@@ -163,7 +164,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "Rust/Rust.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -180,7 +181,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+                "file": "Rust/Rust.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -246,23 +247,24 @@
       "meld-encrypt:Encrypt/Decrypt": false
     }
   },
-  "active": "e1408d9ff635f3bd",
+  "active": "b1b4da5295d0c0b6",
   "lastOpenFiles": [
+    "Rust/Rust.md",
+    "Cpp.md",
+    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
+    "Linux/Shell.md",
+    "Makefile/Makefile.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726911752720.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726911425131.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726911369802.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726911154548.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/课堂笔记.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726908964361.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726908807736.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726908576419.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726908407935.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726908296336.png",
     "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726907159899.png",
-    "15-418_CS149 Parallel Computer Architecture and Programming/assets/1726905049819.png",
-    "Cpp.md",
     "cs杂记.md",
-    "Rust/Rust.md",
     "ECS (Entity-Component-System)/ECS (Entity-Component-System).md",
     "ECS (Entity-Component-System)",
     "ECS.md",
@@ -271,7 +273,6 @@
     "Untitled 20240814 071814.mdenc",
     "数学/线性代数.md",
     "15-418_CS149 Parallel Computer Architecture and Programming/asst2 Building a Task Execution Library from the Ground Up/asst2.md",
-    "Linux/Shell.md",
     "Docker.md",
     "数学/assets",
     "MIT6.824 Distributed Systems/课堂笔记.md",

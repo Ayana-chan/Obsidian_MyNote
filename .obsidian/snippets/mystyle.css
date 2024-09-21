@@ -1,0 +1,65 @@
+body {
+  background-color: rgb(46, 52, 64);
+  /* link */
+  --link-color: rgba(167, 175, 138, 0.814);
+  --link-color-hover: rgba(221, 228, 199, 0.814);
+  /* block quote */
+  --blockquote-color: #6d6d6d;
+  /* headings */
+  --h1-color: var(--color-red);
+  --h2-color: var(--color-orange);
+  --h3-color: var(--color-yellow);
+  --h4-color: var(--color-green);
+  --h5-color: var(--color-blue);
+  --h6-color: var(--color-purple);
+  --h1-size: 3em;
+  --h2-size: 2.5em;
+  --h3-size: 2em;
+  --h4-size: 1.7em;
+  --h5-size: 1.3em;
+  --h6-size: 1.2em;
+  /* embed */
+  --embed-max-height: 600px;
+  --embed-background: #6d6d6d18;
+  --embed-padding: 0 0 30px 35px;
+  /* code */
+  --code-size: 1em;
+  --code-comment: #757b73;
+  /* --code-background: rgba(31, 4, 31, 0.252); */
+}
+
+h1 {
+  padding-bottom: 0.2em;
+  border-bottom: 1px solid #4c4d4f;
+}
+
+h4,
+.cm-header-4 {
+  font-variant: normal;
+}
+
+/* 粗体 */
+strong,
+.cm-strong {
+  font-weight: 1000;
+  font-size: 1.05em;
+  color: rgb(211, 211, 179);
+}
+
+/* 下划线 */
+u,
+a.internal-link,
+a.external-link,
+span.cm-underline {
+  text-underline-offset: 5px;
+}
+
+/* ***==这样的文本==*** 会加边框（在编辑模式下顺序无关） */
+strong > em > mark,
+.cm-strong.cm-em.cm-highlight {
+  border-style: solid;
+  border-width: 2px;
+  background-color: transparent !important;
+  color: var(--text-normal) !important;
+  font-style: normal !important;
+}
