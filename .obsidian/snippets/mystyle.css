@@ -28,6 +28,16 @@ body {
   /* --code-background: rgba(31, 4, 31, 0.252); */
 }
 
+/* 笔记名显示 */
+.inline-title {
+  color: rgb(209, 178, 160);
+  font-size: 3.8em;
+}
+
+.inline-title::before {
+  content: '🕮 ';
+}
+
 h1 {
   padding-bottom: 0.2em;
   border-bottom: 1px solid #4c4d4f;
