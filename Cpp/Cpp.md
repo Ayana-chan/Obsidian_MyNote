@@ -307,7 +307,11 @@ bool intersect(const Shape* s1, const Shape* s2) {
 
 继承时可以指定访问等级，使得继承后基类成员的访问等级不得高于继承访问等级。
 
-![](assets/Pasted%20image%2020230718134236.png)
+| 继承类型 \\ 存取模式 | public    | protected | private |
+| ------------ | --------- | --------- | ------- |
+| public       | public    | protected | private |
+| protected    | protected | protected | private |
+| private      | private   | private   | private |
 
 
 ## 调用基类函数/运算符
@@ -457,7 +461,7 @@ void Obj::func() const {...}
 ```
 
 ![400](assets/uTools_1689432530764.png)
-## 类函数
+## 类函数性质
 
 ![](assets/uTools_1689432203441.png)
 

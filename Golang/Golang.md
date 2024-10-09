@@ -266,8 +266,6 @@ go run -race hello.go
 
 异步对channel传入初始值是因为写入也会被阻塞直到被读取，不异步的话可能会导致主线程阻塞。
 
-![](assets/uTools_1679899925035.png)
-
 ## RPC
 
 可能用到包`"net"`、`"net/http"`、`"net/rpc"`。
