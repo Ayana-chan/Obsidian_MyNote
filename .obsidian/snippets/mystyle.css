@@ -64,13 +64,6 @@ span.cm-underline {
   text-underline-offset: 5px;
 }
 
-/* 公式 */
-mjx-math {
-  color: #eff4e9;
-  font-size: 1.2em !important;
-  font-weight: 50 !important;
-}
-
 /* ***==这样的文本==*** 会加边框（在编辑模式下顺序无关） */
 strong > em > mark,
 .cm-strong.cm-em.cm-highlight {
@@ -81,9 +74,27 @@ strong > em > mark,
   font-style: normal !important;
 }
 
+/* 公式 */
+mjx-math {
+  color: #eff4e9;
+  font-size: 1.2em !important;
+  font-weight: 50 !important;
+}
+
 /* 禁用图片的 hover 效果 */
 img,
 img:hover {
   opacity: 1 !important;
   transition: none !important;
+}
+
+/* Callout */
+.callout[data-callout='notice'] {
+  --callout-color: 190, 150, 250;
+  --callout-icon: lucide-ear;
+}
+
+.callout[data-callout='caution'] {
+  --callout-color: 250, 130, 110;
+  --callout-icon: lucide-highlighter;
 }
