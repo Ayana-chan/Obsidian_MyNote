@@ -1438,6 +1438,15 @@ int main() {
     return 0;  
 }
 ```
+
+## 移除有序容器中的重复元素
+
+>[!note]
+ vector先排序就能用
+
+```cpp
+hbound.erase(unique(hbound.begin(), hbound.end()), hbound.end());
+```
 # CMake
 
 ## CMakeList
