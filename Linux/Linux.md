@@ -430,6 +430,13 @@ cat /proc/cpuinfo| grep "cpu cores"| uniq
 cat /proc/cpuinfo| grep "processor"| wc -l
 ```
 
+## 查看一个文件夹下各文件的硬盘占用
+
+`-d1`表示只显示一层。
+
+```bash
+du -ah -d1 文件夹路径
+```
 
 # 问题
 
