@@ -15,7 +15,9 @@ You can use `BUSTUB_ASSERT` for assertions in debug mode.
 
 `bitset[i]`的下标越小，输出的是越低的位数！
 
-`AddElem`需要可并发化。
+`AddElem`需要可并发化。TODO：让读也上mutex不然就是UB。
+
+TODO：虚拟机内硬盘分配
 
 
 
