@@ -14,5 +14,7 @@
   "obsidian-minimal-settings",
   "better-word-count",
   "cm-chs-patch",
-  "meld-encrypt"
+  "meld-encrypt",
+  "obsidian-enhancing-export",
+  "obsidian-pandoc"
 ]

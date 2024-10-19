@@ -1,0 +1,65 @@
+{
+  "items": [
+    {
+      "name": "Markdown"
+    },
+    {
+      "name": "Markdown (Hugo)"
+    },
+    {
+      "name": "Html"
+    },
+    {
+      "name": "TextBundle"
+    },
+    {
+      "name": "Typst"
+    },
+    {
+      "name": "PDF"
+    },
+    {
+      "name": "Word (.docx)"
+    },
+    {
+      "name": "OpenOffice"
+    },
+    {
+      "name": "RTF"
+    },
+    {
+      "name": "Epub"
+    },
+    {
+      "name": "Latex"
+    },
+    {
+      "name": "Media Wiki"
+    },
+    {
+      "name": "reStructuredText"
+    },
+    {
+      "name": "Textile"
+    },
+    {
+      "name": "OPML"
+    },
+    {
+      "name": "Bibliography"
+    }
+  ],
+  "pandocPath": {
+    "win32": "D:\\DeveloperTools\\pandoc-3.5-windows-x86_64\\pandoc-3.5\\pandoc.exe"
+  },
+  "defaultExportDirectoryMode": "Auto",
+  "openExportedFile": false,
+  "env": {},
+  "showExportProgressBar": true,
+  "openExportedFileLocation": true,
+  "showOverwriteConfirmation": true,
+  "lastExportDirectory": {
+    "win32": "C:\\Users\\DeathWind\\Desktop"
+  },
+  "lastExportType": "Word (.docx)"
+}
