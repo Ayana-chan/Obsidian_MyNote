@@ -1192,6 +1192,27 @@ int main() {
 distance() = 10
 ```
 
+## upper_bound & lower_bound
+
+
+假设有一个有序容器，给出它的两个迭代器，就能使用这两个函数来通过**二分查找**找到想要的值的迭代器。
+
+如果有一个**从小到大**排序好的数组`nums`，则：
+
+```cpp
+// 得到第一个大于等于10的元素的迭代器
+auto it1 = lower_bound(nums.begin(), nums.end() , 10);
+// 得到第一个大于10的元素的迭代器
+auto it1 = upper_bound(nums.begin(), nums.end() , 10);
+```
+
+可以理解为，这两个函数都找到一个从小到大的有序容器中**等于**目标值的元素的范围`[lower, upper)`，然后`lower_bound`返回`lower`，`upper_bound`返回`upper`。
+
+要在从大到小的数组里面查找的话，要使用`greater<int>()`：
+```cpp
+auto it = upper_bound(nums.begin(), nums.end() , 10 ,greater<int>());
+```
+
 ## 随机数
 
 ```cpp
