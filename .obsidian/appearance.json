@@ -4,7 +4,9 @@
   "theme": "obsidian",
   "enabledCssSnippets": [
     "spread-elements",
-    "mystyle"
+    "mystyle",
+    "MyStyle",
+    "MyStyleNotInPdf"
   ],
   "baseFontSize": 15,
   "accentColor": "",
