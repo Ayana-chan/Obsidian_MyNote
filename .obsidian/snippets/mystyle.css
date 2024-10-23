@@ -53,7 +53,6 @@ strong,
 .cm-strong {
   font-weight: 1000;
   font-size: 1.05em;
-  color: rgb(211, 211, 179);
 }
 
 /* 下划线 */
@@ -72,6 +71,12 @@ strong > em > mark,
   background-color: transparent !important;
   color: var(--text-normal) !important;
   font-style: normal !important;
+}
+
+/* 公式 */
+mjx-math {
+  font-size: 1.2em !important;
+  font-weight: 50 !important;
 }
 
 /* 禁用图片的 hover 效果 */

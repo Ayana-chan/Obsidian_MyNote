@@ -1,6 +1,10 @@
+/* 粗体 */
+strong,
+.cm-strong {
+  color: rgb(211, 211, 179);
+}
+
 /* 公式 */
 mjx-math {
   color: #eff4e9;
-  font-size: 1.2em !important;
-  font-weight: 50 !important;
 }
