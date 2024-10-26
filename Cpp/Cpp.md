@@ -1372,6 +1372,32 @@ unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结
 ## vector越界检查
 
 使用at访问数据而非`[]`，可以在越界时抛出异常。
+
+## 生成随机数
+
+生成0~1：
+```cpp
+#include <iostream>
+#include <random>
+
+int main() {
+  std::mt19937 gen(std::random_device{}());
+  std::uniform_real_distribution<double> dis(0, 1);
+  for(int i=0;i<100; i++) {
+    std::cout<< dis(gen) << std::endl;
+  }
+}
+```
+
+或者用闭包：
+```cpp
+function<double()> rand = [] {
+	static std::mt19937 gen(std::random_device{}());
+	static std::uniform_real_distribution<double> dis(0, 1);
+	return dis(gen);
+};
+```
+
 ## 获取c数组长度
 
 ```cpp
