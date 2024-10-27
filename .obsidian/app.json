@@ -12,5 +12,5 @@
   "spellcheck": false,
   "alwaysUpdateLinks": true,
   "showRibbon": true,
-  "trashOption": "local"
+  "trashOption": "system"
 }
