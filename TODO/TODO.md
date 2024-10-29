@@ -9,7 +9,6 @@ kanban-plugin: basic
 - [ ] 数理统计作业
 - [ ] 数据挖掘作业
 - [ ] 数据挖掘论文阅读pre
-- [ ] 科技写作review
 - [ ] 科技写作pre
 
 
@@ -42,6 +41,7 @@ kanban-plugin: basic
 - [x] 6.824 lab
 - [x] csapp book
 - [x] missing semester
+- [ ] 科技写作review
 
 %% kanban:settings
 ```
