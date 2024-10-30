@@ -835,6 +835,19 @@ NRVO无法优化的情况：
 
 编译时添加选项`-fno-elide-constructors`可以关闭NRVO。
 
+## decltype
+
+将参数的类型返回，用于推断类型。
+
+```cpp
+// sum的类型就是函数f返回的类型
+decltype(f()) sum = x;
+```
+
+decltype返回类型说明符（如int、double之类）。
+
+参数可以为表达式。参数中的表达式并没有真被计算，函数也不会真被执行，而只是单纯由编译器分析。
+
 ## 后置返回值类型
 [模板函数——后置返回值类型（trailing return type）\_模板函数返回\_HerofH\_的博客-CSDN博客](https://blog.csdn.net/qq_28114615/article/details/100553186)
 
@@ -932,19 +945,6 @@ int main()
 
 ```
 
-## decltype
-
-将参数的类型返回，用于推断类型。
-
-```cpp
-// sum的类型就是函数f返回的类型
-decltype(f()) sum = x;
-```
-
-decltype返回类型说明符（如int、double之类）。
-
-参数可以为表达式。参数中的表达式并没有真被计算，函数也不会真被执行，而只是单纯由编译器分析。
-
 ## sort函数
 
 默认从小到大。
@@ -990,25 +990,31 @@ sort(arr, arr+len, greater<int>());
 ```cpp
 priority_queue<类型,容器,比较函数类型>
 
-//大顶堆（降序）
+// 大顶堆（降序）
 priority_queue<int> big_heap;
 priority_queue<int,vector<int>,less<int>> big_heap2;
 
-//小顶堆（升序）
+// 小顶堆（升序）
 priority_queue<int,vector<int>,greater<int>> small_heap;
 
-//传入自定义函数
+// 传入自定义函数
 priority_queue<pair<int, int>, vector<pair<int, int>>, decltype(&cmp)> q(cmp);
 
-//使用仿函数
-struct cmp{
+// 传入自定义闭包
+auto cmp = [](const ListNode* a, const ListNode* b){
+	return a->val > b->val;
+};
+priority_queue<ListNode*, vector<ListNode*>, decltype(cmp)> pq;
+
+// 使用仿函数
+struct cmp {
     bool operator ()(const node &a, const node &b){
         return a.value>b.value; //按照value从小到大排列
     }
 };
 priority_queue<node, vector<node>, cmp>q;
 
-//重定义运算符
+// 重定义运算符
 struct node{
     int value;
     friend bool operator<(const node &a,const node &b){
