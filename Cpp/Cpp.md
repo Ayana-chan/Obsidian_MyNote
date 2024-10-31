@@ -419,6 +419,8 @@ Each C++ [expression](https://en.cppreference.com/w/cpp/language/expressions "c
 
 ![400](assets/value_categories.png)
 
+> [!tip]
+> glvalue是有名字的东西，prvalue是没名字的东西，xvalue是有名字但其名字即将消失的东西。
 
 ## 引用
 
