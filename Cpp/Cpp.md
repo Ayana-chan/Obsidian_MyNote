@@ -403,72 +403,24 @@ ClassA* ClassB::getClassAInstance() {
 
 
 
-# 库与语法
+# 数据机制
 
-## 空指针
+## Data Category
 
-空指针指向特定范围的存储空间，这个空间永远不会与物理存储器有映射。
+[Value categories - cppreference.com](https://en.cppreference.com/w/cpp/language/value_category)
 
-对空指针的delete不会报错。
+Each C++ [expression](https://en.cppreference.com/w/cpp/language/expressions "cpp/language/expressions") (an operator with its <u>operands</u>, a <u>literal</u>, a <u>variable name</u>, etc.) is characterized by two independent properties: a **type** and a **value category**. Each expression has some non-reference type, and each expression belongs to exactly one of the three <u>primary value categories</u>: **prvalue**, **xvalue**, and **lvalue**.
 
->delete一个指针后，它不会指向空指针，而是指向非法空间，造成野指针错误。因此可以考虑delete一个指针后将其赋值为nullptr。
+- **glvalue** (“generalized” lvalue) 是一个表达式，其求值可以确定一个对象或函数的 identity。要么是 lvalue 要么是 xvalue。
+- **prvalue** (“pure” rvalue) 是一个表达式，其求值可以计算运算符的一个操作数（没有result object），或初始化一个对象（有result object）。
+- **xvalue** (“eXpiring” value)是一个 <u>glvalue</u>，可以提供出一个对象，该对象的资源可重复使用（通常是因为它接近其生存期的末尾）。
+- **lvalue** 是*非 xvalue* 的 <u>glvalue</u>。
+- **rvalue** 是一个 <u>prvalue</u> 或 <u>xvalue</u>。要么是prvalue 要么是xvalue。
 
-**nullptr是有类型的，且仅可以被隐式转化为指针类型。**
+![400](assets/value_categories.png)
 
-NULL可能会被定义为0，若有两个同名不同参的函数（重载），一个的参数类型为指针、另一个的参数类型为int，则传入NULL时可能执行参数类型为int的那一个函数。
-## 命名空间
 
-`using namespace xxx`表示使用xxx整个命名空间；而`using xxx:fx`表示使用xxx命名空间下的fx。
-
-## explicit
-
-[C++11 新特性 之 explicit关键字 - 显示构造与隐式构造\_explicit 构造\_cpp\_learners的博客-CSDN博客](https://blog.csdn.net/cpp_learner/article/details/117883912)
-
-定义一个类的构造函数时，默认可以通过赋值的形式经由此构造函数构建对象：
-
-```cpp
-Student S1(22); // 显示构造 
-Student S2 = 23; // 隐式构造
-```
-
-而在构造函数前加上`explicit`即可禁用该构造函数的隐式构造。
-
-## const
-
-被const修饰的东西为常量，必须初始化。类的常量成员使用初始化表来初始化。
-
->C语言中const被当做变量来编译，可以不初始化。c++中所有出现const常量名字的地方，都被常量的初始值替换了。
-
-```cpp
-//a本身不能被更改
-const int a = 20;
-
-//不能通过p间接修改其指向的内存，因为此时修饰着*p，表示解引用后的数据
-const int *p;
-int const *p;
-
-//不能修改p本身，因为此时直接修饰p，为常指针
-int* const p;
-
-//p本身不能改，也不能通过p修改其指向的内存
-const int *const p;
-
-//函数返回值上的const都是为了防止出现左值、指针等导致外部对内部可修改
-const int* func1();
-
-//不能更改调用此方法的对象。此const可以看做是在修饰this
-void Obj::func() const {...} 
-```
-
-![400](assets/uTools_1689432530764.png)
-## 类函数性质
-
-![](assets/uTools_1689432203441.png)
-
-## 数据机制
-
-[【Modern C++】深入理解移动语义](https://mp.weixin.qq.com/s/GYn7g073itjFVg0OupWbVw)
-### 引用
+## 引用
 
 - 左值引用，使用T&，只能绑定左值
 - 右值引用，使用T&&，只能绑定右值
@@ -481,12 +433,12 @@ void Obj::func() const {...}
 
 由于具名右值引用被视为左值，因此我们要把它转回右值引用时就需要再用move或forward。
 
-#### 引用折叠
+### 引用折叠
 
 - X& &、X& &&、X&& &都折叠成X&。
 - X&& &&折叠为X&&。
 
-### 特殊成员函数
+## 特殊成员函数
 
 - 默认构造函数 `Obj()`
 - 析构函数 `~Obj()`
@@ -518,7 +470,7 @@ void Obj::func() const {...}
 
 基础数据类型都没有实现移动。
 
-#### 特殊成员函数编写规范
+### 特殊成员函数编写规范
 
 复制、移动操作应该是无副作用的。而且如果有副作用的话，会因为编译器的优化导致出现意想不到的结果。
 
@@ -528,7 +480,7 @@ void Obj::func() const {...}
 
 移动操作尽可能实现move语义，保证原对象被吃干抹净。
 
-### 完整对象示例
+## 完整对象示例
 
 ```cpp
 class BigObj { 
@@ -600,10 +552,10 @@ private:
 };
 ```
 
-### std::static_cast
+## std::static_cast
 
 用于类型转换（替代了C风格的`(Type)var`）。
-### std::copy
+## std::copy
 
 ```cpp
 template<class InputIterator, class OutputIterator>
@@ -623,7 +575,9 @@ template<class InputIterator, class OutputIterator>
 
 目标不应在`[first,last)`当中。
 
-### std::move
+## std::move
+
+[【Modern C++】深入理解移动语义](https://mp.weixin.qq.com/s/GYn7g073itjFVg0OupWbVw)
 
 ```cpp
 //C++11 std::move的实现 
@@ -651,7 +605,7 @@ typename remove_reference<T>::type&& move(T&& param) {
 
 移动构造函数在删除原对象对数据的所有权时，**要那些指针设为nullptr**。因为即使一个左值a被move到另一个左值b，a本身是不会被消除的，**在a的生命周期结束后会自动调用其析构函数**，从而可能触发野指针错误或者对一个数据进行多次析构（a和b都会调用析构函数）。
 
-### forward 完美转发 
+## forward 完美转发 
 
 forward能还原值的左右值性质，从而触发不同的函数。
 
@@ -739,11 +693,74 @@ lvalue overload, n=1
 rvalue overload, n=3
 ```
 
-#### forward_as_tuple
+### forward_as_tuple
 
 [std::forward\_as\_tuple - cppreference.com](https://en.cppreference.com/w/cpp/utility/tuple/forward_as_tuple)
 
 将参数组成tuple的形式，并且每个参数都被forward了。可以用于全部完美转发地传参数列表。而且如果参数是临时变量的话，不会将其存储（即不会延长生命周期）；如果不在表达式结束前使用完毕，则会造成悬垂引用。
+
+# 库与语法
+
+## 空指针
+
+空指针指向特定范围的存储空间，这个空间永远不会与物理存储器有映射。
+
+对空指针的delete不会报错。
+
+>delete一个指针后，它不会指向空指针，而是指向非法空间，造成野指针错误。因此可以考虑delete一个指针后将其赋值为nullptr。
+
+**nullptr是有类型的，且仅可以被隐式转化为指针类型。**
+
+NULL可能会被定义为0，若有两个同名不同参的函数（重载），一个的参数类型为指针、另一个的参数类型为int，则传入NULL时可能执行参数类型为int的那一个函数。
+## 命名空间
+
+`using namespace xxx`表示使用xxx整个命名空间；而`using xxx:fx`表示使用xxx命名空间下的fx。
+
+## explicit
+
+[C++11 新特性 之 explicit关键字 - 显示构造与隐式构造\_explicit 构造\_cpp\_learners的博客-CSDN博客](https://blog.csdn.net/cpp_learner/article/details/117883912)
+
+定义一个类的构造函数时，默认可以通过赋值的形式经由此构造函数构建对象：
+
+```cpp
+Student S1(22); // 显示构造 
+Student S2 = 23; // 隐式构造
+```
+
+而在构造函数前加上`explicit`即可禁用该构造函数的隐式构造。
+
+## const
+
+被const修饰的东西为常量，必须初始化。类的常量成员使用初始化表来初始化。
+
+>C语言中const被当做变量来编译，可以不初始化。c++中所有出现const常量名字的地方，都被常量的初始值替换了。
+
+```cpp
+//a本身不能被更改
+const int a = 20;
+
+//不能通过p间接修改其指向的内存，因为此时修饰着*p，表示解引用后的数据
+const int *p;
+int const *p;
+
+//不能修改p本身，因为此时直接修饰p，为常指针
+int* const p;
+
+//p本身不能改，也不能通过p修改其指向的内存
+const int *const p;
+
+//函数返回值上的const都是为了防止出现左值、指针等导致外部对内部可修改
+const int* func1();
+
+//不能更改调用此方法的对象。此const可以看做是在修饰this
+void Obj::func() const {...} 
+```
+
+![400](assets/uTools_1689432530764.png)
+## 类函数性质
+
+![](assets/uTools_1689432203441.png)
+
 ## ROV & NROV
 
 两个优化都自动将返回的目标左值作为隐式参数以引用的形式传入到函数中，以减少多余的构造、析构和拷贝。
