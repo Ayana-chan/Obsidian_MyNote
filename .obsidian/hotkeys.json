@@ -1,6 +1,5 @@
 {
-  "editor:save-file": [],
-  "obsidian-plugin-prettier:format-note": [
+  "obsidian-plugin-prettier:format-selection": [
     {
       "modifiers": [
         "Mod"
