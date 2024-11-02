@@ -1,1 +1,11 @@
-{}
+{
+  "editor:save-file": [],
+  "obsidian-plugin-prettier:format-note": [
+    {
+      "modifiers": [
+        "Mod"
+      ],
+      "key": "S"
+    }
+  ]
+}

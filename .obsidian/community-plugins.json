@@ -1,7 +1,6 @@
 [
   "obsidian-auto-link-title",
   "obsidian-copy-block-link",
-  "cm-editor-syntax-highlight-obsidian",
   "obsidian-kanban",
   "note-refactor-obsidian",
   "obsidian-outliner",
@@ -16,5 +15,6 @@
   "cm-chs-patch",
   "meld-encrypt",
   "obsidian-enhancing-export",
-  "obsidian-pandoc"
+  "obsidian-pandoc",
+  "obsidian-plugin-prettier"
 ]
