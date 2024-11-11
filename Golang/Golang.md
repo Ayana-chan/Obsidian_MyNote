@@ -327,6 +327,12 @@ func call(rpcname string, args interface{}, reply interface{}) bool {
 ```
 
 
+# Arena
+
+一次性申请一大块独立的内存, 然后在里面创建对象进行内存分配, 最后手动释放整个内存块, 以减少gc复杂度.
+
+TODO
+
 # 问题
 
 goroutine会随着主线程的结束被迫关闭。
