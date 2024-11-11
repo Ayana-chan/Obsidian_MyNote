@@ -1,15 +1,12 @@
 ---
 
-kanban-plugin: basic
+kanban-plugin: board
 
 ---
 
 ## BUAA课程
 
-- [ ] 数理统计作业
-- [ ] 数据挖掘作业
 - [ ] 数据挖掘论文阅读pre
-- [ ] 科技写作pre
 
 
 ## 科研
@@ -43,9 +40,12 @@ kanban-plugin: basic
 - [x] csapp book
 - [x] missing semester
 - [ ] 科技写作review
+- [ ] 数理统计作业
+- [ ] 数据挖掘作业
+- [ ] 科技写作pre
 
 %% kanban:settings
 ```
-{"kanban-plugin":"basic"}
+{"kanban-plugin":"board"}
 ```
 %%
