@@ -411,11 +411,11 @@ ClassA* ClassB::getClassAInstance() {
 
 Each C++ [expression](https://en.cppreference.com/w/cpp/language/expressions "cpp/language/expressions") (an operator with its <u>operands</u>, a <u>literal</u>, a <u>variable name</u>, etc.) is characterized by two independent properties: a **type** and a **value category**. Each expression has some non-reference type, and each expression belongs to exactly one of the three <u>primary value categories</u>: **prvalue**, **xvalue**, and **lvalue**.
 
-- **glvalue** (“generalized” lvalue) 是一个表达式，其求值可以确定一个对象或函数的 identity。要么是 lvalue 要么是 xvalue。
-- **prvalue** (“pure” rvalue) 是一个表达式，其求值可以计算运算符的一个操作数（没有result object），或初始化一个对象（有result object）。
-- **xvalue** (“eXpiring” value)是一个 <u>glvalue</u>，可以提供出一个对象，该对象的资源可重复使用（通常是因为它接近其生存期的末尾）。
-- **lvalue** 是*非 xvalue* 的 <u>glvalue</u>。
-- **rvalue** 是一个 <u>prvalue</u> 或 <u>xvalue</u>。要么是prvalue 要么是xvalue。
+- **glvalue** (“generalized” lvalue) (**范左值**): 是一个表达式，其求值可以确定一个对象或函数的 identity。要么是 lvalue 要么是 xvalue。
+- **prvalue** (“pure” rvalue) (**纯右值**): 是一个表达式，其求值可以计算运算符的一个操作数（没有result object），或初始化一个对象（有result object）。
+- **xvalue** (“eXpiring” value) (**将亡值**): 是一个 <u>glvalue</u>，可以提供出一个对象，该对象的资源可重复使用（通常是因为它接近其生存期的末尾）。
+- **lvalue** (**左值**): 是*非 xvalue* 的 <u>glvalue</u>。
+- **rvalue** (**右值**): 是一个 <u>prvalue</u> 或 <u>xvalue</u>。要么是prvalue 要么是xvalue。
 
 ![400](assets/value_categories.png)
 
@@ -424,21 +424,64 @@ Each C++ [expression](https://en.cppreference.com/w/cpp/language/expressions "c
 
 ## 引用
 
-- 左值引用，使用T&，只能绑定左值
-- 右值引用，使用T&&，只能绑定右值
-- 常量左值，使用const T&,既可以绑定左值，又可以绑定右值，但是不能对其进行修改
-- 具名右值引用，**编译器会认为是个左值**
+[Reference declaration - cppreference.com](https://en.cppreference.com/w/cpp/language/reference)
 
-[CPP11-右值引用 - 简书](https://www.jianshu.com/p/06b0b17c62bc)
+- 左值引用 (lvalue reference)，`T&`，只能绑定左值
+- 右值引用 (rvalue reference)，`T&&`，只能绑定右值
+- 常量左值引用，`const T&`,既可以绑定左值，又可以绑定右值，但是不能对其进行修改
 
-要把右值引用看成用于接住右值、给它续命的东西。
+> [!notice]
+> 不管什么引用, 都是lvalue.
 
-由于具名右值引用被视为左值，因此我们要把它转回右值引用时就需要再用move或forward。
+在`int a = std::move(b)`中, `std::move(b)`这个函数调用语句是一个**xvalue**, 但左边的`a`(**具名右值引用**)是个**lvalue**.
 
-### 引用折叠
+由于具名右值引用被视为左值，因此我们要把它转回右值引用时就需要再用`move`(再次交出左值)或`forward`(具名赋值的逆操作)。
+
+> [!tip]
+> cpp中的引用是通过等号来实现的, 如`int &a = b`和`int &&a = 1`, 而函数的赋值也相当于进行了等号操作. 这有时候看起来像是特别奇怪的隐式类型转换.
+
+### 从左值转化成右值引用
+
+```cpp
+int i = 0;
+int &&k1 = i; //编译失败
+int &&k2 = static_cast<int&&>(i); //编译成功
+```
+
+### 引用折叠 (Reference Collapsing)
 
 - X& &、X& &&、X&& &都折叠成X&。
 - X&& &&折叠为X&&。
+
+```cpp
+typedef int&  lref;
+typedef int&& rref;
+int n;
+ 
+lref&  r1 = n; // int&
+lref&& r2 = n; // int&
+rref&  r3 = n; // int&
+rref&& r4 = 1; // int&&
+```
+
+> [!note]
+> - 只要带了引用, 就永远不会被折叠成非引用.
+> - 带有左值引用的会一直是左值引用, <u>只有纯粹的右值引用的叠加才是右值引用</u>.
+
+### 万能引用
+
+由于引用折叠机制, 一个引用带上`&&`之后, 得到的引用类别由引用本身决定, 同时带上引用之后永远不会被推导为非引用, 因此在模板函数中使用`T&&`可以接收任何引用：
+```cpp
+template<typename T> 
+void f(T&&);
+
+int i = 42;
+f(i); // 实例化`f(int &)`
+f(std::move(i)); // 实例化`f(int &&)`
+```
+
+万能引用接收右值参数的时候，在函数体内(形参)就会变成左值（具名右值引用）。使用`std::forward<T>(x)`可以让其回归右值引用，且对左值情况没有任何影响，从而正确地触发拷贝操作/移动操作。
+
 
 ## 特殊成员函数
 
@@ -554,28 +597,7 @@ private:
 };
 ```
 
-## std::static_cast
 
-用于类型转换（替代了C风格的`(Type)var`）。
-## std::copy
-
-```cpp
-template<class InputIterator, class OutputIterator>
-  OutputIterator copy (InputIterator first, InputIterator last, OutputIterator result)
-{
-  while (first!=last) {
-    *result = *first;
-    ++result; ++first;
-  }
-  return result;
-}
-```
-
-指定源的起点、终点，和目标的起点，即可将`[first,last)`处的数据进行逐个复制。调用的是拷贝赋值运算符。
-
-目标要有容纳这些被拷贝的数据项的空间。
-
-目标不应在`[first,last)`当中。
 
 ## std::move
 
@@ -590,16 +612,18 @@ typename remove_reference<T>::type&& move(T&& param) {
 }
 ```
 
->std::move is used to indicate that an object t may be "moved from", i.e. allowing the efficient transfer of resources from t to another object. In particular, std::move produces an xvalue expression that identifies its argument t. It is exactly equivalent to a static_cast to an rvalue reference type.
+因此`std::move(arg)`等价于:
+```cpp
+static_cast<std::remove_reference<decltype(arg)>::type&&>(arg)
+```
 
-- 如果传递的是左值，则推导为左值引用，然后由static_cast转换为右值引用
-- 如果传递的是右值，则推导为右值引用，然后static_cast转换为右值引用
+>std::move is used to indicate that an object t may be "moved from", i.e. allowing the efficient transfer of resources from t to another object. In particular, std::move produces an **xvalue** expression that identifies its argument t. It is exactly equivalent to a static_cast to an rvalue reference type.
 
 转换的过程不存在复制，也不存在数据剥夺，在运行时什么都没做，只是个单纯的数据转换。
 
-若将move结果赋值给一个变量（左值），则会调用其移动操作。
+若将move结果赋值给一个变量（左值），则会调用其移动赋值函数。
 
-**move语义**：将左值对应的内存的所有权进行转交，原对象在move后不可使用。移动操作应当以move语义为目标。
+**move语义**：将左值对应的内存的所有权进行转交，原对象在move后不可使用。移动操作应当以move语义为目标。语义仅仅是语义, 没有额外的魔法保证.
 
 因此，移动操作一般要做到：将原对象的数据移至自己的手下，并让原对象失去数据。
 
@@ -609,9 +633,11 @@ typename remove_reference<T>::type&& move(T&& param) {
 
 ## forward 完美转发 
 
-forward能还原值的左右值性质，从而触发不同的函数。
+[std::forward - cppreference.com](https://en.cppreference.com/w/cpp/utility/forward)
 
-能转发：
+`forward`能把一个函数形参还原成它在此函数被调用时传入的值的data category，从而触发不同的函数。
+
+它能转发[forwarding references](https://en.cppreference.com/w/cpp/language/reference#Forwarding_references). 这些东西在形式上是：
 ```cpp
 [const] T &[&]
 即：
@@ -621,21 +647,7 @@ const T &&
 T &&
 ```
 
-**万能引用**：由于引用折叠，模板函数参数为右值引用形式（T&&）时可以无害地接收左右值：
-
-```cpp
-template<typename T> 
-void f(T&&);
-
-int i = 42;
-f(i)
-```
-
-如果是其他模板的话T为int，但这里会例外地推断出T为int&，从而实例化f(T& &&)，即f(T&)。
-
-万能引用接收参数的时候，可能会出现右值变左值（具名右值引用）等问题。使用`std::forward<T>(x)`可以保证其不发生改变，左值回归左值，右值回归右值，从而正确地调用拷贝操作/移动操作。
-
-和move差不多，都在运行时没做任何改动，仅仅是转换。
+> 和move一样在<u>运行时</u>没做任何改动，仅仅是类型转换。
 
 ```cpp
 #include <iostream>
@@ -763,6 +775,12 @@ void Obj::func() const {...}
 
 ![](assets/uTools_1689432203441.png)
 
+## 各种函数声明的关键词
+
+写在函数末尾, `override`声明当前函数为重写, 使编译器去检查这是否真的发生了重写. 而`final`声明当前虚函数不可被重写.
+
+
+
 ## ROV & NROV
 
 两个优化都自动将返回的目标左值作为隐式参数以引用的形式传入到函数中，以减少多余的构造、析构和拷贝。
@@ -854,6 +872,29 @@ NRVO无法优化的情况：
 
 编译时添加选项`-fno-elide-constructors`可以关闭NRVO。
 
+## std::static_cast
+
+用于类型转换（替代了C风格的`(Type)var`）。
+## std::copy
+
+```cpp
+template<class InputIterator, class OutputIterator>
+  OutputIterator copy (InputIterator first, InputIterator last, OutputIterator result)
+{
+  while (first!=last) {
+    *result = *first;
+    ++result; ++first;
+  }
+  return result;
+}
+```
+
+指定源的起点、终点，和目标的起点，即可将`[first,last)`处的数据进行逐个复制。调用的是拷贝赋值运算符。
+
+目标要有容纳这些被拷贝的数据项的空间。
+
+目标不应在`[first,last)`当中。
+
 ## decltype
 
 将参数的类型返回，用于推断类型。
@@ -866,6 +907,36 @@ decltype(f()) sum = x;
 decltype返回类型说明符（如int、double之类）。
 
 参数可以为表达式。参数中的表达式并没有真被计算，函数也不会真被执行，而只是单纯由编译器分析。
+
+`decltype(e)`(其中`e`的类型为`T`)的**推导规则**有五条：
+1. 如果是一个<u>未加括号</u>的**标识符表达式**（结构化绑定除外）或者<u>未加括号</u>的**类成员访问**，则`decltype(e)`推断出的类型是`e`的类型`T`。如果并不存在这样的类型，或者e是一组重载函数，则无法进行推导。
+2. 如果`e`是一个函数调用或者仿函数调用，那么`decltype(e)`推断出的类型是其返回值的类型。
+3. 如果`e`是一个类型为T的左值，则`decltype(e)`是`T&`。
+4. 如果`e`是一个类型为T的将亡值，则`decltype(e)`是`T&&o`
+5. 除去以上情况，则`decltype(e)`是`T`。
+
+> [!info]
+> 使用括号可以恢复变量本身的各种类型信息(最重要的就是变回左值).
+
+```cpp
+const int&& foo();
+int i;
+struct A {
+	double x;
+};
+const A* a = new A();
+
+decltype(foo()); // const int&&
+decltype(i); // int
+decltype(a->x); // double
+decltype((a->x)); // const double&
+```
+
+使用`decltype(auto)`可以借用`decltype`的规则对变量类型进行推导.
+```cpp
+auto x1=(i); // int
+decltype(auto)x2 (i); // int&
+```
 
 ## 后置返回值类型
 [模板函数——后置返回值类型（trailing return type）\_模板函数返回\_HerofH\_的博客-CSDN博客](https://blog.csdn.net/qq_28114615/article/details/100553186)
@@ -1393,6 +1464,22 @@ unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结
 ```cpp
 #include<bits/stdc++.h>
 ```
+
+## 打印类型名
+
+使用`typeid`后, 通过`name`方法获取类型名.
+
+```cpp
+int i = 1;
+std::cout << typeid(i).name() << std::endl;
+```
+
+## 查看算数类型的性质
+
+[std::numeric\_limits - cppreference.com](https://en.cppreference.com/w/cpp/types/numeric_limits)
+
+例如查询`long long`的最大值用`std::numeric_limits<long long>::max()`.
+
 
 ## vector越界检查
 
