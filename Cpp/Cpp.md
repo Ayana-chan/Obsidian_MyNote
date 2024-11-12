@@ -103,6 +103,11 @@ b->func();  // Outputs "Base::func" 由指针类型决定
 b->vfunc(); // Outputs "Derived::vfunc" 由对象类型决定
 ```
 
+### override & final
+
+写在函数末尾, `override`声明当前函数为重写, 使编译器去检查这是否真的发生了重写. 而`final`声明当前虚函数不可被重写.
+
+
 ### 纯虚函数 & 抽象基类
 
 ```cpp
@@ -627,6 +632,23 @@ rvalue overload, n=3
 
 # 类与对象
 
+## 类成员变量默认初始化
+
+
+可以在类成员函数处直接指定其默认初始化值, 而不需要全都写在初始化列表里面. 优先级低于初始化列表, 即会被初始化列表指定的值覆盖.
+
+```cpp
+class X {
+  private:
+    int a = 1;
+    double b{1.};
+};
+```
+
+## 类函数性质
+
+![](assets/uTools_1689432203441.png)
+
 ## 特殊成员函数
 
 - 默认构造函数 `Obj()`
@@ -1000,28 +1022,6 @@ void Obj::func() const {...}
 ```
 
 ![400](assets/uTools_1689432530764.png)
-## 类函数性质
-
-![](assets/uTools_1689432203441.png)
-
-## 杂项: 各种函数声明的关键词
-
-写在函数末尾, `override`声明当前函数为重写, 使编译器去检查这是否真的发生了重写. 而`final`声明当前虚函数不可被重写.
-
-
-## 类成员变量默认初始化
-
-
-可以在类成员函数处直接指定其默认初始化值, 而不需要全都写在初始化列表里面. 优先级低于初始化列表, 即会被初始化列表指定的值覆盖.
-
-```cpp
-class X {
-  private:
-    int a = 1;
-    double b{1.};
-};
-```
-
 
 ## ROV & NROV
 
@@ -1113,6 +1113,21 @@ NRVO无法优化的情况：
 - 函数有多处return，且返回的变量不同。
 
 编译时添加选项`-fno-elide-constructors`可以关闭NRVO。
+
+## 基于范围的for循环
+
+类似于java的增强型for循环.
+
+要求目标是可迭代的, 其`v.begin() != v.end()`可以给出布尔值.
+
+cpp20中, 可以在这种for循环前加上初始化语句:
+```cpp
+T thing foo();
+for (auto &x: thing.items()) {}
+
+//C++20
+for (T thing = foo(); auto &x: thing.items()) {}
+```
 
 ## std::static_cast
 
