@@ -490,6 +490,120 @@ f(std::move(i)); // 实例化`f(int &&)`
 
 万能引用接收右值参数的时候，在函数体内(形参)就会变成左值（具名右值引用）。使用`std::forward<T>(x)`可以让其回归右值引用，且对左值情况没有任何影响，从而正确地触发拷贝操作/移动操作。
 
+## std::move
+
+[【Modern C++】深入理解移动语义](https://mp.weixin.qq.com/s/GYn7g073itjFVg0OupWbVw)
+
+```cpp
+//C++11 std::move的实现 
+template<typename T> 
+typename remove_reference<T>::type&& move(T&& param) { 
+	using ReturnType = typename remove_reference<T>::type&&; 
+	return static_cast<ReturnType>(param); 
+}
+```
+
+因此`std::move(arg)`等价于:
+```cpp
+static_cast<std::remove_reference<decltype(arg)>::type&&>(arg)
+```
+
+>std::move is used to indicate that an object t may be "moved from", i.e. allowing the efficient transfer of resources from t to another object. In particular, std::move produces an **xvalue** expression that identifies its argument t. It is exactly equivalent to a static_cast to an rvalue reference type.
+
+转换的过程不存在复制，也不存在数据剥夺，在运行时什么都没做，只是个单纯的数据转换。
+
+若将move结果赋值给一个变量（左值），则会调用其移动赋值函数。
+
+**move语义**：将左值对应的内存的所有权进行转交，原对象在move后不可使用。移动操作应当以move语义为目标。语义仅仅是语义, 没有额外的魔法保证.
+
+因此，移动操作一般要做到：将原对象的数据移至自己的手下，并让原对象失去数据。
+
+**自定义的类不会自动带有真正的、完整的move语义**，编译器自动生成的移动构造函数只是可以调用其各个成员变量的移动构造函数。因此，对于自定义类来说，想实现移动语义必须实现非常具体的移动构造函数。
+
+移动构造函数在删除原对象对数据的所有权时，**要那些指针设为nullptr**。因为即使一个左值a被move到另一个左值b，a本身是不会被消除的，**在a的生命周期结束后会自动调用其析构函数**，从而可能触发野指针错误或者对一个数据进行多次析构（a和b都会调用析构函数）。
+
+## std::forward 完美转发 
+
+[std::forward - cppreference.com](https://en.cppreference.com/w/cpp/utility/forward)
+
+`forward`能把一个函数形参还原成它在此函数被调用时传入的值的data category，从而触发不同的函数。
+
+它能转发[forwarding references](https://en.cppreference.com/w/cpp/language/reference#Forwarding_references). 这些东西在形式上是：
+```cpp
+[const] T &[&]
+即：
+const T &
+T &
+const T &&
+T &&
+```
+
+> 和move一样在<u>运行时</u>没做任何改动，仅仅是类型转换。
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <utility>
+ 
+struct A {
+    A(int&& n) { std::cout << "rvalue overload, n=" << n << "\n"; }
+    A(int& n)  { std::cout << "lvalue overload, n=" << n << "\n"; }
+};
+ 
+class B {
+public:
+    template<class T1, class T2, class T3>
+    B(T1&& t1, T2&& t2, T3&& t3) :
+        a1_{std::forward<T1>(t1)},
+        a2_{std::forward<T2>(t2)},
+        a3_{std::forward<T3>(t3)}
+    {
+    }
+ 
+private:
+    A a1_, a2_, a3_;
+};
+ 
+template<class T, class U>
+std::unique_ptr<T> make_unique1(U&& u)
+{
+    return std::unique_ptr<T>(new T(std::forward<U>(u)));
+}
+ 
+template<class T, class... U>
+std::unique_ptr<T> make_unique2(U&&... u)
+{
+    return std::unique_ptr<T>(new T(std::forward<U>(u)...));
+}
+ 
+int main()
+{   
+    auto p1 = make_unique1<A>(2); // 右值
+    int i = 1;
+    auto p2 = make_unique1<A>(i); // 左值
+ 
+    std::cout << "B\n";
+    auto t = make_unique2<B>(2, i, 3);
+}
+```
+
+输出：
+
+```txt
+rvalue overload, n=2
+lvalue overload, n=1
+B
+rvalue overload, n=2
+lvalue overload, n=1
+rvalue overload, n=3
+```
+
+### forward_as_tuple
+
+[std::forward\_as\_tuple - cppreference.com](https://en.cppreference.com/w/cpp/utility/tuple/forward_as_tuple)
+
+将参数组成tuple的形式，并且每个参数都被forward了。可以用于全部完美转发地传参数列表。而且如果参数是临时变量的话，不会将其存储（即不会延长生命周期）；如果不在表达式结束前使用完毕，则会造成悬垂引用。
+
 
 ## 特殊成员函数
 
@@ -504,12 +618,12 @@ f(std::move(i)); // 实例化`f(int &&)`
 
 >注意，xx构造函数都叫构造函数，都不能为virtual！
 
-- `Obj o2=o1;`调用**拷贝构造函数**
-- `Obj o2; o2=o1;`调用**拷贝赋值运算符**
-- `Obj o2=move(o1);`调用**移动构造函数**
-- `Obj o2; o2=move(o1);`调用**移动赋值运算符**
-- `Obj o2=Obj();`调用**移动构造函数**（因为传的是右值）
-- `Obj &&o1; Obj o2=o1;`调用**拷贝构造函数**（因为具名右值引用被视为左值）
+- `Obj o2 = o1;`调用**拷贝构造函数**
+- `Obj o2; o2 = o1;`调用**拷贝赋值运算符**
+- `Obj o2 = move(o1);`调用**移动构造函数**
+- `Obj o2; o2 = move(o1);`调用**移动赋值运算符**
+- `Obj o2 = Obj();`调用**移动构造函数**（因为传的是右值）
+- `Obj &&o1; Obj o2 = o1;`调用**拷贝构造函数**（因为具名右值引用是左值）
 
 
 移动相关：
@@ -605,121 +719,124 @@ private:
 };
 ```
 
+## 聚合类型
 
-
-## std::move
-
-[【Modern C++】深入理解移动语义](https://mp.weixin.qq.com/s/GYn7g073itjFVg0OupWbVw)
+聚合类型的定义是, 它是一个<u>普通数组</u>, 或者<u>同时满足</u>:
+- 没有用户声明的构造函数
+- 没有用户提供的构造函数(允许显示预置或弃置的构造函数)
+- 没有私有或保护的非静态数据成员
+- 没有基类
+- 没有虚函数
+- 没有{}和=直接初始化的非静态数据成员
+- 没有默认成员初始化器
 
 ```cpp
-//C++11 std::move的实现 
-template<typename T> 
-typename remove_reference<T>::type&& move(T&& param) { 
-	using ReturnType = typename remove_reference<T>::type&&; 
-	return static_cast<ReturnType>(param); 
+// 一个非常简单, 平凡, 赤裸裸的类型
+class X {
+  public:
+    int a;
+    double b;
+};
+```
+
+
+## 初始化
+
+- 直接初始化: 使用括号来初始化, 如 `X v(5);`
+- 拷贝初始化: 使用等号来初始化, 如 `X v = 5`
+这两个概念没有本质区别, 它们都只会调用符合要求的构造函数(包括拷贝构造函数), 只不过一般会使用`explicit`防止拷贝初始化调用非拷贝函数.
+
+### 指定初始化
+
+```cpp
+struct Point {
+	int x;
+	int y;
+};
+Point p{ .x = 4, .y = 2 };
+```
+
+语法要求:
+1. 必须是一个**聚合类型**
+2. 数据成员必须是非静态数据成员
+3. 数据成员最多只能初始化一次
+4. 非静态数据成员的初始化**必须按照声明的顺序**进行
+5. 针对联合体中的数据成员只能初始化一次，不能同时指定
+6. 不能嵌套指定初始化数据成员
+7. 一旦使用指定初始化就不能混用其他方法对数据成员初始化了
+8. 禁止对数组使用指定初始化
+
+
+### 列表初始化
+
+[std::initializer\_list - cppreference.com](https://en.cppreference.com/w/cpp/utility/initializer_list)
+
+- `int x{1};` 是直接初始化
+- `int x = {1};` 是拷贝初始化
+同样, 这两种写法没有本质区别.
+
+```cpp
+std::vector v{ 1, 2, 3 };
+std::map<std::string, int> m = { {"bob", 3}, {"Alice", 5} };
+```
+
+[聚合类型](Cpp/Cpp.md#聚合类型)**天然支持**列表初始化, 相当于直接给每个成员变量按顺序赋值, 例如:
+```cpp
+class X {
+  public:
+    int a;
+    double b;
+};
+
+int main() {
+    X v = {2, 5.5};
+    std::cout << v.a << " " << v.b << std::endl;
+    // Output: 2 5.5
 }
 ```
 
-因此`std::move(arg)`等价于:
-```cpp
-static_cast<std::remove_reference<decltype(arg)>::type&&>(arg)
-```
+一个普通类型想要支持列表初始化, 需要拥有一个参数为`std::initializer_list<T>`的构造函数.
 
->std::move is used to indicate that an object t may be "moved from", i.e. allowing the efficient transfer of resources from t to another object. In particular, std::move produces an **xvalue** expression that identifies its argument t. It is exactly equivalent to a static_cast to an rvalue reference type.
-
-转换的过程不存在复制，也不存在数据剥夺，在运行时什么都没做，只是个单纯的数据转换。
-
-若将move结果赋值给一个变量（左值），则会调用其移动赋值函数。
-
-**move语义**：将左值对应的内存的所有权进行转交，原对象在move后不可使用。移动操作应当以move语义为目标。语义仅仅是语义, 没有额外的魔法保证.
-
-因此，移动操作一般要做到：将原对象的数据移至自己的手下，并让原对象失去数据。
-
-**自定义的类不会自动带有真正的、完整的move语义**，编译器自动生成的移动构造函数只是可以调用其各个成员变量的移动构造函数。因此，对于自定义类来说，想实现移动语义必须实现非常具体的移动构造函数。
-
-移动构造函数在删除原对象对数据的所有权时，**要那些指针设为nullptr**。因为即使一个左值a被move到另一个左值b，a本身是不会被消除的，**在a的生命周期结束后会自动调用其析构函数**，从而可能触发野指针错误或者对一个数据进行多次析构（a和b都会调用析构函数）。
-
-## forward 完美转发 
-
-[std::forward - cppreference.com](https://en.cppreference.com/w/cpp/utility/forward)
-
-`forward`能把一个函数形参还原成它在此函数被调用时传入的值的data category，从而触发不同的函数。
-
-它能转发[forwarding references](https://en.cppreference.com/w/cpp/language/reference#Forwarding_references). 这些东西在形式上是：
-```cpp
-[const] T &[&]
-即：
-const T &
-T &
-const T &&
-T &&
-```
-
-> 和move一样在<u>运行时</u>没做任何改动，仅仅是类型转换。
+`std::initializer_list`是可迭代的, 因此也能使用增强型for循环来遍历.
 
 ```cpp
-#include <iostream>
-#include <memory>
-#include <utility>
- 
-struct A {
-    A(int&& n) { std::cout << "rvalue overload, n=" << n << "\n"; }
-    A(int& n)  { std::cout << "lvalue overload, n=" << n << "\n"; }
-};
- 
-class B {
-public:
-    template<class T1, class T2, class T3>
-    B(T1&& t1, T2&& t2, T3&& t3) :
-        a1_{std::forward<T1>(t1)},
-        a2_{std::forward<T2>(t2)},
-        a3_{std::forward<T3>(t3)}
-    {
-    }
- 
+#include <initializer_list>
+
+class Numbers {
 private:
-    A a1_, a2_, a3_;
+    int* values;
+    size_t size;
+
+public:
+    // 使用 initializer list 的构造函数
+    Numbers(std::initializer_list<int> list) : 
+        size(list.size()),
+        values(new int[list.size()])
+    {
+        int i = 0;
+        for (auto item : list) {
+            values[i] = item;
+            i++;
+        }
+    }
 };
- 
-template<class T, class U>
-std::unique_ptr<T> make_unique1(U&& u)
-{
-    return std::unique_ptr<T>(new T(std::forward<U>(u)));
-}
- 
-template<class T, class... U>
-std::unique_ptr<T> make_unique2(U&&... u)
-{
-    return std::unique_ptr<T>(new T(std::forward<U>(u)...));
-}
- 
-int main()
-{   
-    auto p1 = make_unique1<A>(2); // 右值
-    int i = 1;
-    auto p2 = make_unique1<A>(i); // 左值
- 
-    std::cout << "B\n";
-    auto t = make_unique2<B>(2, i, 3);
+
+int main() {
+    // 使用 initializer list 创建对象
+    Numbers nums = {1, 2, 3, 4, 5};
+    Numbers numsList[] = { {1, 2}, {6, 8} };
+    return 0;
 }
 ```
 
-输出：
-
-```txt
-rvalue overload, n=2
-lvalue overload, n=1
-B
-rvalue overload, n=2
-lvalue overload, n=1
-rvalue overload, n=3
+无法支持(或者发出警告)**隐式缩窄转换**(即强表达类型转成弱的), 如`int`转成`char`时:
+```cpp
+int x = 9;
+char c1 = 9; // Correct
+char c2 = {9}; // Error or Warning
 ```
 
-### forward_as_tuple
 
-[std::forward\_as\_tuple - cppreference.com](https://en.cppreference.com/w/cpp/utility/tuple/forward_as_tuple)
-
-将参数组成tuple的形式，并且每个参数都被forward了。可以用于全部完美转发地传参数列表。而且如果参数是临时变量的话，不会将其存储（即不会延长生命周期）；如果不在表达式结束前使用完毕，则会造成悬垂引用。
 
 # 库与语法
 
@@ -783,10 +900,23 @@ void Obj::func() const {...}
 
 ![](assets/uTools_1689432203441.png)
 
-## 各种函数声明的关键词
+## 杂项: 各种函数声明的关键词
 
 写在函数末尾, `override`声明当前函数为重写, 使编译器去检查这是否真的发生了重写. 而`final`声明当前虚函数不可被重写.
 
+
+## 类成员变量默认初始化
+
+
+可以在类成员函数处直接指定其默认初始化值, 而不需要全都写在初始化列表里面. 优先级低于初始化列表, 即会被初始化列表指定的值覆盖.
+
+```cpp
+class X {
+  private:
+    int a = 1;
+    double b{1.};
+};
+```
 
 
 ## ROV & NROV
@@ -986,6 +1116,8 @@ std::make_unique<TrieNodeWithValue<T>>(children_, value_)
 
 ### Lambda表达式
 
+[Lambda expressions (since C++11) - cppreference.com](https://en.cppreference.com/w/cpp/language/lambda)
+
 ```cpp
 [ 捕获 ] ( 形参 ) -> ret { 函数体 };
 ```
@@ -1022,6 +1154,8 @@ int x = 5;
 auto foo = [r = x + 1]{ return r; }
 ```
 
+所有**值捕获**都默认是`const`, 想要其<u>可变</u>的话就要在参数后面加上`mutable`.
+
 #### 泛型lambda表达式
 
 参数中使用auto来定义泛型lambda表达式, 从而兼容多种类型. 
@@ -1048,7 +1182,10 @@ auto foo = []<typename T>(std::vector<T> vec) {...}
 
 #### 可构造和可赋值的无状态lambda表达式
 
-cpp20中, 允许无状态(无捕获)的lambda表达式可以被构造和赋值(拷贝), 即为其保留默认构造函数和拷贝构造函数.
+> [!warning]
+> GCC 14.2.0 都尚不支持此特性.
+
+cpp20中, 允许无状态(无捕获)的lambda表达式可以被构造和赋值(拷贝), 即为其保留默认构造函数和拷贝构造函数. cpp20前, 闭包类型不是默认可构造的.
 
 例如下面的代码中, 想要用模板类型参数来指定`cmp`, 并且不希望通过传值来传递`cmp`闭包的话, 就要在`std::map`的构造函数内部对`decltype(greater)`这个无状态闭包类型进行构造. 这是cpp20才支持的, 以前还要给`mymap`额外传`greater`参数.
 ```cpp
