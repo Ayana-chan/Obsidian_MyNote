@@ -1276,6 +1276,27 @@ std::tie(x, y) = return_multiple_values();
 ```cpp
 auto[x, y] = return_multiple_values();
 ```
+
+配合自动推导返回值类型的特性, 可以使其看起来像是能让函数返回多个变量:
+```cpp
+auto return_multiple_values() {
+	return std:make_tuple(11, 7);
+}
+
+int main() {
+	auto[x, y] = return_multiple_values();
+}
+```
+
+总共有三种结构化绑定:
+1. 绑定**原始数组**, 将从前往后的每一项提出来
+2. 绑定**结构体与类**, 将<u>当前可访问</u>的非静态成员变量提出来
+3. 绑定**元组**或**类元组**对象
+
+> [!example] 类的结构化绑定不一定要public的例子
+> 一个类的友元函数中对该类的对象进行结构化绑定时, 编译器会判断把private的变量也给提出来, 因为此时作用域内是可以访问private的.
+
+
 ## std::string_view
 
 对string的一个引用，不发生拷贝。
@@ -1489,6 +1510,32 @@ priority_queue<node>q;
 | size()    | 获取优先级队列的大小             |
 | empty()   | 验证队列是否为空                 |
 |   swap()        | 交换两个优先级队列的内容                                 |
+
+## 三向比较
+
+两个数的比较可以有三种结果, 使用spaceship运算符`<=>`得到三个结果的其中一个.
+
+器返回值只能和0进行比较(否则报错), 从而反映不同的结果.
+```cpp
+bool b = 7 <=> 11 < 0; // true
+```
+
+对于不同的类型, 其进行的比较以及返回值的类型都是不同的:
+- strong_ordering (如int)
+	- `std::strong_ordering::less`
+	- `std::strong_ordering::equal` (可以互相替换)
+	- `std::strong_ordering::greater`
+- weak_ordering (如忽略大小写的字符串)
+	- `std::weak_ordering::less`
+	- `std::weak_ordering::equivalent` (相等但不能互相替换)
+	- `std::weak_ordering::greater`
+- partial_ordering (如float)
+	- `std::partial_ordering::less`
+	- `std::partial_ordering::equivalent` (相等但不能互相替换)
+	- `std::partial_ordering::greater`
+	- `std::partial_ordering::unordered` (不可比)
+
+
 
 ## 字符串
 
@@ -1726,36 +1773,15 @@ void f(const T &t) {} // 当然，文件内部没有声明依赖关系的时候�
 
 ## using
 
+using可以替代typedef, 但其最大的作用是创建**别名模板(alias template)**.
+
 ```cpp
 // 重定义unsigned int
 typedef unsigned int uint_t;
 using uint_t = unsigned int;
-// 重定义std::map
+// 指定std::map的模板参数 (别名模板)
 typedef std::map<std::string, int> map_int_t;
 using map_int_t = std::map<std::string, int>;
-```
-
-```cpp
-template <typename Val> 
-using str_map_t = std::map<std::string, Val>; 
-// ... 
-str_map_t<int> map1;
-```
-
-```cpp
-/* C++98/03 */
-template <typename T>
-struct func_t
-{
-    typedef void (*type)(T, T);
-};
-// 使用 func_t 模板
-func_t<int>::type xx_1;
-/* C++11 */
-template <typename T>
-using func_t = void (*)(T, T);
-// 使用 func_t 模板
-func_t<int> xx_2;//模板别名（alias template）
 ```
 
 ## 函数模板的默认模板参数
@@ -1804,7 +1830,7 @@ void add(T &t1, const T &t2) {
   t1 += t2;
 }
 
-template <> // 模板特化也要用模板前缀，但由于已经特化了，所以参数为空
+template <> // 模板特化也要用模板前缀，但由于已经全部特化了，所以参数为空
 void add<char *>(char *&t1, char *const &t2) { // 特化要指定模板参数，模板体中也要使用具体的类型
   std::strcat(t1, t2);
 }
