@@ -977,7 +977,7 @@ char c2 = {9}; // Error or Warning
 
 
 
-# 库与语法
+# 库, 语法与特性
 
 ## 空指针
 
@@ -1131,6 +1131,27 @@ for (auto &x: thing.items()) {}
 for (T thing = foo(); auto &x: thing.items()) {}
 ```
 
+## 带初始化语句的 if/switch
+
+在判断语句的前面声明的变量的**生命周期会一直往下持续到整个if-else结束**, 因此`b1`在下面的`elseif`语句块中也能使用.
+
+```cpp
+if(bool b1 = foo1(); b1) {
+	...
+} else if(bool b2 = foo2(); b2) {
+	...
+}
+```
+
+可以利用初始化语句进行加锁保护:
+```cpp
+if (std::lock_guard<std::mutex> lock(mx); shared_flag)
+	shared_flag = false;
+}
+```
+
+switch的相关语法和if完全一样.
+
 ## std::static_cast
 
 用于类型转换（替代了C风格的`(Type)var`）。
@@ -1198,16 +1219,31 @@ decltype(auto)x2 (i); // int&
 ```
 
 ## 后置返回值类型
+
+
 [模板函数——后置返回值类型（trailing return type）\_模板函数返回\_HerofH\_的博客-CSDN博客](https://blog.csdn.net/qq_28114615/article/details/100553186)
+
+```cpp
+auto foo() -> int {...}
+```
 
 ```cpp
 template <class T>  
 auto Get(std::string_view key) const -> const T *;
 ```
 
-auto为占位符，实际上是箭头后的`T*`。
+若要使用decltype推导返回值类型, 则需要使用函数参数，于是使用返回值后置使得函数参数先被声明然后才被使用。
 
-由于返回值是无法推导的，而使用decltype需要使用函数参数，但此时函数参数未定义，于是一般使返回值后置并使用decltype进行推导。
+## 省略返回值类型
+
+可以不指定返回值, 只写个auto, 编译器会自动根据函数体推导.
+
+```cpp
+auto foo() {
+	return 0;
+}
+```
+
 
 ## 智能指针
 ### unique_ptr转shared_ptr
@@ -1227,7 +1263,21 @@ std::make_unique<TrieNodeWithValue<T>>(children_, value_)
 ## std::ref
 
 传入参数时就指定使用引用输入（平时都是在接收的时候才决定是引用）。
-## string_view
+
+## 结构化绑定
+
+把一个tuple给拆开成多个变量,原本需要使用`std::tie`来完成:
+```cpp
+int x = 0, y = 0;
+std::tie(x, y) = return_multiple_values();
+```
+
+现在可以使用:
+```cpp
+auto[x, y] = return_multiple_values();
+```
+## std::string_view
+
 对string的一个引用，不发生拷贝。
 
 ## 函数（谓词）
@@ -1645,13 +1695,25 @@ for (int i=0; i<10; ++i) {
 
 此时，只要在传参的时候在第一个参数前附上`std::piecewise_construct`，就能显式地匹配单纯有若干个参数的函数。
 
-## 模板
+
+
+## 异常
+
+[std::exception - cppreference.com](https://en.cppreference.com/w/cpp/error/exception)
+
+## 并发编程
+
+conditional variable的第一个参数是lock，第二个参数是返回bool的函数。被notify时，会自动上锁，然后检查函数返回值是否为true，是的话继续执行，不是的话释放锁继续等待。最开始进入wait之前也会检查一次函数返回值。 这是为了让锁来保护函数的参数（条件），避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
+
+unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结束后自动释放锁。千万不要对它们使用unlock，否则会很难debug，特别是在不小心unlock了它们包裹的mutex而不是它们本身的时候。
+
+# 模板
 
 模板代码本身什么都不能做，它需要被使用后知道要生成哪些实例。并且所有实例都自带inline，不会重复定义。
 
 （在预编译之后）声明和实现必须在同一个文件里面。如果把声明放在头文件、把实现放在cpp文件，则另一个cpp文件只会include头文件而会忽视cpp文件，于是只能通过模板函数声明推导出函数声明语句，而不会推导实现语句，使得实例（如`f<int>()`)会找不到实现。
-### 函数模板
-#### 基本使用
+## 函数模板
+### 基本使用
 
 
 ```cpp
@@ -1662,7 +1724,7 @@ template <typename T>
 void f(const T &t) {} // 当然，文件内部没有声明依赖关系的时候，声明和实现可以合并
 ```
 
-### using
+## using
 
 ```cpp
 // 重定义unsigned int
@@ -1696,7 +1758,7 @@ using func_t = void (*)(T, T);
 func_t<int> xx_2;//模板别名（alias template）
 ```
 
-### 函数模板的默认模板参数
+## 函数模板的默认模板参数
 
 ```cpp
 template <typename T = int>
@@ -1730,7 +1792,7 @@ int main(){
 ```
 
 
-### 特化
+## 特化
 
 有时候对模板类型的操作不能通用，需要单独特殊处理，则可以用特化。
 
@@ -1758,20 +1820,10 @@ void Demo() {
 }
 ```
 
-### 全特化
+## 全特化
 
 确定了所有模板参数后即为全特化。全特化已经是个实例，因此要当成普通函数/类来对待。如果要和模板函数/类一起写在头文件的话，要提防重复定义，如手动加上inline。
 
-
-## 异常
-
-[std::exception - cppreference.com](https://en.cppreference.com/w/cpp/error/exception)
-
-## 并发编程
-
-conditional variable的第一个参数是lock，第二个参数是返回bool的函数。被notify时，会自动上锁，然后检查函数返回值是否为true，是的话继续执行，不是的话释放锁继续等待。最开始进入wait之前也会检查一次函数返回值。 这是为了让锁来保护函数的参数（条件），避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
-
-unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结束后自动释放锁。千万不要对它们使用unlock，否则会很难debug，特别是在不小心unlock了它们包裹的mutex而不是它们本身的时候。
 
 # 问题、技巧、解决方案
 
