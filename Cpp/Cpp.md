@@ -994,7 +994,85 @@ NULL可能会被定义为0，若有两个同名不同参的函数（重载），
 
 `using namespace xxx`表示使用xxx整个命名空间；而`using xxx:fx`表示使用xxx命名空间下的fx。
 
-## const
+## 字面量
+
+有两个**输入输出操作器**可以传递给`cout`:
+- 传递`std::hexfloat`可以使浮点数以十六进制格式输出
+- 传递`std::hexfloat`可以使浮点数用默认十进制输出
+
+```cpp
+#include <iostream>
+
+int main() {
+    double float_array[]{
+		    0x1.7p+2, 0x1.f4p+9, 0x1.df3b64p-4
+	    };
+    for (auto elem : float_array) {
+        std::cout 
+        << std::hexfloat << elem << "=" 
+        << std::defaultfloat << elem 
+        << std::endl;
+    }
+}
+
+// Output:
+// 0x1.7p+2=5.75      
+// 0x1.f4p+9=1000     
+// 0x1.df3b64p-4=0.117
+```
+
+二进制使用`0b`前缀表示, 如`0b11010011`.
+
+使用单引号作为**整数分隔符**(任意进制都能用):
+```cpp
+constexpr int x = 123'456;
+static_assert(x == 0x1e'240);
+static_assert(x == 036'11'00);
+static_assert(x == 0b11'110'001'001'000'000);
+```
+
+使用`R"(...)"`来表示**原生字符串**`...`, 可以不用转义字符:
+```cpp
+// 缩进也会被考虑在内
+char str[] = R"(abc/\&"%
+	tt)";
+// Value:
+// abc/\&"%
+//     tt
+
+// 如果字符串里面有`)"`, 
+// 则可以在开头结尾的`"`和 `(`或`)` 之间
+// 插入任意标识符, 只有带上标识符的`)mark"`才会被识别成终点
+char str[] = R"mark1(bbb)")mark1";
+// Value:
+// bbb)"
+```
+
+可以**自定义字面量**, 使得给其他字面量<u>加后缀</u>就能进行<u>数据处理</u>. 默认是在运行时调用处理函数; 想在编译期完成处理的话就要把处理函数标记为`constexpr`.
+
+```cpp
+long double operator"" _mm(long double x) {
+    return x;
+}
+
+long double operator"" _cm(long double x) {
+    return x * 10;
+}
+
+long double operator"" _m(long double x) {
+    return x * 1000;
+}
+
+int main() {
+    // height = 30.0
+    auto height = 3.0_cm;
+    // length = 1230.0
+    auto length = 1.23_m;
+}
+```
+
+## 常量相关
+### const
 
 被const修饰的东西为常量，必须初始化。类的常量成员使用初始化表来初始化。
 
@@ -1022,6 +1100,49 @@ void Obj::func() const {...}
 ```
 
 ![400](assets/uTools_1689432530764.png)
+
+### constexpr
+
+表示一个东西**可以**在编译期完成求值. 不强制要求编译器完成.
+
+编译期就能完成计算的表达式可以使用constexpr, 使其在编译期被处理完.
+
+使用`if constexpr (...)`使得当条件可以在编译期被计算时, 可以只编译符合条件的那部分代码块.
+
+在函数<u>前面</u>加上`constexpr`可以定义常量表达式函数, 其值应当可以在编译期算出来. 也可以定义常量表达式构造函数, 使得对象可以在编译期被构造.
+
+```cpp
+constexpr int square(int x) {
+	return x * x;
+}
+```
+
+cpp14对常量表达式函数要求的放松:
+- 函数体允许声明变量，除了没有初始化, `static`和`thread_local`变量
+- 函数允许出现`if`和`switch`语句，不能使用`go`语句
+- 函数允许所有的循环语句，包括`for`,`while`,`do-while`
+- 函数可以修改生命周期和常量表达式相同的对象
+- 函数的返回值可以声明为`void`
+- `constexpr`修饰的成员函数不再具有`const`属性
+
+cpp20对常量表达式要求的放松:
+- 允许在constexpr中进行平凡的默认初始化
+- 允许在constexprk函数中出现Try-catch
+- 允许在constexpr中更改联合类型的有效成员
+- 允许dynamic_cast和typeid出现在常量表达式中
+
+在修饰变量的时候, `constexpr` 和 `const`是完全等价的.
+
+### consteval
+
+使用consteval声明立即函数, 保证编译期**必须**计算(constexpr只是"可以").
+
+### constinit
+
+使用constinit声明变量, 可以保证它是**通过常量来初始化**的(它本身不需要是常量). 
+
+这可以用来保证static变量的初始化不依赖于其他static变量, 也就保证其于static变量的初始化顺序无关.
+
 
 ## ROV & NROV
 
@@ -1515,7 +1636,7 @@ priority_queue<node>q;
 | empty()   | 验证队列是否为空                 |
 |   swap()        | 交换两个优先级队列的内容                                 |
 
-## 三向比较运算符
+## 三向比较运算符`<=>`
 
 两个数的比较可以有三种结果, 使用**spaceship运算符**`<=>`得到三个结果的其中一个.
 
@@ -1753,6 +1874,18 @@ for (int i=0; i<10; ++i) {
 此时，只要在传参的时候在第一个参数前附上`std::piecewise_construct`，就能显式地匹配单纯有若干个参数的函数。
 
 
+## inline
+
+### 将static类成员变量是声明和定义放一起
+
+类中的static变量需要在class的定义中声明, 而class的定义一般写在头文件, 而头文件里面不应当对变量初始化, 于是不得不将其声明与定义分离. 现在使用inline即可在一处直接声明并初始化.
+
+```cpp
+class X {
+	inline static std::string text{ "hello" };
+}
+```
+
 
 ## 异常
 
@@ -1763,6 +1896,14 @@ for (int i=0; i<10; ++i) {
 conditional variable的第一个参数是lock，第二个参数是返回bool的函数。被notify时，会自动上锁，然后检查函数返回值是否为true，是的话继续执行，不是的话释放锁继续等待。最开始进入wait之前也会检查一次函数返回值。 这是为了让锁来保护函数的参数（条件），避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
 
 unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结束后自动释放锁。千万不要对它们使用unlock，否则会很难debug，特别是在不小心unlock了它们包裹的mutex而不是它们本身的时候。
+
+### 线程局部存储 thread_local
+
+在声明变量的时候在前面标上`thread_local`即可让该变量变成线程局部存储变量, 即只需声明一次, 但每个线程都能独立地拥有此变量. 
+
+行为有点像`static`, 只会被初始化一次, 通常在线程结束时销毁. 其地址在运行时决定. 可以但不建议将其指针传递给其他线程.
+
+
 
 # 模板
 
