@@ -124,13 +124,13 @@ public:
 class Dwelling {
 public:
     // a base method
-    virtual Dwelling & build(int n);
+    virtual Dwelling &build(int n);
     ...
 };
 class Hovel : public Dwelling {
 public:
     // 一个派生类方法，返回类型协变
-    virtual Hovel & build(int n); // 相同的参数特征标
+    virtual Hovel &build(int n); // 相同的参数特征标
     ...
 };
 ```
@@ -142,6 +142,7 @@ public:
 构造函数不设为虚函数，因为派生类不继承基类的构造函数，而是隐式调用默认构造函数或显式调用某个构造函数。
 
 友元不能是虚函数，因为友元不是类成员，而**只有成员才能是虚函数**。
+
 ### 虚函数处理原理
 
 给每个对象添加一个隐藏成员是一个指向函数地址数组的指针，且尽可能靠前。这种数组称为虚函数表（virtual function table，vtbl）。vtbl和类进行绑定，每个对象的指针隐藏指针都指向同一个vtbl。
@@ -604,6 +605,7 @@ rvalue overload, n=3
 
 将参数组成tuple的形式，并且每个参数都被forward了。可以用于全部完美转发地传参数列表。而且如果参数是临时变量的话，不会将其存储（即不会延长生命周期）；如果不在表达式结束前使用完毕，则会造成悬垂引用。
 
+# 类与对象
 
 ## 特殊成员函数
 
@@ -646,6 +648,58 @@ rvalue overload, n=3
 复制操作应该尽可能进行复制，特别是new出来的东西要复制一份一模一样的而不是共用。
 
 移动操作尽可能实现move语义，保证原对象被吃干抹净。
+
+### explicit
+
+如果类`X`的某个构造函数只有`Y y`一个参数, 那么`X x = y;`语句会调用此构造函数. 这是一种**隐式类型转换**, 使得`T`类型可以被直接隐式转为`X`类型.
+
+```cpp
+Student S1(22); // 显式构造 
+Student S2 = 23; // 隐式构造
+```
+
+在这种**单参数的构造函数**的<u>前面</u>加上explicit可以防止在等号表达式中调用此构造函数:
+```cpp
+struct X {
+	explicit X(Y y) {...}
+}
+```
+
+### delete & default
+
+
+声明特殊函数后在<u>后面</u>加上
+- ` = default`: 生成默认的对应函数(**要求**编译器生成)
+- ` = delete`: 删除默认的对应函数(**阻止**编译器生成)
+
+```cpp
+struct X {
+	f1() = default;
+	virtual ~f2() = delete;
+	f3(const MyType &);
+};
+X::f3(const MyType &) = default;
+```
+
+### 委托构造函数
+
+**委托构造函数**请求**代理构造函数**代为初始化, 即调用本类型的另一个构造函数.
+
+```cpp
+class X {
+public:
+	X() : X(0,0.) {}
+	X(int a) : X(a,0.) {}
+	X(double b) : X(0,b) {}
+	X(int a,double b): a_(a), b_(b) { CommonInit(); }
+private:
+	void CommonInit()}
+	int a_;
+	double b_;
+};
+```
+
+
 
 ## 完整对象示例
 
@@ -854,19 +908,6 @@ NULL可能会被定义为0，若有两个同名不同参的函数（重载），
 ## 命名空间
 
 `using namespace xxx`表示使用xxx整个命名空间；而`using xxx:fx`表示使用xxx命名空间下的fx。
-
-## explicit
-
-[C++11 新特性 之 explicit关键字 - 显示构造与隐式构造\_explicit 构造\_cpp\_learners的博客-CSDN博客](https://blog.csdn.net/cpp_learner/article/details/117883912)
-
-定义一个类的构造函数时，默认可以通过赋值的形式经由此构造函数构建对象：
-
-```cpp
-Student S1(22); // 显示构造 
-Student S2 = 23; // 隐式构造
-```
-
-而在构造函数前加上`explicit`即可禁用该构造函数的隐式构造。
 
 ## const
 
