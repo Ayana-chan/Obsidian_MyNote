@@ -440,6 +440,14 @@ Each C++ [expression](https://en.cppreference.com/w/cpp/language/expressions "c
 > [!tip]
 > cpp中的引用是通过等号来实现的, 如`int &a = b`和`int &&a = 1`, 而函数的赋值也相当于进行了等号操作. 这有时候看起来像是特别奇怪的隐式类型转换.
 
+使用`static_cast`也能产生正常使用的左值引用:
+```cpp
+int i = 1;
+auto &a = static_cast<int &>(i);
+a = 2;
+std::cout << i << std::endl; // 2
+```
+
 ### 从左值转化成右值引用
 
 ```cpp
@@ -984,11 +992,14 @@ std::make_unique<TrieNodeWithValue<T>>(children_, value_)
 
 式子会返回一个匿名、右值的闭包。
 
+每个lambda表达式都有唯一的类型(即使签名相同), 这是为了[方便编译器优化](Rust/Rust.md#函数类型唯一性与编译器优化理论).
+
 当编译器可以推导返回值类型的时候（包括无返回值时），可以不写`-> ret`。
 
 底层逻辑其实就是仿函数，即编译器自动生成一个重载了`operater()`的类。
 
-#### 捕获
+#### 捕获 (capture)
+
 在调用lambda表达式时不需要把捕获中的变量当成参数输入，就可以把它们传进去（相当于在定义时而非在调用时传入变量）。
 
 ```txt
@@ -1003,6 +1014,53 @@ std::make_unique<TrieNodeWithValue<T>>(children_, value_)
 [&, x]：默认以引用捕获所有变量，但是x是例外，通过复制捕获；
 [this]：通过引用捕获当前对象（其实是复制指针）；
 [*this]：通过复制方式捕获当前对象；
+```
+
+**广义捕获**包括**简单捕获**和**初始化捕获**. 上面的捕获是简单捕获. 初始化捕获的例子:
+```cpp
+int x = 5;
+auto foo = [r = x + 1]{ return r; }
+```
+
+#### 泛型lambda表达式
+
+参数中使用auto来定义泛型lambda表达式, 从而兼容多种类型. 
+
+```cpp
+auto foo = [](auto a){ return a; }
+int three = foo(3);
+char const* hello = foo("hello");
+```
+
+也可以使用模板语法:
+```cpp
+auto foo = []<typename T>(std::vector<T> vec) {...}
+```
+
+
+#### 捕获this
+
+如果定义的上下文是在对象里面, 那么**当前对象的this指针**可以捕获进lambda表达式(`[this]`). 显然, this指针只能进行**值捕获**.
+
+但是, 也可以直接拷贝当前对象进去, 即`[*this]`.
+
+虽然<u>目前</u>`[=]`也能直接捕获到`this`, 但是可以写成`[=, this]`来让语义更显式. 这也是为了与`[=, *this]`(捕获所有变量并且复制当前对象)相区分.
+
+#### 可构造和可赋值的无状态lambda表达式
+
+cpp20中, 允许无状态(无捕获)的lambda表达式可以被构造和赋值(拷贝), 即为其保留默认构造函数和拷贝构造函数.
+
+例如下面的代码中, 想要用模板类型参数来指定`cmp`, 并且不希望通过传值来传递`cmp`闭包的话, 就要在`std::map`的构造函数内部对`decltype(greater)`这个无状态闭包类型进行构造. 这是cpp20才支持的, 以前还要给`mymap`额外传`greater`参数.
+```cpp
+auto greater = [](auto x, auto y) { return x > y;};  
+std::map<std::string, int, decltype(greater)> mymap;
+```
+
+而下面这段代码需要greater拥有拷贝构造函数, 也是cpp20才支持:
+```cpp
+auto greater = [](auto x, auto y) { return x > y;};  
+std::map<std::string, int, decltype(greater)> mymap1, mymap2;  
+mymap1 = mymap2;
 ```
 
 ### std::function （包装器）
