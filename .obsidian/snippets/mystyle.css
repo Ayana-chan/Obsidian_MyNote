@@ -38,14 +38,15 @@ body {
   content: '🕮 ';
 }
 
-h1 {
+h1
+.cm-header-1 {
   padding-bottom: 0.2em;
   border-bottom: 1px solid #4c4d4f;
 }
 
 h4,
 .cm-header-4 {
-  font-variant: normal;
+  font-variant: normal !important;
 }
 
 /* 粗体 */
