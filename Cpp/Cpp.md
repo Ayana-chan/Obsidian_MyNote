@@ -1895,10 +1895,101 @@ for (int i=0; i<10; ++i) {
 ```
 
 
-## range
+## ranges
 
-[std::ranges::range - cppreference.com](https://en.cppreference.com/w/cpp/ranges/range)
+[Ranges library (C++20) - cppreference.com](https://en.cppreference.com/w/cpp/ranges)
 
+### range concept
+
+库中定义了`range` concept: [std::ranges::range - cppreference.com](https://en.cppreference.com/w/cpp/ranges/range)
+```cpp
+template< class T >
+concept range = requires(T& t) {
+  ranges::begin(t); // equality-preserving for forward iterators
+  ranges::end  (t);
+};
+```
+
+满足了`range` concept的类型就可以使用ranges库的东西了.
+
+例如, 可以简化`sort`等函数的传参, 因为满足该concept后, 必然可以正常获取首尾迭代器.
+```cpp
+vector<int> vec{3,5,2,8,10};
+std::ranges::sort(vec);
+```
+
+### Range Adaptors & 管道运算符 `|`
+
+> [!info]
+> `std::ranges::views`被起了别名: `std::views`.
+
+range adaptors可以加工满足要求的东西, 如`std::views::take`, `std::views::transform` 和 `std::views::filter`. 下面的代码是通过嵌套调用来完成的: 
+```cpp
+std::vector<int> vec{20, 1, 12, 4, 20, 3, 10, 1};
+
+auto even = [](const int &a) { return a % 2 == 0; };
+auto square = [](const int &a) { return a * a; };
+
+for (int i : 
+	 std::views::take(
+		 std::views::transform(
+			 std::views::filter(vec, even), 
+		 square), 
+	 2)
+	 ) {
+	std::cout << i << " ";
+}
+
+// Output:
+// 400 144
+```
+
+显然, 这种嵌套类似于链式调用. cpp提供了管道运算符让前一个函数的输出变成下一个函数的参数, 从而增强可读性:
+```cpp
+for (int i : 
+	 vec | std::views::filter(even) |
+	 std::views::transform([](const int &a) {return a * a;}) |
+	 std::views::take(2)
+	) {
+	std::cout << i << " ";
+}
+```
+
+range adaptors 是懒求值的.
+
+自己实现管道运算符:
+```cpp
+#include <iostream>
+#include <vector>
+#include <functional>
+
+std::vector<int>& operator|(std::vector<int>& v, std::function<void(int&)> func)
+{
+    for (int& i:v)
+        func(i);
+    return v;
+}
+
+int main()
+{
+    std::vector<int> v{1, 2, 3};
+    std::function f{[](const int& i) {std::cout<< i << ' ';}};
+    auto f2 = [](int& i) {i *= i;};
+    v | f2 | f;
+    return 0;
+}
+```
+
+更通用的写法:
+```cpp
+template<class T>
+std::vector<T>& operator|(std::vector<T>& v, std::invocable<T&> auto const &func)
+{
+    for (T& i:v)
+        func(i);
+    return v;
+}
+```
 
 
 ## piecewise_construct
@@ -2138,7 +2229,8 @@ void f1(T) {}
 template<typename T>
 void f2(T) requires Hashable<T> {}
 
-// 直接写入声明中, 不用写模板参数了
+// 直接写入声明中, 不用写模板参数了.
+// 而这个参数类型本身成为concept的第一个参数
 void f3(Hashable auto /* parameter-name */) {}
  
 int main()
