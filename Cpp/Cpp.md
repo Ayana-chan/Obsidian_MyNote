@@ -464,7 +464,7 @@ Each C++ [expression](https://en.cppreference.com/w/cpp/language/expressions "c
 由于具名右值引用被视为左值，因此我们要把它转回右值引用时就需要再用`move`(再次交出左值)或`forward`(具名赋值的逆操作)。
 
 > [!tip]
-> cpp中的引用是通过等号来实现的, 如`int &a = b`和`int &&a = 1`, 而函数的赋值也相当于进行了等号操作. 这有时候看起来像是特别奇怪的隐式类型转换.
+> cpp中的引用是通过等号来实现的, 如`int &a = b`和`int &&a = 1`, 而函数的传参也相当于进行了等号操作. 这有时候看起来像是特别奇怪的隐式类型转换.
 
 使用`static_cast`也能产生正常使用的左值引用:
 ```cpp
@@ -975,6 +975,62 @@ char c1 = 9; // Correct
 char c2 = {9}; // Error or Warning
 ```
 
+## 运算符
+
+### 三向比较运算符`<=>`
+
+两个数的比较可以有三种结果, 使用**spaceship运算符**`<=>`得到三个结果的其中一个.
+
+器返回值只能和0进行比较(否则报错), 从而反映不同的结果.
+```cpp
+bool b = 7 <=> 11 < 0; // true
+```
+
+对于不同的类型, 其进行的比较以及返回值的类型都是不同的:
+- strong_ordering (如int)
+	- `std::strong_ordering::less`
+	- `std::strong_ordering::equal` (可以互相替换)
+	- `std::strong_ordering::greater`
+- weak_ordering (如忽略大小写的字符串)
+	- `std::weak_ordering::less`
+	- `std::weak_ordering::equivalent` (相等但不能互相替换)
+	- `std::weak_ordering::greater`
+- partial_ordering (如float)
+	- `std::partial_ordering::less`
+	- `std::partial_ordering::equivalent` (相等但不能互相替换)
+	- `std::partial_ordering::greater`
+	- `std::partial_ordering::unordered` (不可比)
+
+cpp20规定, 如果一个类型声明了三向比较运算符`<=>`的话, 编译器就自动为其生成 `<`, `>`, `<=`, `>=` 这四种运算符函数. 
+
+> [!info]
+> 不自动生成`==`运算符函数是因为一般来说判断是否相等的逻辑会更加简单, 例如判断容器是否等同一般都先比较长度, 长度不同才需要进行遍历.
+
+实现了`<`和`==`的类型会自动实现`<=>`.
+
+
+### 类型转换运算符
+
+在类型`X`中定义`operator Y()`函数即可定义从`X`到`Y`的类型转换(可以是隐式的). 加上`explicit`之后就只能进行显式类型转换(`static_cast`)了.
+```cpp
+struct X {
+	explicit operator Y() {
+		...
+	}
+}
+```
+
+
+### 默认按值比较
+
+默认比较运算符函数可以是一个参数为`const C&`的非静态成员函数，或则是两个参数为`const C&`或`C`的友元函数。加上`= default`之后, 编译器会生成按值判断相等的函数.
+
+```cpp
+struct c {
+	int i;
+	friend bool operator==(C,C) = default;
+};
+```
 
 
 # 库, 语法与特性
@@ -1150,7 +1206,7 @@ cpp20对常量表达式要求的放松:
 
 ### RVO 返回值优化（Return Value Optimization）
 
-返回为临时对象时有效。
+返回为临时对象时有效. 任何时候都可以完成优化.
 
 ```cpp
 T f() { 
@@ -1197,9 +1253,10 @@ void process(Data &data,int i) {
 }
 ```
 
-还是有多余的构造、拷贝、析构。
+还是有多余的构造、拷贝、析构。此时就需要NRVO来进一步优化.
 
->从`c++17`开始，`copy elision`得到保证，强制使用RVO
+> [!info]
+> 从`c++17`开始，copy elision得到保证，强制使用RVO, 即使拷贝和移动构造函数还有其他作用.
 
 ### NRVO 命名返回值优化（Named Return Value Optimization）
 
@@ -1636,36 +1693,6 @@ priority_queue<node>q;
 | empty()   | 验证队列是否为空                 |
 |   swap()        | 交换两个优先级队列的内容                                 |
 
-## 三向比较运算符`<=>`
-
-两个数的比较可以有三种结果, 使用**spaceship运算符**`<=>`得到三个结果的其中一个.
-
-器返回值只能和0进行比较(否则报错), 从而反映不同的结果.
-```cpp
-bool b = 7 <=> 11 < 0; // true
-```
-
-对于不同的类型, 其进行的比较以及返回值的类型都是不同的:
-- strong_ordering (如int)
-	- `std::strong_ordering::less`
-	- `std::strong_ordering::equal` (可以互相替换)
-	- `std::strong_ordering::greater`
-- weak_ordering (如忽略大小写的字符串)
-	- `std::weak_ordering::less`
-	- `std::weak_ordering::equivalent` (相等但不能互相替换)
-	- `std::weak_ordering::greater`
-- partial_ordering (如float)
-	- `std::partial_ordering::less`
-	- `std::partial_ordering::equivalent` (相等但不能互相替换)
-	- `std::partial_ordering::greater`
-	- `std::partial_ordering::unordered` (不可比)
-
-cpp20规定, 如果一个类型声明了三向比较运算符`<=>`的话, 编译器就自动为其生成 `<`, `>`, `<=`, `>=` 这四种运算符函数. 
-
-> [!info]
-> 不自动生成`==`运算符函数是因为一般来说判断是否相等的逻辑会更加简单, 例如判断容器是否等同一般都先比较长度, 长度不同才需要进行遍历.
-
-实现了`<`和`==`的类型会自动实现`<=>`.
 
 
 ## 字符串
@@ -1867,6 +1894,13 @@ for (int i=0; i<10; ++i) {
 }
 ```
 
+
+## range
+
+[std::ranges::range - cppreference.com](https://en.cppreference.com/w/cpp/ranges/range)
+
+
+
 ## piecewise_construct
 
 有的函数参数是用单个tuple接收的。因此，编译器可能不知道应该去匹配tuple为参数的函数，还是单纯有若干个参数（和tuple内部结构一样）的函数。
@@ -1875,6 +1909,8 @@ for (int i=0; i<10; ++i) {
 
 
 ## inline
+
+TODO
 
 ### 将static类成员变量是声明和定义放一起
 
@@ -1997,9 +2033,124 @@ void Demo() {
 }
 ```
 
-## 全特化
+确定了<u>所有模板参数</u>后即为**全特化**。全特化已经是个实例，因此要当成普通函数/类来对待。如果要和模板函数/类一起写在头文件的话，要提防重复定义，如手动加上inline。
 
-确定了所有模板参数后即为全特化。全特化已经是个实例，因此要当成普通函数/类来对待。如果要和模板函数/类一起写在头文件的话，要提防重复定义，如手动加上inline。
+## 可变参数模板
+
+使得模板类型参数可以有任意多个, 参数类型可以不一致. 它可获取参数个数(使用`sizeof...`).
+
+```cpp
+template<class ...Args> 
+void foo(Args ...args) { 
+	cout << sizeof...(args) << endl;
+} 
+
+template<class ...Args> // 类型模板形参包
+class bar {
+public:
+	bar(Args ...args){ // 函数形参包
+		foo(args...); // 形参包展开
+	}
+};
+```
+
+递归计算:
+```cpp
+// 递归终点, 只剩一个参数的时候
+template<class T>
+T sum(T arg) {
+	return arg;
+}
+
+// 每次都提取出第一个参数
+template<class T1, class ...Args>
+auto sum(T1 arg1, Args ...args){
+	return arg1 + sum(args...);
+}
+
+int main() {
+	std::cout << sum(1, 5.0, 11.7) << std::endl;
+}
+```
+
+利用**折叠表达式**:
+```cpp
+template<class...Args>
+auto sum(Args ...args) {
+	return (args + ...); // 包展开, 每个参数之间用`+`连接
+}
+
+int main() {
+	std::cout << sum(1 ,5.0, 11.7) << std::endl;
+}
+```
+
+`(args + ...)`是向右折叠, 先计算最靠右的参数. `(... + args)`就是向左折叠.
+
+
+## concept
+
+[Constraints and concepts (since C++20) - cppreference.com](https://en.cppreference.com/w/cpp/language/constraints)
+
+[Requires expression (since C++20) - cppreference.com](https://en.cppreference.com/w/cpp/language/requires)
+
+以前的SNIFAE机制, 让编译器只会选择编译正确的那个特化实例; 但有了concept机制之后, 可以把约束全都写到一起并进行组合, 使得在模板特化之前就检查模板类型参数是否满足要求.
+
+一个模板定义可以`require`一些requirements.
+
+concept是被命名的requirements的集合; `require` concept等价于`require`其对应的requirements.
+
+```cpp
+// 定义一个concept
+template<class T, class U>
+concept Derived = std::is_base_of<U, T>::value;
+```
+
+```cpp
+#include <cstddef>
+#include <concepts>
+#include <functional>
+#include <string>
+ 
+// Declaration of the concept “Hashable”, which is satisfied by any type “T”
+// such that for values “a” of type “T”, the expression std::hash<T>{}(a)
+// compiles and its result is convertible to std::size_t
+template<typename T>
+concept Hashable = requires(T a)
+{
+    { std::hash<T>{}(a) } -> std::convertible_to<std::size_t>;
+};
+ 
+struct meow {};
+ 
+// Constrained C++20 function template:
+template<Hashable T>
+void f(T) {}
+
+// Alternative ways to apply the same constraint:
+
+// 紧跟模板参数后面
+template<typename T>
+    requires Hashable<T>
+void f1(T) {}
+
+// 函数声明后面
+template<typename T>
+void f2(T) requires Hashable<T> {}
+
+// 直接写入声明中, 不用写模板参数了
+void f3(Hashable auto /* parameter-name */) {}
+ 
+int main()
+{
+    using std::operator""s;
+ 
+    f("abc"s);    // OK, std::string satisfies Hashable
+    // f(meow{}); // Error: meow does not satisfy Hashable
+}
+```
+
+
 
 
 # 问题、技巧、解决方案
