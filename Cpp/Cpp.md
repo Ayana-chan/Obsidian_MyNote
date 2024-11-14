@@ -502,7 +502,7 @@ rref&& r4 = 1; // int&&
 > - 只要带了引用, 就永远不会被折叠成非引用.
 > - 带有左值引用的会一直是左值引用, <u>只有纯粹的右值引用的叠加才是右值引用</u>.
 
-### 万能引用
+### 万能引用 (universal reference)
 
 由于引用折叠机制, 一个引用带上`&&`之后, 得到的引用类别由引用本身决定, 同时带上引用之后永远不会被推导为非引用, 因此在模板函数中使用`T&&`可以接收任何引用：
 ```cpp
@@ -515,6 +515,13 @@ f(std::move(i)); // 实例化`f(int &&)`
 ```
 
 万能引用接收右值参数的时候，在函数体内(形参)就会变成左值（具名右值引用）。使用`std::forward<T>(x)`可以让其回归右值引用，且对左值情况没有任何影响，从而正确地触发拷贝操作/移动操作。
+
+`auto &&`也能做到类似的事情. 于是可以在for循环中写成:
+```cpp
+for(auto &&elem: vec) {...}
+```
+
+
 
 ## std::move
 
@@ -1440,7 +1447,7 @@ std::make_unique<TrieNodeWithValue<T>>(children_, value_)
 
 ## 结构化绑定
 
-把一个tuple给拆开成多个变量,原本需要使用`std::tie`来完成:
+把一个tuple给拆开成多个变量, 原本需要使用`std::tie`来完成:
 ```cpp
 int x = 0, y = 0;
 std::tie(x, y) = return_multiple_values();
@@ -1448,7 +1455,7 @@ std::tie(x, y) = return_multiple_values();
 
 现在可以使用:
 ```cpp
-auto[x, y] = return_multiple_values();
+auto [x, y] = return_multiple_values();
 ```
 
 配合自动推导返回值类型的特性, 可以使其看起来像是能让函数返回多个变量:
@@ -2268,6 +2275,7 @@ std::cout << typeid(i).name() << std::endl;
 
 例如查询`long long`的最大值用`std::numeric_limits<long long>::max()`.
 
+注意要包含`#include <limits>`.
 
 ## vector越界检查
 
