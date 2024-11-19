@@ -1929,6 +1929,7 @@ concept range = requires(T& t) {
 ```cpp
 vector<int> vec{3,5,2,8,10};
 std::ranges::sort(vec);
+std::ranges::sort(vec, std::greater());
 ```
 
 ### Range Adaptors & 管道运算符 `|`
