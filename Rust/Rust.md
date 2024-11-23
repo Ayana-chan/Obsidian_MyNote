@@ -492,15 +492,42 @@ fn main() {
 }
 ```
 
-### unwrap_or_default()
+### flatten
+
+把`Option<Option<T>>` 拍平成 `Option<T>`.
+
+### unwrap_or_default
 
 使用`unwrap_or_default()`，在Some时返回提取的内容，在None时返回Default trait的`default()`的结果。
 
-### and() and_then()
+### and & and_then
 
 `and(x)`: 如果是Some，则返回`Some(x)`，否则直接返回None。
 
 `and_then(|x| {...})`: 如果是Some，则将内部数据当做闭包参数调用闭包，且闭包返回值类型是Option；否则直接返回None。
+
+
+
+### 将`Option<String>`变成`Option<&str>`
+
+使用[as_deref](Rust/Rust.md#as_deref).
+
+```rust
+fn main() {
+    let opt: Option<String> = Some("some value".to_owned());
+    let value = opt.as_deref().unwrap_or("default string");
+}
+```
+
+
+### `Option<T>`克隆为`Option<Arc<T>>`
+
+```rust
+pub fn get_t_ref(&self) -> Option<Arc<T>> {
+	self.t_var.as_ref().map(Arc::clone)
+}
+```
+
 ## 错误
 
 Rust没有异常系统。
@@ -3619,6 +3646,7 @@ fn main(){
 
 有时候一个结构体要销毁了，但它的成员变量还有用，又不好使用智能指针，也不应当clone时，可以考虑将其类型设为`Option<T>`，要Move走时就进行`obj.variable_name.take().unwrap()`将`T`取出。
 
+
 ## 可变引用一个结构体下的多个成员变量
 
 ```rust
@@ -3692,11 +3720,25 @@ fn main() {
 
 `core::slice::from_raw_parts`
 
-## `Option<T>`克隆为`Option<Arc<T>>`
+## 对迭代器的map包含错误时
+
+实际上只要出现一次错误, `collect`就会返回`None`. 因此`collect`的返回类型是不是`Vec<Result<i32>>` 而是 `Result<Vec<i32>>` .
 
 ```rust
-pub fn get_t_ref(&self) -> Option<Arc<T>> {
-	self.t_var.as_ref().map(Arc::clone)
+let strings = vec!["1", "2", "three", "4"];
+
+// 尝试将字符串解析为整数
+let results: Result<Vec<i32>, _> = strings.iter()
+	.map(|s| s.parse::<i32>()) // 尝试解析每个字符串
+	.collect(); // 收集结果
+
+match results {
+	Ok(numbers) => {
+		println!("Parsed numbers: {:?}", numbers);
+	}
+	Err(e) => {
+		println!("Error parsing: {}", e);
+	}
 }
 ```
 
@@ -4945,6 +4987,9 @@ lazy_static! {
 }
 ```
 
+> [!info]
+> 1.80 版本后就能使用`LazyCell`和`LazyLock`来替代.
+
 
 ## bitflags
 
@@ -4965,6 +5010,15 @@ bitflags! {
         const D = 1 << 7;
     }
 }
+```
+
+## anyhow
+
+使用`Result<T, anyhow::Error>`(或`anyhow::Result<T>`)就能接受所有实现了`std::error::Error` trait 的错误.
+
+使用`anyhow!`可以直接凭空生成包含字符串的错误:
+```rust
+Err(anyhow::anyhow!("Birth time format incorrect."))
 ```
 
 ## tokio
@@ -5125,7 +5179,54 @@ serde提供一些过程宏来规定结构体的序列化或反序列化规则。
 
 在成员变量上标注`#[serde(rename = "ID")]`来让该变量被重命名。
 
-在成员变量上标注`#[serde(deserialize_with = "serde::deserialize_vec")]`就可以指定该成员变量的反序列化函数。
+使用`#[serde(flatten)]`来去除结构体本身的嵌套, 如下面的代码可以解析value为key-value的key-value:
+```rust
+#[derive(Debug, Deserialize)]
+struct DataGroups {
+    #[serde(flatten)]
+    groups: HashMap<String, CityData>,
+}
+
+#[derive(Debug, Deserialize)]
+struct CityData {
+    #[serde(flatten)]
+    city_map: HashMap<String, Vec<String>>,
+}
+```
+
+在成员变量上标注`#[serde(deserialize_with = "xxx")]`就可以指定该成员变量的反序列化函数。其要求函数签名为:
+```rust
+// T为任意类型
+fn deserialize_special_key_map<'de, D>(deserializer: D) -> Result<T, D::Error>
+```
+
+例子:
+```rust
+/// serde读取键为实现了`FromStr`的`HashMap`.
+/// 
+/// 例如, 可以读取json中键为数字的map.
+pub fn deserialize_special_key_map<'de, D, K, V>(deserializer: D) -> Result<HashMap<K, V>, D::Error>
+where
+    D: Deserializer<'de>,
+    K: Deserialize<'de> + Eq + Hash + FromStr,
+    <K as FromStr>::Err: Display,
+    V: Deserialize<'de>,
+{
+    let map: HashMap<String, V> = HashMap::deserialize(deserializer)?;
+    map.into_iter()
+        .map(|(k, v)| k.parse().map(|k| (k, v)))
+        .collect::<Result<HashMap<K, V>, _>>()
+        .map_err(serde::de::Error::custom)
+}
+
+#[derive(Debug, Deserialize)]
+struct PolicyConfigOneGender {
+    #[serde(flatten)]
+    #[serde(deserialize_with = "tools::deserialize_special_key_map")]
+    policy_map: HashMap<u32, AnotherStruct>,
+}
+```
+
 
 ## axum
 
