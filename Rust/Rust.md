@@ -208,7 +208,17 @@ let arr: [i32:5] = [1,2,3,4,5]
 
 `let arr = [3;5]`等价于`let arr = [3,3,3,3,3]`。
 
-raft禁止数组越界访问，会在运行时报错。编译时只能检查出简单的越界错误。
+rust禁止数组越界访问，会在运行时报错。编译时只能检查出简单的越界错误。
+
+## 溢出问题
+
+[数值类型 - 溢出问题 - Rust语言圣经(Rust Course)](https://course.rs/basic/base-type/numbers.html#%E6%95%B4%E5%9E%8B%E6%BA%A2%E5%87%BA)
+
+rust在数字计算时, 会检测溢出, panic掉程序. 虽然`--release`下不会panic, 会和cpp一样处理, 但依然要视其为错误行为. 要想显式表示一次运算可以接受溢出, 应当使用规定的方法:
+- 使用 `wrapping_*` 方法在所有模式下都按照补码循环溢出规则处理，例如 `wrapping_add`.
+- 如果使用 `checked_*` 方法时发生溢出，则返回 `None` 值.
+- 使用 `overflowing_*` 方法返回该值和一个指示是否存在溢出的布尔值.
+- 使用 `saturating_*` 方法，可以限定计算后的结果不超过目标类型的最大值或低于最小值.
 
 
 ## 语句与表达式
@@ -1607,7 +1617,7 @@ fn main() {
 
 使用&str后，内部可能需要转变成String，发生拷贝。但实际上，在不想交出所有权的情况下，却在函数里依然需要生成String，所以这种情形必然会发生拷贝，就算用String当参数也必然要进行一次clone。
 
-## Vector
+## Vec
 
 ```rust
 let v1: Vec<i32> = Vec::new();
@@ -1638,6 +1648,12 @@ let mut v = vec![2,5,7];
 for i in &mut v {
 	*i += 50;
 }
+```
+
+预分配内存使用`with_capacity`, 而带长度的初始化要使用`vec!`:
+```rust
+let vec = Vec::with_capacity(max_number);
+let vec: Vec<i32> = vec![default_value; length];
 ```
 
 使用附带数据的枚举可以实现用vector存储不同类型的数据。编译器推导出vector的泛型是枚举后，就相当于得知了它的有限个类型种类，也就可以生成对应的操作应对方案。
