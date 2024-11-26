@@ -220,6 +220,8 @@ rust在数字计算时, 会检测溢出, panic掉程序. 虽然`--release`下不
 - 使用 `overflowing_*` 方法返回该值和一个指示是否存在溢出的布尔值.
 - 使用 `saturating_*` 方法，可以限定计算后的结果不超过目标类型的最大值或低于最小值.
 
+`u32.wrapping_add(u32)` 等价于模 $2^{32}$ 加法.
+
 
 ## 语句与表达式
 
@@ -537,6 +539,47 @@ pub fn get_t_ref(&self) -> Option<Arc<T>> {
 	self.t_var.as_ref().map(Arc::clone)
 }
 ```
+
+## 打印
+
+使用`#[derive(Debug)]`派生宏，使得ST由Debug trait派生；打印时使用`{:?}`即可行内打印，使用`{:#?}`即可换行打印。这样可以完整地打印结构体或枚举。
+
+```rust
+#[derive(Debug)]
+struct ST{
+	v1: i32,
+	v2: f64,
+}
+
+let st = ST{
+	v1: 1,
+	v2: 3.5,
+};
+println!("{:?}",st)
+println!("{:#?}",st)
+
+// 输出：
+// ST { v1: 1, v2: 3.5 }  
+// ST {  
+//     v1: 1,  
+//     v2: 3.5,  
+// }
+```
+
+`dbg!`宏可以在打印的时候输出代码所在行编号，以及被打印的表达式本身。没有`format!`相关语法，只能打印完整的一个表达式。会获得表达式的所有权，因此必要时可以通过传引用。
+
+```rust
+dbg!(12 + 13);
+
+// 输出：
+// [src\main.rs:17] 12 + 13 = 25
+```
+
+在`println!`的`{}`里面加东西之后, 会影响**整个**输出情况, 例如以十六进制的形式打印数组:
+```rust
+println!("{:08x?}", my_vec);
+```
+
 
 ## 错误
 
@@ -3490,40 +3533,6 @@ global_asm!(include_str!("entry.asm"));
 文档中的代码段默认为rust，也默认会被编译、运行。使用一些attributes写在语言处即可调整设置：[Documentation tests - Attributes - The rustdoc book](https://doc.rust-lang.org/nightly/rustdoc/write-documentation/documentation-tests.html#attributes)
 # 问题、技巧、解决方案
 
-## 打印
-
-使用`#[derive(Debug)]`派生宏，使得ST由Debug trait派生；打印时使用`{:?}`即可行内打印，使用`{:#?}`即可换行打印。这样可以完整地打印结构体或枚举。
-
-```rust
-#[derive(Debug)]
-struct ST{
-	v1: i32,
-	v2: f64,
-}
-
-let st = ST{
-	v1: 1,
-	v2: 3.5,
-};
-println!("{:?}",st)
-println!("{:#?}",st)
-
-// 输出：
-// ST { v1: 1, v2: 3.5 }  
-// ST {  
-//     v1: 1,  
-//     v2: 3.5,  
-// }
-```
-
-`dbg!`宏可以在打印的时候输出代码所在行编号，以及被打印的表达式本身。没有`format!`相关语法，只能打印完整的一个表达式。会获得表达式的所有权，因此必要时可以通过传引用。
-
-```rust
-dbg!(12 + 13);
-
-// 输出：
-// [src\main.rs:17] 12 + 13 = 25
-```
 
 ## 获取类型相关信息（std::any）
 
