@@ -91,6 +91,9 @@ trait: 可视为接口，提供了一些方法，如`rand::Rng`。
 
 T代表所有类型，包括&T和&mut T；而&T和&mut T完全没有交集。
 
+Rust container 内存结构:
+![](assets/1732771441072.png)
+
 ## Move
 
 若一个结构体没有实现Copy trait（标量类型自带实现），那么赋值的时候类似于cpp的`std::move`，会将**所有权**转交出去。
@@ -1447,7 +1450,9 @@ Rust的生命周期也基本是靠推导得到的（如果不是`'static`的话�
 
 ## const
 
-Rust中的const像是cpp的constexpr。const值在编译期就知道内容，且在使用的时候是inline的。const函数用于生成const值。
+Rust中的const像是cpp的constexpr。const值在编译期就知道内容，且在使用的时候是inline的。
+
+**const函数**用于生成const值。这使得它能在编译期进行调用, 用于初始化static变量.
 ## expect
 
 可能失败的方法会返回Result，是个枚举类，为`Ok(val)`或`Err(_)`，可以交由expect处理（`result.expect(msg)`）。若Result为Ok，则返回Result中存储的结果值val；否则，打印expect的参数msg并停止程序。
@@ -3271,15 +3276,13 @@ fn main() {
 可以通过在参数中传入一些借用来产生生命周期关系。
 
 结构体也一样，没使用的生命周期参数几乎没有约束结构体的价值，因此需要`PhantomData`来构建约束关系。例如结构体只需要在T的读引用合法期间使用，那么就可以放一个`PhantomData<&'a T>`。
-## NonNull & Unique
+## Unique
 
 `NonNull`是对`*mut T`的封装，并且确保指针非空。使用`new_unchecked`可以在不检查空指针的情况下构建`NonNull`。使用`Option<NonNull<T>>`来表示可以为空的`*mut T`，且在内存中依然是一个指针。
 
-而`Unique`通过`PhantomData<T>`表示它应当像是拥有T的所有权（影响Drop Check）。其内存占用依然是一个指针，也可以使用`Option`包装。表示T数据只有这一个指针，也因此`Unique`的行为就好像它就是T本身。在语义上，如果T数据被一个`Unique`包装的话，就应当只能通过该`Unique`来访问目标T数据。获取T数据引用的方法是unsafe的，因为要程序员自己保证没有其他地方可以访问目标T数据。
+`NonNull`被Drop的时候不会调用目标的Drop, 因此需要手动调用`drop_in_place`.
 
-```rust
-pub struct Unique<T: ?Sized>(NonNull<T>, PhantomData<T>);
-```
+`NonNull`假设目标数据是有可能被共享的, 因此不实现Sync和Send.
 
 ## 宏 macro
 
@@ -4526,6 +4529,7 @@ lock文件（`Cargo.lock`）在build后生成，表示目前所用的确切版�
 有多个crate时，可以在项目根目录创建一个用于聚合的toml，指定各个crate的路径，然后在对应路径中创建对应的crate（cargo new）。
 
 ```toml
+# 整个toml没有其他东西
 [workspace]
 members = [
     "package1",
@@ -4534,6 +4538,14 @@ members = [
 ```
 
 crate之间的依赖需要在crate内的toml的dependencies通过路径指定。
+
+```toml
+[workspace]
+resolver = "2"
+members = [
+    "crates/*",
+]
+```
 
 ## 生成文档
 
@@ -4556,6 +4568,14 @@ crate之间的依赖需要在crate内的toml的dependencies通过路径指定。
 ```
 #[cfg(not(feature = "no_gateway"))]
 ```
+
+在`Cargo.toml`中声明feature:
+```toml
+[features]  
+# 括号内是相关项, 开启本项后自动开启它们
+no_gateway = []
+```
+
 ## Build Script
 
 [Build Scripts - The Cargo Book](https://doc.rust-lang.org/cargo/reference/build-scripts.html)
