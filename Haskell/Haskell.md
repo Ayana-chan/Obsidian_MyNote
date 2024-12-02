@@ -170,7 +170,7 @@ List常用函数：
 
 ### List Comprehension
 
-`[expression | ranges and constrait]`
+`[expression | ranges and constrait]` 生成满足要求的, 加工后的列表.
 
 ```haskell
 [x * 2 | x <- [1..10]]
@@ -178,7 +178,7 @@ List常用函数：
 ```
 
 ```haskell
-[[x, y] | x <- [1..], y <- [10..], x + y == 20]
+[[x, y] | x <- [1..10], y <- [10..20], x + y == 20]
 -- [[1,19],[2,18],[3,17],[4,16],[5,15],[6,14],[7,13],[8,12],[9,11],[10,10]]
 ```
 
@@ -195,7 +195,9 @@ List常用函数：
 - `replicate n value`重复一个值n次。
 
 
+## 函数相关语法
 
+### pattern matching 模式匹配
 
 
 
