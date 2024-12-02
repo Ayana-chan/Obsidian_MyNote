@@ -132,12 +132,7 @@ functionName arg1 arg2 = arg1 + arg2
 > [!info]
 > `'`也是函数名的合法字符，常常使用单引号来区分一个稍经修改但差别不大的函数。
 
-没有参数的函数称之为定义或者名字，定义后不可修改:
-
-```haskell
-hello = "hello,world!"
-```
-
+<u>没有参数的函数</u>称之为**定义**(define)或者名字，定义后不可修改. 例如`otherwise`永远返回True.
 
 ## List 列表
 
@@ -146,11 +141,10 @@ Haskell中，List是最常用的数据结构，十分强大，可以解决许多
 ghci中可以使用`let a = 1`来定义常量，与脚本中`a = 1`相同。
 
 - 对于字符串来说，`"hello"`仅仅只是`['h','e','l','l','o']`的语法糖，也就是说字符串就是List。
-- 合并两个List，`l1 ++ l2`。实现中会遍历左边的List，对于长字符串或者列表不是很友好。
-- 使用`:`可以往列表前插入元素，`elem1 : list`。如果要使用`++`连接单个元素到List可以用`[elem1] ++ list`。
+- **合并两个List**，`l1 ++ l2`。实现中会遍历左边的List，对于长字符串或者列表不是很友好。
+- 使用`:`可以**把元素和列表合并**，`elem1 : list`。如果要使用`++`连接单个元素到List可以用`[elem1] ++ list`。
 - 实际上`[1, 2, 3]`就是`1:2:3:[]`的语法糖，也就是空列表依次在前面插入元素。
-- 按照索引取List元素：`[1, 2, 3] !! 2`，索引从0开始。越界将报错。
-- List同样可以存放List，不过List的元素类型是它的类型的一部分，需要类型匹配：`[1]:[[2]]`。
+- 按照**索引**取List元素：`[1, 2, 3] !! 2`，索引从0开始。越界将报错。
 - List内部元素可比较时，可以使用`> >= ==`等运算符比较大小，将会按元素依次比较。
 
 List常用函数：
@@ -195,9 +189,202 @@ List常用函数：
 - `replicate n value`重复一个值n次。
 
 
-## 函数相关语法
+## pattern matching 模式匹配
 
-### pattern matching 模式匹配
+赋值就会发生模式匹配, 分解数据到其他变量中.
+
+### let
+
+`let`可以定义局部变量. 
+
+`let [binding] in [expressions]`
+- 没`in`时, 就是简单的定义局部变量, 有局部生命周期.
+- 有`in`时, 在`binding`中绑定的名字**仅在`expressions`中可见**。
+
+如果要在一行中绑定多个名字, 如果要将多个名字排成一行可以用`;`隔开.
+
+```haskell
+main :: IO ()
+main = do
+	-- 局部变量
+	let x = 5
+	    y = 10
+	-- 局部函数
+    print (x + y) -- 15
+	let square n = n * n
+	print (square 4) -- 16
+```
+
+```haskell
+calcBmis :: (RealFloat a) => [(a, a)] -> [a]  
+calcBmis xs = [bmi | (w, h) <- xs, let bmi = w / h ^ 2, bmi >= 25.0]
+```
+
+有`in`时, let定义的东西就完全被交给了后面的`expressions`, 返回求得的值, 且定义的临时变量无法被外部访问. 
+
+```haskell
+main :: IO ()
+main = do
+  let r = let square x = x * x in (square 2, square 3)
+  print r -- (4, 9)
+```
+
+```haskell
+>>> let a = 100; b = 20 in a + b
+120
+```
+
+```haskell
+>>> let (a, b) = (100, 20) in a + b
+120
+```
+
+### case表达式
+
+语法：
+```haskell
+case expression of pattern1 -> result1
+                   pattern2 -> result2
+                   pattern3 -> result3
+                   ...
+```
+
+使用case检测List是否递增：
+```haskell
+increasing' :: Ord a => [a] -> Bool 
+increasing' xs = case xs of 
+  (x:y:ys) -> x <= y && increasing' (y:ys) 
+  _ -> True
+```
+
+> [!tip]
+> 函数参数模式匹配只能用于函数定义时，而`case`表达式可以用于任何地方。
+
+
+### 函数模式匹配
+
+函数的模式匹配是`case`表达式的语法糖.
+
+可以定义一个函数, 把函数名写很多次, 每一次的参数是不同的特殊形式 (如`[a]`或者`(a, b)`, 也可以是常数). 当把一个值传给这个函数时, 就会**按序**匹配**符合要求**的项, 值也被分解到该项的参数中. 类似match.
+
+因为必须要有返回值, 因此必须要让模式匹配**exhaustive**.
+
+```haskell
+describeNumber :: Int -> String
+describeNumber 0 = "Zero"
+describeNumber 1 = "One"
+describeNumber 2 = "Two"
+describeNumber _ = "Others"
+```
+
+定义单分支就相当于一次分解赋值:
+```haskell
+-- 对任意三元素元组取第二项
+second :: (a, b, c) -> b
+second (_, y, _) = y
+```
+
+因为`:`可以连接元素和List, 因此也可以在模式匹配中用来分离List两端的元素.
+
+```haskell
+-- 递归求list长度
+lengthList :: [a] -> Int
+lengthList [] = 0  -- 空列表
+lengthList (_:xs) = 1 + lengthList xs -- 取出一个元素就+1
+```
+
+使用模式匹配检查数组是否递增:
+```haskell
+increasing' :: Ord a => [a] -> Bool 
+increasing' (x:y:ys) = x <= y && increasing (y:ys)
+increasing' _ = True
+```
+
+### Guard 守卫
+
+使用guard来进行**判断分支**. <u>只能用于模式匹配</u>的一项当中. 使用等号.
+
+可以使用永真函数`otherwise`来让其exhaustive. 如果当前的guard尚未exhaust, 那么**剩下的情况都会交给下一个模式匹配**.
+
+如果只有单个分支, 就可以看成是模式匹配的一项的额外检查, 暴力的一个例子:
+```haskell
+grade :: Int -> String
+grade score = case score of
+    s | s >= 90 -> "优秀"      -- 使用守卫检查分数
+    s | s >= 80 -> "良好"
+    s | s >= 70 -> "中等"
+    s | s >= 60 -> "及格"
+    _           -> "不及格"   -- 默认情况
+```
+
+检查数组非空:
+```haskell
+checkLen :: [[Integer]] -> Bool
+checkLen p
+  | not (null p) = True
+  | otherwise = False
+```
+
+使用guard判断数组递增:
+```haskell
+increasing' :: (Ord a) => [a] -> Bool
+increasing' xs
+    | null xs = True
+    | head xs <= head (tail xs) = increasing' (tail xs)
+    | otherwise = False
+```
+
+```haskell
+-- 定义一个代数数据类型
+data Person = Person String Int  -- Person 包含姓名和年龄
+
+-- 定义一个函数，根据年龄返回不同的描述
+describePerson :: Person -> String
+describePerson (Person name age)
+    | age < 0 = "年龄不能为负数"
+    | age < 18 = name ++ " 是未成年人"
+    | age < 65 = name ++ " 是成年人"
+    | otherwise = name ++ " 是老年人"
+```
+
+```haskell
+-- 定义一个代数数据类型
+data Shape = Circle Float | Rectangle Float Float
+
+-- 定义一个函数，根据形状计算面积
+area :: Shape -> String
+area shape = case shape of
+    Circle r 
+        | r < 0     -> "半径不能为负数"
+        | otherwise -> "圆的面积是: " ++ show (pi * r * r)
+    Rectangle width height
+        | width < 0 || height < 0 -> "宽度和高度不能为负数"
+        | otherwise               -> "矩形的面积是: " ++ show (width * height)
+```
+
+### where
+
+在函数进行模式匹配前, 可以**定义或预处理数据**, 使用`where`实现.
+
+```haskell
+bmiTell :: (RealFloat a) => a -> a -> String  
+bmiTell weight height  
+    | bmi <= skinny = "You're underweight, you emo, you!"  
+    | bmi <= normal = "You're supposedly normal. Pffft, I bet you're ugly!"  
+    | bmi <= fat    = "You're fat! Lose some weight, fatty!"  
+    | otherwise     = "You're a whale, congratulations!"  
+    where bmi = weight / height ^ 2  
+          skinny = 18.5  
+          normal = 25.0  
+          fat = 30.0
+```
+
+## 递归
+
+
+
+
+
 
 
 
