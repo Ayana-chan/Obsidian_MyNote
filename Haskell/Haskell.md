@@ -108,7 +108,7 @@ typeclass定义了类型的行为, 类似于接口或trait.
 - `Integral` 整数，包括`Int`, `Integer`
 - `Floating` 浮点数，包括`Float`, `Double`
 
-在表示一个东西的type的时候, 有时候需要使用type variable, 但是又需要对其做出限定(即泛型约束), 那么就需要在`=>`左边写明每个type variable要属于哪些typeclass.
+在表示一个东西的type的时候, 有时候需要使用type variable, 但是又需要对其做出限定(即泛型约束), 那么就需要在`=>`**左边**写明每个type variable要**属于哪些typeclass** (这部分可以使用括号).
 ```haskell
 -- `==`二元函数对所有满足了Eq typeclass的类型适用
 (==) :: Eq a => a -> a -> Bool
