@@ -102,7 +102,7 @@ False :: Bool
 
 `Int`是普通的类似`usize`的整数, 而`Integer`是无界整数.
 
-函数type用`->`串起来, 最后一个是返回值, 前几个全是输入. 比如输入两个浮点数输出整数的函数的类型为`Float -> Float -> Int`.
+函数type用`->`串起来, 最后一个是返回值, 前几个全是输入. 比如输入两个浮点数输出整数的函数的类型为`Float -> Float -> Int`. 实际上, 是第一个为输入, 后面的合为一个输出, 详见[函数](Haskell/Haskell.md#函数).
 
 完整的type声明需要结合typeclass.
 
@@ -153,6 +153,132 @@ functionName arg1 arg2 = arg1 + arg2
 > `'`也是函数名的合法字符，常常使用单引号来区分一个稍经修改但差别不大的函数。
 
 <u>没有参数的函数</u>称之为**定义**(define)或者名字，定义后不可修改. 例如`otherwise`永远返回True.
+
+### Curry 柯里化
+
+实际上, Haskell的**所有函数都只能接收<u>一个</u>参数**, 因为有[**Curry (柯里化)**](函数式编程/函数式编程.md#Currying%20柯里化)的支持. 例如有一个"双参函数" `add :: a -> b -> c`, 在调用`add x y`时, 首先会把`x`传给`add`, 得到一个类型为`b -> c`的函数; 然后再把`y`传进去, 使之变成值`c`.
+
+> [!note]
+> `->`是**右结合**的.
+
+下面两个函数是等价的 (一般会要求写成前者):
+```haskell
+-- 用柯里化弄出个单参函数来定义自己
+max4 :: (Ord a, Num a) => a -> a
+max4 = max 4
+-- 自己要求一个参数, 但其余的定义只是个变量
+max4' :: (Ord a, Num a) => a -> a
+max4' x = max 4 x
+```
+
+由于右结合, 所以`a -> (a -> a)`与`a -> a -> a`等价. 也正因此可以认为, 函数定义是给等号右边的东西(可以是变量或函数)**在左侧按序增加若干参数**, 将其拼成更长的函数.
+
+定义`max4'' x = max x 4`即Curry了`max`函数的第二个参数, 显得也不是很流畅, 是普通情景下的Curry. 中缀函数也要这样手动柯里化:
+```haskell
+divBy10 :: Double -> Double
+divBy10 = (/10)
+divX :: Double -> Double
+divX = (10/)
+```
+
+> [!info]
+> 对于某些一元和二元运算符使用同一个符号的情况，比如`-`用作减号和负号，`(-4)`则表示值-4，而不是接受一个参数将参数减4的函数。属于例外，为了避免冲突的选择，要使用减号含义则可以使用`subtract`，负号含义和`negate`等价。
+
+> [!notice]
+> 当想把函数类型作为一个函数的返回值时, 要意识到`->`是右结合的, 因此如果函数内生成函数类型返回值的逻辑过于复杂时, 想想是不是可以把东西都放到参数里面, 通过柯里化的逻辑来实现.
+
+### 函数作为参数
+
+函数作为参数的时候就需要给`->`链加括号了, 如`(a -> a) -> a`表示 传入`a -> a`函数得到`a`变量 的函数.
+
+```haskell
+-- 传入一个双参函数和两个List, 把List元素一一对应应用到函数中
+zipWith' :: (t1 -> t2 -> a) -> [t1] -> [t2] -> [a]
+-- 存在空列表的情况, 停止递归
+zipWith' _ [] _ = []
+zipWith' _ _ [] = []
+-- 调用`f x y`得到单项结果并递归拼接
+zipWith' f (x:xs) (y:ys) = f x y : zipWith' f xs ys
+```
+
+### 常用高阶函数
+
+高阶函数：函数可以作为参数、返回值、赋给另一个变量。
+
+- `map :: (a -> b) -> [a] -> [b]` 映射一个列表到另一个列表。
+- `filter :: (a -> Bool) -> [a] -> [a]` 筛选符合条件的元素到结果列表。
+
+> [!note]
+>  `map` 和 `filter`等价于列表推导式.
+
+- `takeWhile :: (a -> Bool) -> [a] -> [a]` 按顺序取元素直到条件不满足。
+- `zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]` 将两个列表的对应元素应用函数后得到新列表。
+- `flip :: (a -> b -> c) -> b -> a -> c` 接受一个二元函数，将两个参数翻转并返回新的二元函数。
+
+fold系列操作把列表变成值.
+- foldl 可以把列表`[a]`从左到右聚合到初值`b`上, 且调用函数时初值在前元素在后.
+- foldl 可以把列表`[a]`从右到左(先取尾部)聚合到初值`b`上, 且调用函数时元素在前初值在后.
+```haskell
+foldl :: Foldable t => (b -> a -> b) -> b -> t a -> b
+foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
+```
+- `foldl1`和`foldr1`分别将首或尾元素作为初值.
+
+scan系列操作保留fold每次的结果, 替换原元素.
+```haskell
+scanl :: (b -> a -> b) -> b -> [a] -> [b]
+scanr :: (a -> b -> b) -> b -> [a] -> [b]
+```
+- `scanl1`和`scanr1`分别将首或尾元素作为初值.
+
+> [!note]
+> 多用`fold`和`scan`来减少类似for循环的递归.
+
+
+### lambda 匿名函数
+
+使用`\`定义lambda, 语法为`\args -> retval`. 用的时候一般用括号将整个匿名函数括起来.
+
+```haskell
+>>> zipWith (\x y -> x + y) [1, 2] [10, 100, 1]
+[11,102]
+>>> map (\x -> x ** x) [1, 2, 3, 4]
+[1.0,4.0,27.0,256.0]
+```
+
+> [!notice]
+> - `\x -> \y -> \z -> x * y * z` 完全等价于 `\x y z -> x * y * z` (类型为`Num a => a -> a -> a -> a`).
+> - `f = \x y -> f y x` 完全等价于`f x y = f y x` (类型为`(t1 -> t2 -> t3) -> t2 -> t1 -> t3`).
+> 
+> 因此不要随意把lambda表达式作为返回值.
+
+
+### `$` 函数调用符
+
+目的是让`$`右侧先进行求值再交给左侧. `f1 $ f2 x`等价于`f1 (f2 x)`. 因此其作用是减少括号的使用.
+
+```haskell
+-- 是个中缀函数
+($) :: (a -> b) -> a -> b
+f $ x = f x
+```
+
+具有最低优先级, 因此在表达式中加一个`$`就能将其一刀两断.
+
+`$`是**右结合**的, 达成分块执行的效果 (从右往左运行`$`隔出来的块).
+
+- 左侧不会是单纯变量, 否则就语法错误了(没有东西消耗这堆变量).
+- 如果右侧是单纯变量的话就没什么意义了, 相当于给参数列表加括号, 并不会发生什么改变.
+- 因此, 使用的时候, 左右两遍都得是函数或者表达式, 让右侧计算(Curry)完毕后再给左侧.
+
+`f (1 + 1)` 等价于 `f $ 1 + 1`.
+
+`$ x`可以**将变量变成函数**: 接受一个函数, 返回将`x`应用于传入的函数后得到的结果.
+```haskell
+>>> :t ($ 1)
+($ 1) :: Num a => (a -> b) -> b
+```
+
 
 ## List 列表
 
@@ -401,10 +527,50 @@ bmiTell weight height
 
 ## 递归
 
+无状态的纯函数编程无法使用循环, 因此必须使用递归.
 
+```haskell
+-- 求List最大项
+maximum' :: (Ord a) => [a] -> a
+maximum' [] = error "maximum a empty list"
+maximum' [x] = x
+maximum' (x:xs) = max x (maximum' xs)
+```
 
+```haskell
+-- 把一个数值重复数次组成List
+replicate' :: (Ord t, Num t) => t -> a -> [a]
+replicate' n x
+    | n <= 0 = []
+    | otherwise = x:replicate' (n-1) x
+```
 
+```haskell
+-- 取List的前数个元素组成新List
+take' :: (Ord a1, Num a1) => a1 -> [a2] -> [a2]
+take' n _
+    | n <= 0 = []
+take' _ [] = []
+take' n (x:xs) = x : take' (n-1) xs
+```
 
+```haskell
+-- 判断元素是否在List中
+elem' :: Eq t => t -> [t] -> Bool
+elem' a [] = False 
+elem' a (x:xs)
+    | x == a = True 
+    | otherwise = a `elem'` xs
+```
+
+递归时要注意最好有**尾递归**优化. 原本是循环迭代的算法写成递归形式似乎都能是尾递归, 毕竟不可能"回归"上次循环. 例如斐波那契数列的迭代版本($O(n)$复杂度)就能写成:
+```haskell
+fibonacci :: Integral a => a -> Integer -> Integer -> Integer
+fibonacci 0 a b = b
+fibonacci n a b = fibonacci (n - 1) (a + b) a
+fib' :: Integral a => a -> Integer
+fib' n = fibonacci n 1 0
+```
 
 
 
