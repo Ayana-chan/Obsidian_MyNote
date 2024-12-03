@@ -1,4 +1,4 @@
-
+[Haskell趣学指南\_w3cschool](https://www.w3cschool.cn/hsriti/)
 # 安装与使用
 
 使用科大源安装GHCup: [GHCup - USTC Mirror Help](https://mirrors.ustc.edu.cn/help/ghcup.html)
@@ -25,13 +25,16 @@ Error: [S-7282]
 
 直接运行haskell的工具.
 
-使用`:t`命令可以检测出其后跟的表达式的类型。
 - `:l :load` 加载(hs文件)
 - `:r :reload` 重载
 - `:t :type` 获取类型
 - `:i :info` 信息，针对函数、类型、类型类等。
 - `:k :kind` 得知一个类型的Kind。
 
+引入模块：
+```haskell
+:m module1 module2 module3
+```
 
 # stack
 
@@ -56,7 +59,7 @@ Haskell是惰性的，如非特殊说明，函数真正需要结果以前不会�
 
 所有的表达式都要求返回一个值. `if`语句也是个表达式, 因此必须有`else`.
 
-
+**type variable (类型变量)** 就是泛型, 由小写字母`a` `b` `c`等表示. 使用类型变量的函数称之为**多态函数**.
 
 
 ## 注释
@@ -106,9 +109,112 @@ False :: Bool
 
 完整的type声明需要结合typeclass.
 
-### type variable 类型变量
+### data 定义type
 
-就是泛型, 由小写字母`a` `b` `c`等表示. 使用类型变量的函数称之为**多态函数**.
+```haskell
+data NameOfType = ValueConstructor1 TypesOfParams1 | ... deriving (Typeclass1, Typeclass2, ...)
+```
+
+`=`右侧的 **Value Constructor (值构造子)** 使用`|`(或)来分割. 它们明确类型的所有可能取值. `True`, `[]`, `5`等都是**无参数**的value constructor. 
+
+value constructor是<u>跟着type一起声明</u>的, 可以理解为赋予了这种值结构以一个名字. 如果值构造子只有一个, 那么完全可以让type名和value constructor名相同. 
+
+value constructor 本质就是**函数** (而不是类型!). 名字要写成**大驼峰**.
+
+由无参value constructor组成的类型:
+```haskell
+data Bool = False | True
+```
+
+后面可以跟着`deriving`来表示派生, 例如:
+```haskell
+-- Shape类型的变量可以被输出到控制台
+data Shape = Circle Float Float Float | Rectangle Float Float Float Float deriving (Show)
+```
+
+上面这个`data`语句相当于定义了两个函数, 它们传入一定的参数就能得到一个Shape type的值; 同时, 它们本身就是对`Shape`这个type的定义 (即使用所有构造方式来定义类型本身). **定义type时所有参数都要填满** (不然函数是定义不出来的).
+```haskell
+Circle :: Float -> Float -> Float -> Shape   
+Rectangle :: Float -> Float -> Float -> Float -> Shape
+```
+
+由于一个type的value constructor是可穷举的, 因此可以使用**模式匹配**来区分属于一个type的变量的不同value constructor的情况, 并获取对应的value constructor的参数.
+
+计算`Shape`面积的函数可以使用模式匹配写成:
+```haskell
+surface :: Shape -> Float    surface (Circle _ _ r) = pi * r ^ 2    surface (Rectangle x1 y1 x2 y2) = (abs $ x2 - x1) * (abs $ y2 - y1)
+```
+
+`Shape`的另一种写法:
+```haskell
+-- 重名, 因为只有一个value constructor
+data Point = Point Float Float deriving (Show)    data Shape = Circle Point Float | Rectangle Point Point deriving (Show)
+```
+
+**导出value constructor**需要在type后面加`(xxx, xxx)`, 或者使用`(...)`导出所有该type的value constructor. 不导出值构造子就可以禁止模块外直接访问值内部变量, 或自行构造此值.
+```haskell
+module Shapes( 
+	Point(..), 
+	Shape(Rectangle, Circle), 
+	surface
+) where
+```
+
+### Record Syntax
+
+赋予 value constructor 的每一个参数以一个名字
+
+```haskell
+data Person = Person { firstName :: String   
+                     , lastName :: String   
+                     , age :: Int   
+                     , height :: Float   
+                     , phoneNumber :: String   
+                     , flavor :: String   
+                     } deriving (Show)
+```
+
+haskell就为每个名字自动生成一个函数, 以方便从类型中获取对应的值:
+```haskell
+ghci> :t flavor   
+flavor :: Person -> String   
+ghci> :t firstName   
+firstName :: Person -> String
+```
+
+> [!info]
+> 这种情况下, Show的打印也会带上名字.
+
+如果一个类型是多个 record syntax 使用`|`连接的, 那么取某一项的时候显然无法静态判断是否能取到, 如果取错了会运行时报错.
+```haskell
+data Shape
+  = Circle {radius :: Float}
+  | Rectangle {width :: Float, height :: Float}
+  deriving (Show)
+
+main :: IO ()
+main = do
+  -- Err: No match in record selector radius
+  let s = Rectangle 20 30
+  let rad = radius s
+  print rad
+```
+
+### 类型参数
+
+虽然要求填满value constructor的所有参数, 但依然可以为type 保留type variable(类似模板). 要在type后声明 type variable.
+
+```haskell
+-- 即 Option<T>
+data Maybe a = Nothing | Just a
+```
+
+> [!notice]
+> 不要在定义type的时候给type variable添加约束. 有约束应当在函数处写.
+
+### derive
+
+TODO
 
 
 ## typeclass 类型类
@@ -613,15 +719,69 @@ fib' :: Integral a => a -> Integer
 fib' n = fibonacci n 1 0
 ```
 
-# 模块
+# Module 模块
 
 
+标准库: [Haskell Hierarchical Libraries](https://downloads.haskell.org/ghc/latest/docs/libraries/)
+
+检索库内容(包括第三方库): [Hoogle](https://hoogle.haskell.org/)
+
+[5 Modules](https://www.haskell.org/onlinereport/haskell2010/haskellch5.html)
+
+## 导入模块
+
+库使用**大驼峰**命名, 使用`.`来表示路径.
+
+许多东西都位于`Prelude`模块, 自动引入.
+
+```haskell
+import module1 module2 module3
+```
+
+使用`(xxx)`来引入部分：
+```haskell
+import module1 (func1, func2)
+```
+
+使用`hiding`来exclude部分：
+```haskell
+import module1 hiding (func)
+```
+
+> [!info]
+> `Prelude`模块虽然已经自动引入，但仍可以手动只引入其中部分符号或者屏蔽其中部分符号：`import Prelude hiding (max)`.
+
+使用`qualified`, 使得使用时必须使用名称`modulename.xxx`, 防止名字冲突:
+```haskell
+import qualified modulename
+```
+
+使用`as`起别名:
+```haskell
+import qualified Data.Map as M hiding (map)
+```
 
 
+## 编写模块
 
+开头定义模块名, 使用`(xxx, xxx)`来进行**export**(没写在这里的都是**私有**项), 后跟`where`. 必须写在开头, import写在后面. 可以把import进来的东西进行export.
 
+```haskell
+-- 文件名: MyModule.hs
+module MyModule (
+	greet, 
+	add, 
+	Shape(...) -- 导出所有 value constructor
+) where
 
+greet :: String -> String
+greet name = "Hello, " ++ name ++ "!"
 
+add :: Int -> Int -> Int
+add x y = x + y
+
+data Shape = Circle Point Float | Rectangle Point Point deriving (Show)
+```
 
 
 

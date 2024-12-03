@@ -42,5 +42,33 @@ print(data)
 ```
 
 
+# Embeddable Python
+
+[Embeddable Python在工程实践上的使用 | Soulter's Blog](https://blog.soulter.top/posts/embbed-python.html)
+
+官网下载时选择 Embeddable Package 可以下载精简版python, 它可以集成到项目中.
+
+默认没有pip, 需要[下载`get-pip.py`文件](https://bootstrap.pypa.io/get-pip.py), 放到python根目录, 然后运行`python get-pip.py`.
+
+> [!info]
+> windows默认会先使用当前工作目录下的可执行文件, 再去环境变量里面找. 使用`python -c "import sys; print(sys.executable)"`查看python目录, 或看`where python`的第一个.
+
+`cd`到`Scripts`文件夹中才能运行`pip`.
+
+要把`python38._pth`里的`import site`的注释给去掉, 才能让其正常工作.
+
+要在`python38._pth`里面加上项目路径(没有import): `../MyProName`.
+
+项目里使用相对路径的话就容易在使用Embeddable Python的时候报错.
+
+
+
+
+
+
+
+
+
+
 
 
