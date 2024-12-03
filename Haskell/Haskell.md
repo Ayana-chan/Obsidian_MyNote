@@ -7,6 +7,10 @@
 
 换源下载完GHCup后, 依然会卡在其他安装, 此时可以安全把安装窗口关掉, 换源后手动`ghcup install xxx` 和 `cabal update`等.
 
+stack是独立的, 就算外部安装了GHC (The Glasgow Haskell Compiler), 在stack里面还得再装一次.
+
+使用`STACK_UP`环境变量设置stack的位置(包和配置文件), 并且只有第一次跑过了stack才会新建文件夹. 要注意重启电脑防止一些终端读不到环境变量而误操作.
+
 stack可能会在代码有warning时出现以下编译报错, 但是原地再次编译就没事了(此时不会报warning), 应该是终端编码问题,使其不兼容warning的情况.
 ```bash
 Error: [S-7282]
@@ -29,14 +33,30 @@ Error: [S-7282]
 - `:k :kind` 得知一个类型的Kind。
 
 
+# stack
+
+```bash
+stack new my-project
+cd my-project
+stack setup
+stack build
+stack exec my-project-exe
+```
+
 # 语法
 ## 基础
 
 Haskell是强类型和静态类型的。
 
+Haskell是惰性的，如非特殊说明，函数真正需要结果以前不会被求值，加上引用透明，可以把程序看做数据的一系列变形。也就是说惰性语言中的计算只是一组初始数据和变换公式。
+
+在函数式编程语言中，变量一旦指定就不可以更改了，在命令式编程语言中，变量表示状态，如果状态不可变，那么能做的事情将非常有限。而函数式编程语言中，变量的含义更接近数学中的变量，`x=5`表示`x`就是`5`，而不是`x`处于`5`这个状态。
+
 函数式编程语言的一般思路：先取一个初始集合，对其进行变形、执行过滤条件（map and reduce）得到最终结果。
 
 所有的表达式都要求返回一个值. `if`语句也是个表达式, 因此必须有`else`.
+
+
 
 
 ## 注释
