@@ -93,7 +93,7 @@ Haskell是惰性的，如非特殊说明，函数真正需要结果以前不会�
 
 **大驼峰**命名.
 
-每个表达式都有type, "a的类型为A"表示为`a::A`.
+每个表达式都有type. "a的类型为A"表示为`a :: A`. 函数调用也是表达式, 因此在函数调用末尾加上`:: A`可以限制函数返回类型.
 
 ```haskell
 'a' :: Char
@@ -109,24 +109,48 @@ False :: Bool
 
 完整的type声明需要结合typeclass.
 
-### data 定义type
+### Type Constructor
 
 ```haskell
 data NameOfType = ValueConstructor1 TypesOfParams1 | ... deriving (Typeclass1, Typeclass2, ...)
 ```
 
-`=`右侧的 **Value Constructor (值构造子)** 使用`|`(或)来分割. 它们明确类型的所有可能取值. `True`, `[]`, `5`等都是**无参数**的value constructor. 
+`data`表达式的`=`左侧是一个 **Type Constructor (类型构造子)**, 它是可以有type参数的. **无参数**的 type constructor 称作 **nullary** type constructor, **简称 type**.
+
+带参数的 type constructor 的参数具有声明作用, 使得`=`右边的 value constructor 可以使用这些 type variable.
+
+```haskell
+-- nullary type constructor
+data Bool = True | False
+-- 带参数的 type constructor
+data Tree a = Tip | Node a (Tree a) (Tree a)
+```
+
+```haskell
+-- 即 Option<T>
+data Maybe a = Nothing | Just a
+```
+
+> [!notice]
+> 不要在定义type的时候给type variable添加约束. 有约束应当在函数处写.
+
+type constructor 可以看做<u>类型意义</u>上的<u>函数</u>, 但不是haskell的函数 (在lisp里面它直接就是普通函数).
+
+### Value Constructor
+
+`data`表达式的`=`右侧的 **Value Constructor (或Data Constructor, 值构造子)** 使用`|`(或)来分割. 它们明确类型的所有可能取值. **无参数**的value constructor (例如`True`, `[]`, `5`) 称作**nullary** value constructor. 
 
 value constructor是<u>跟着type一起声明</u>的, 可以理解为赋予了这种值结构以一个名字. 如果值构造子只有一个, 那么完全可以让type名和value constructor名相同. 
 
-value constructor 本质就是**函数** (而不是类型!). 名字要写成**大驼峰**.
+value constructor 就是个**函数** (不过其名字与参数可以被模式匹配)(而不是类型!). 名字要写成**大驼峰**.
 
 由无参value constructor组成的类型:
 ```haskell
 data Bool = False | True
 ```
 
-后面可以跟着`deriving`来表示派生, 例如:
+后面可以跟着`deriving`来表示**派生 typeclass**.
+ 
 ```haskell
 -- Shape类型的变量可以被输出到控制台
 data Shape = Circle Float Float Float | Rectangle Float Float Float Float deriving (Show)
@@ -162,7 +186,7 @@ module Shapes( 
 
 ### Record Syntax
 
-赋予 value constructor 的每一个参数以一个名字
+特殊的value constructor定义方式, 赋予 value constructor 的每一个参数以一个名字
 
 ```haskell
 data Person = Person { firstName :: String   
@@ -200,21 +224,41 @@ main = do
   print rad
 ```
 
-### 类型参数
+### deriving
 
-虽然要求填满value constructor的所有参数, 但依然可以为type 保留type variable(类似模板). 要在type后声明 type variable.
+type deriving typeclass.
 
+如果type里所有的value constructor都是nullary的, 显然有前后继, 且有边界, 因此可以直接deriving `Enum` 和 `Bounded`.
 ```haskell
--- 即 Option<T>
-data Maybe a = Nothing | Just a
+data Day = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday    
+           deriving (Eq, Ord, Show, Read, Bounded, Enum)
 ```
 
-> [!notice]
-> 不要在定义type的时候给type variable添加约束. 有约束应当在函数处写.
+也就可以作比较:
+```haskell
+ghci> Saturday == Sunday   
+False   
+ghci> Saturday == Saturday   
+True   
+ghci> Saturday > Friday   
+True   
+ghci> Monday `compare` Wednesday   
+LT
+```
 
-### derive
+### type 类型别名
 
-TODO
+使用`type`给类型起别名.
+
+```haskell
+type String = [Char]
+```
+
+可以保留type variable:
+```haskell
+type AssocList k v = [(k,v)]
+```
+
 
 
 ## typeclass 类型类
@@ -241,6 +285,12 @@ typeclass定义了类型的行为, 类似于接口或trait.
 -- 
 elem :: (Foldable t, Eq a) => a -> t a -> Bool
 ```
+
+type class 可以被 type 给 deriving.
+
+### 定义 type class
+
+TODO
 
 
 ## 函数
