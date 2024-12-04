@@ -28,7 +28,7 @@ Error: [S-7282]
 - `:l :load` 加载(hs文件)
 - `:r :reload` 重载
 - `:t :type` 获取类型
-- `:i :info` 信息，针对函数、类型、类型类等。
+- `:i :info` 信息，针对函数、类型、类型类(能看到有哪些instance)等。
 - `:k :kind` 得知一个类型的Kind。
 
 引入模块：
@@ -120,9 +120,9 @@ data NameOfType = ValueConstructor1 TypesOfParams1 | ... deriving (Typeclass1, T
 带参数的 type constructor 的参数具有声明作用, 使得`=`右边的 value constructor 可以使用这些 type variable.
 
 ```haskell
--- nullary type constructor
+-- `Bool` 是 nullary type constructor
 data Bool = True | False
--- 带参数的 type constructor
+-- `Tree` 是带参数的 type constructor
 data Tree a = Tip | Node a (Tree a) (Tree a)
 ```
 
@@ -224,9 +224,11 @@ main = do
   print rad
 ```
 
-### deriving
+### 派生 typeclass
 
-type deriving typeclass.
+#### deriving
+
+type 可以通过在data表达式末尾使用 `deriving` 来**自动**实现 typeclass.
 
 如果type里所有的value constructor都是nullary的, 显然有前后继, 且有边界, 因此可以直接deriving `Enum` 和 `Bounded`.
 ```haskell
@@ -245,6 +247,33 @@ True
 ghci> Monday `compare` Wednesday   
 LT
 ```
+
+#### instance
+
+可以使用`instance`关键字来**手动**实现typeclass, 即自定义实现各个所需函数的实现:
+```haskell
+import Prelude hiding ((/=), (==)) -- 排除默认符号
+
+data TrafficLight = Red | Yellow | Green
+instance Eq' TrafficLight where
+	-- 对`Eq'`要求的`==`中缀函数进行模式匹配
+    Red == Red = True
+    Green == Green = True
+    Yellow == Yellow = True
+    _ == _ = False
+```
+
+支持对带有type variable的type进行instance实现, 从而对<u>所有满足要求</u>的type提供实现.
+
+支持用`=>`对type variable进行**约束**, 在`=>` **左边**要求其实现哪些typeclass.
+
+```haskell
+instance (Eq' m) => (Eq' (Maybe m)) where
+  Just x == Just y = x == y
+  Nothing == Nothing = True
+  _ == _ = False
+```
+
 
 ### type 类型别名
 
@@ -288,9 +317,28 @@ elem :: (Foldable t, Eq a) => a -> t a -> Bool
 
 type class 可以被 type 给 deriving.
 
-### 定义 type class
+### 定义 typeclass
 
-TODO
+使用`class`关键字来定义typeclass. 如下`Eq`定义, `a`是一个类型变量, 表示任意满足了`Eq` typeclass的类型. `where`后规定`Eq`所要求的若干函数的**类型声明**, 下面的<u>函数定义不是必须</u>的.
+
+```haskell
+class Eq a where
+    (==) :: a -> a -> Bool
+    (/=) :: a -> a -> Bool
+    x == y = not (x /= y)
+    x /= y = not (x == y)
+```
+
+支持使用`=>`声明typeclass的**派生关系**, 即要求能实现当前typeclass的类型必须满足另一个typeclass的约束 (`=>`<u>右边</u>是要声明的typeclass, 左边是父typeclass):
+```haskell
+-- `Num` 是 `Eq` 的子typeclass
+class (Eq a) => Num a where
+    ...
+```
+
+typeclass内提供的函数的定义是其提供的**默认实现**. 如`Eq`, 其中`==`默认使用`/=`实现, `/=`默认使用`==`实现. 这要求使用者要提供其中一个函数的新实现, 从而为其自动实现另一个函数 (否则就会出现死递归).
+
+
 
 
 ## 函数
