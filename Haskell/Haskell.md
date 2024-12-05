@@ -66,11 +66,33 @@ Haskell是惰性的，如非特殊说明，函数真正需要结果以前不会�
 
 ```haskell
 -- 单行注释
+
 {-
 多行注释
 -}
 ```
 
+在`{- -}`里面使用`>>>`可以进行计算求值, 值会显示在下一行. 注意不要写死循环!
+```haskell
+{-
+>>> fib' 10
+55
+>>> fib' 100
+354224848179261915075
+>>> fib' 300
+222232244629420445529739893461909967206666939096499764990979600
+>>> fib' (50 :: Integer)
+12586269025
+>>> fib' (100 :: Int)
+3736710778780434371
+-}
+
+fibonacci :: Integral a => a -> Integer -> Integer -> Integer
+fibonacci 0 a b = b
+fibonacci n a b = fibonacci (n - 1) (a + b) a
+fib' :: Integral a => a -> Integer
+fib' n = fibonacci n 1 0
+```
 
 ## 运算符
 
@@ -499,6 +521,12 @@ scanr :: (a -> b -> b) -> b -> [a] -> [b]
 f $ x = f x
 ```
 
+一般来说, 用于表示"调用后面的函数":
+```haskell
+-- 表达的意思是"先翻转line然后再输出"
+putStrLn $ reverse line
+```
+
 - 具有 **<u>最低</u>优先级**, 因此在表达式中加一个`$`就能将其一刀两断.
 - `$`是**右结合**的, 达成分块执行的效果 (从右往左运行`$`隔出来的块).
 - 这使得所有分块都会先自己完成计算(最低优先级导致)(Curry或函数组合), 然后从右往左折叠计算(右结合导致)(单纯Curry).
@@ -601,6 +629,7 @@ List常用函数：
 
 ## Range
 
+
 - `[1..20]`即表示`[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]`。
 - 给出指定第二个元素将使用第一个和第二个元素的间隔作为步长，默认是1`[1,3..20]`表示`[1,3,5,7,9,11,13,15,17,19]`。
 - 步长可以为负，到达不了上限则生成列表为空：`[1,0..10]`为`[]`。
@@ -611,11 +640,7 @@ List常用函数：
 - `replicate n value`重复一个值n次。
 
 
-## pattern matching 模式匹配
-
-赋值就会发生模式匹配, 分解数据到其他变量中.
-
-### let
+## let
 
 `let`可以定义局部变量. 
 
@@ -642,6 +667,27 @@ calcBmis :: (RealFloat a) => [(a, a)] -> [a]
 calcBmis xs = [bmi | (w, h) <- xs, let bmi = w / h ^ 2, bmi >= 25.0]
 ```
 
+可以写一长串:
+```haskell
+roadStep :: (Path, Path) -> Section -> (Path, Path)  
+roadStep (pathA, pathB) (Section a b c) =   
+    let priceA = sum $ map snd pathA  
+        priceB = sum $ map snd pathB  
+        forwardPriceToA = priceA + a  
+        crossPriceToA = priceB + b + c  
+        forwardPriceToB = priceB + b  
+        crossPriceToB = priceA + a + c  
+        newPathToA = if forwardPriceToA <= crossPriceToA  
+                        then (A,a):pathA  
+                        else (C,c):(B,b):pathB  
+        newPathToB = if forwardPriceToB <= crossPriceToB  
+                        then (B,b):pathB  
+                        else (C,c):(A,a):pathA  
+    in  (newPathToA, newPathToB)  
+```
+
+### 有 `in` 的情况
+
 有`in`时, let定义的东西就完全被交给了后面的`expressions`, 返回求得的值, 且定义的临时变量无法被外部访问. 
 
 ```haskell
@@ -660,6 +706,10 @@ main = do
 >>> let (a, b) = (100, 20) in a + b
 120
 ```
+
+## pattern matching 模式匹配
+
+赋值就会发生模式匹配, 分解数据到其他变量中.
 
 ### case表达式
 
@@ -848,6 +898,113 @@ fib' :: Integral a => a -> Integer
 fib' n = fibonacci n 1 0
 ```
 
+
+## I/O
+
+### IO Action
+
+```haskell
+main :: IO ()
+main = do
+    putStrLn "hello, input your name:"
+    name <- getLine 
+    putStrLn ("Hey ! " ++ name ++ " Yo ! what's up !")
+```
+
+一个IO action是一个会造成副作用的动作, 常常是读取**输入<u>或者</u>输出**到屏幕, 同时会返回值. `IO`这个type constructor是单参数的, 而其type参数即为IO action的**返回值type**. IO action像盒子一样包装着返回值, 只能通过绑定来读取返回值.
+
+> [!info]
+> `main`函数要求返回`IO ()`, 因此要么在最后一行写输出, 要么使用`return ()`来满足其要求.
+
+在标准输出打印字符串没有具体的值返回, 用`()`(即unit)代表.
+```haskell
+Prelude> :t putStrLn
+putStrLn :: String -> IO ()
+Prelude> :t putStrLn "hello" 
+putStrLn "hello" :: IO ()
+```
+
+读取输入的`getLine`函数, 其type参数就是String:
+```haskell
+ghci> :t getLine 
+getLine :: IO String
+```
+
+使用`<-`把IO action的结果**绑定**到一个名字上, 例如`name <- getLine`. 不使用返回值, 因为这样就能防止出现"调用两次同一个函数却得到了不同的返回值"的<u>不纯</u>情况. 一个IO action必须使用`<-`后, <u>才能影响普通程序部分</u>(普通部分没有IO类型, 因此直接使用的话无法过类型检查).
+
+> [!tip]
+> `putStrLn`没有返回值因此也不会对其绑定.
+
+任何一段程序一旦依赖着 I/O 数据的话, 那段程序也会被视为 **I/O code**.
+
+TODO: 学完monad整理这个, 尤其是do block的意思
+
+一个IO action会在被**绑定到 `main` 这个名字**并且执行程序的时候**触发**. 
+
+do block中, 最后一个 action 不能绑定任何名字.
+
+### return
+
+
+使用`return`把一个变量使用IO action包裹.
+
+> [!notice]
+> 只有包裹作用, 不会改变控制流!!!
+
+```haskell
+-- 这么做没什么意义, 效果等价于 let a = "hello"
+a <- return "hello"
+```
+
+可以在一些返回值为IO action的函数里面生成返回值.
+
+例: 一行一行地读输入, 一读到就按词翻转后输出:
+```haskell
+main = do
+    line <- getLine
+    if null line
+	    -- 读到空行, 退出
+	    -- main 要求返回`IO ()`, 因此这里使用`return ()`
+        then return ()
+        else do
+            putStrLn $ reverseWords line
+            main -- 递归
+
+-- 按词翻转
+reverseWords :: String -> String
+reverseWords = unwords . map reverse . words
+```
+
+### TODO 利用工具函数
+
+sequence, when
+
+
+# 库, 工具与技巧
+
+## when
+
+位于`Control.Monad`.
+
+传入一个Bool和一个参数为`()`的Applicative, 返回的是同样的Applicative. 如果Bool为True, 则执行.
+
+```haskell
+ghci> import Control.Monad
+ghci> :t when
+when :: Applicative f => Bool -> f () -> f ()
+```
+
+```haskell
+import Control.Monad
+
+main = do
+    c <- getChar
+    when (c /= ' ') $ do
+        putChar c
+        main
+```
+
+
 # Module 模块
 
 
@@ -855,7 +1012,8 @@ fib' n = fibonacci n 1 0
 
 检索库内容(包括第三方库): [Hoogle](https://hoogle.haskell.org/)
 
-[5 Modules](https://www.haskell.org/onlinereport/haskell2010/haskellch5.html)
+[haskell org Modules](https://www.haskell.org/onlinereport/haskell2010/haskellch5.html)
+
 
 ## 导入模块
 
