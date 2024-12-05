@@ -29,7 +29,7 @@ Error: [S-7282]
 - `:r :reload` 重载
 - `:t :type` 获取类型
 - `:i :info` 信息，针对函数、类型、类型类(能看到有哪些instance)等。
-- `:k :kind` 得知一个类型的Kind。
+- `:k :kind` 得知一个类型的Kind。其中`Type`使用`*`表示.
 
 引入模块：
 ```haskell
@@ -111,11 +111,14 @@ False :: Bool
 
 ### Type Constructor
 
+`Int`, `Map` 等都是 **type constructor (类型构造子)**, 有type参数. **无参数**的 type constructor 称作 **nullary** type constructor, **简称 type**.
+
+type constructor 可以看做<u>类型意义</u>上的<u>函数</u>, 但不是haskell的函数 (在lisp里面它直接就是普通函数). type constructor 也可以被**Curry**, 例如 `Map Int` 依然是一个单参数的type constructor. 在[kind](Haskell/Haskell.md#kind)当中它确实就写作函数type的形式.
+
+`data`表达式的`=`左侧就是一个 type constructor:
 ```haskell
 data NameOfType = ValueConstructor1 TypesOfParams1 | ... deriving (Typeclass1, Typeclass2, ...)
 ```
-
-`data`表达式的`=`左侧是一个 **Type Constructor (类型构造子)**, 它是可以有type参数的. **无参数**的 type constructor 称作 **nullary** type constructor, **简称 type**.
 
 带参数的 type constructor 的参数具有声明作用, 使得`=`右边的 value constructor 可以使用这些 type variable.
 
@@ -134,7 +137,7 @@ data Maybe a = Nothing | Just a
 > [!notice]
 > 不要在定义type的时候给type variable添加约束. 有约束应当在函数处写.
 
-type constructor 可以看做<u>类型意义</u>上的<u>函数</u>, 但不是haskell的函数 (在lisp里面它直接就是普通函数).
+
 
 ### Value Constructor
 
@@ -311,7 +314,6 @@ typeclass定义了类型的行为, 类似于接口或trait.
 ```haskell
 -- `==`二元函数对所有满足了Eq typeclass的类型适用
 (==) :: Eq a => a -> a -> Bool
--- 
 elem :: (Foldable t, Eq a) => a -> t a -> Bool
 ```
 
@@ -338,6 +340,35 @@ class (Eq a) => Num a where
 
 typeclass内提供的函数的定义是其提供的**默认实现**. 如`Eq`, 其中`==`默认使用`/=`实现, `/=`默认使用`==`实现. 这要求使用者要提供其中一个函数的新实现, 从而为其自动实现另一个函数 (否则就会出现死递归).
 
+
+## kind
+
+**type constructor** 的"类型" 称为 **Kind**, 被表示成函数type的样子, 其中"变量type"是`Type`, 表示任意type. 在ghci中`Type`使用`*`表示.
+```haskell
+Int     :: Type
+Maybe   :: Type -> Type
+[]      :: Type -> Type
+(->)    :: Type -> Type -> Type
+Either  :: Type -> Type -> Type
+Map     :: Type -> Type -> Type
+Map Int :: Type -> Type
+```
+
+当type的定义要求其某个 type variable 为含参type constructor 时, 其kind会将其表示出来(不过本来`Type`就能表示`Type -> Type`). 此时可以将其<u>类比</u>为**将函数作为参数的函数**.
+
+```haskell
+-- `:: b a` 表示 `b` 是一个单参type variable
+ghci> data Frank a b = Frank {frankField :: b a}
+ghci> :k Frank
+-- a 写作 k
+-- b 写作 k -> *
+Frank :: k -> (k -> *) -> *
+```
+
+**typeclass** 的 kind 是: 传入一个`Type`, 给出一个`Constraint`.
+```haskell
+Eq :: Type -> Constraint
+```
 
 
 
