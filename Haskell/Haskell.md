@@ -61,6 +61,10 @@ Haskell是惰性的，如非特殊说明，函数真正需要结果以前不会�
 
 **type variable (类型变量)** 就是泛型, 由小写字母`a` `b` `c`等表示. 使用类型变量的函数称之为**多态函数**.
 
+## 杂项概念
+
+**Lifting** 指的是把一个函数转化出一个新函数, 新函数有新配置 (往往更强).
+
 
 ## 注释
 
@@ -95,6 +99,8 @@ fib' n = fibonacci n 1 0
 ```
 
 ## 运算符
+
+`(xxx)`可以**把运算符弄成函数**(或者说形式上变成前缀式), 例如`(+) 2 3`就是`2 + 3`, `(->) a b`就是`a -> b`.
 
 
 优先级|左结合|不结合|右结合
@@ -134,6 +140,9 @@ False :: Bool
 ### Type Constructor
 
 `Int`, `Map` 等都是 **type constructor (类型构造子)**, 有type参数. **无参数**的 type constructor 称作 **nullary** type constructor, **简称 type**.
+
+> [!tip]
+> 看样子 type constructor 才是广义上的类型.
 
 type constructor 可以看做<u>类型意义</u>上的<u>函数</u>, 但不是haskell的函数 (在lisp里面它直接就是普通函数). type constructor 也可以被**Curry**, 例如 `Map Int` 依然是一个单参数的type constructor. 在[kind](Haskell/Haskell.md#kind)当中它确实就写作函数type的形式.
 
@@ -249,7 +258,7 @@ main = do
   print rad
 ```
 
-### 派生 typeclass
+### 实现 typeclass
 
 #### deriving
 
@@ -339,7 +348,7 @@ typeclass定义了类型的行为, 类似于接口或trait.
 elem :: (Foldable t, Eq a) => a -> t a -> Bool
 ```
 
-type class 可以被 type 给 deriving.
+type class 可以被 type 给[实现](Haskell/Haskell.md#实现%20typeclass), 实现了typeclass的type称作 **instance**.
 
 ### 定义 typeclass
 
@@ -552,7 +561,7 @@ x & f = f x
 
 即**复合函数**$(f \circ g)(x) = f(g(x))$, 要求把`g(x)`的结果作为`f`的自变量进一步求值.
 
-使用`.`来定义复合函数. 使用`f . g`定义$f(g(x))$, 先调用后者.
+使用`.`来定义复合函数. 使用`f . g`定义$f(g(x))$, 先调用后者. 要求都为**单参**.
 ```haskell
 -- 定义
 (.) :: (b -> c) -> (a -> b) -> a -> c
@@ -978,6 +987,96 @@ reverseWords = unwords . map reverse . words
 ### TODO 利用工具函数
 
 sequence, when
+
+
+## Functor
+
+Functor是一个typeclass, 只有kind为`* -> *`的type constructor才能实现它. 它要求可以对内部包含的变量进行操作(称作 **map over**), 且操作返回类型是任意类型.
+
+```haskell
+type Functor :: (* -> *) -> Constraint
+class Functor f where
+  -- 对内部变量进行操作
+  fmap :: (a -> b) -> f a -> f b
+  -- 把变量塞入内部
+  (<$) :: a -> f b -> f a
+```
+
+> [!tip]
+> 这种map over操作是彻底的, 例如List `[a]`, 在加工过后一个`a`都不能留, 才能变成`[b]`.
+
+由于只能接收单参数的type constructor, 因此需要把多参type constructor给Curry了才能实现, 例如`Either`只能实现`instance Functor (Either a) where`.
+
+IO action可以对内部的值进行操作, 最后还是能通过`return`得到新的IO action. 它以Functor的形式实现这个功能:
+```haskell
+instance Functor IO where
+    fmap f action = do
+        result <- action
+        return (f result)
+
+-- 直接读到翻转后的行
+line <- fmap reverse getLine
+
+-- 更复杂的加工, 利用function combination
+line <- fmap (intersperse '-' . reverse . map toUpper) getLine 
+```
+
+function combination 把一个`a -> b`的函数变成一个`a -> c`的函数, 只需要给出一个`b -> c`的函数. 显然这也是个Functor, 可以定义成:
+```haskell
+instance Functor ((->) r) where  
+    fmap f g = (\x -> f (g x))  
+    -- 或者直接写成
+    -- fmap = (.)
+```
+
+> [!note]
+> 分析: 对任意`g :: r -> a`, 给出`f :: a -> b`, 返回一个单参函数`r -> b` (这里`x :: r`),  该函数的内容是先执行`g`再执行`f`.
+
+`fmap`可以被理解为对Functor的内部元素进行映射变换, 但也可以理解为是一种**lifting操作**. 显然, 它接受<u>一个</u>function, 然后返回这样的一个function: 接受一个Functor, 返回加工后的Functor. 也就是说, `fmap`是一个把`a -> b`变成`f a -> f b`的**lifting操作**.
+
+```haskell
+-- fmap把 `a -> [a]` lift到了 `f a -> f [a]`
+ghci> :t replicate 3
+replicate 3 :: a -> [a]
+ghci> :t fmap (replicate 3)
+fmap (replicate 3) :: Functor f => f a -> f [a]
+```
+
+> [!tip]
+> 我们可以把 functor 看作**输出具有 context 的值**。例如说 Just 3 就是输出 3，但他又带有一个可能没有值的 context。\[1,2,3\] 输出三个值，1,2 跟 3，同时也带有可能有多个值或没有值的 context。(+3) 则会带有一个依赖于参数的 context。
+> 
+> 如果你把 functor 想做是输出值这件事，那你可以把 map over 一个 functor 这件事想成**在 functor 输出的后面再多加一层转换**。当我们做 fmap (+3) \[1,2,3\] 的时候，我们是把 (+3) 接到 \[1,2,3\] 后面，所以当我们查看任何一个 list 的输出的时候，(+3) 也会被套用在上面。另一个例子是对函数做 map over。当我们做 fmap (+3) (*3)，我们是把 (+3) 这个转换套用在 (*3) 后面。这样想的话会很自然就会把 fmap 跟函数合成关联起来（fmap (+3) (*3) 等价于 (+3) . (*3)，也等价于 \x -> ((x*3)+3)），毕竟我们是接受一个函数 (*3) 然后套用 (+3) 转换。最后的结果仍然是一个函数，只是当我们喂给他一个数字的时候，他会先乘上三然后做转换加上三。这基本上就是函数合成在做的事。
+
+
+### Functor Law
+
+Functor应当满足两个Functor Law. 这是设计上的要求, 不会被编译器检查.
+
+Functor Law 1: `fmap id = id`. 
+
+由于`id`函数(`id :: a -> a`)只是非常单纯地把输入原封不动扔出来(`\x -> x`), 因此Functor应当满足: 对一个Functor使用`id`函数进行`fmap`, 等价于对Functor本身调用`id`函数. 简单来说, 使用`id`的`fmap`应该什么都不做.
+
+> [!note]
+> 这防止了额外固定操作. 例如, `Maybe`应当在`Nothing`的时候什么都不做, 但如果在进行`fmap`的时候, 把`Nothing`全换成某个默认值, 那也<u>不会违背</u>Functor typeclass, 但是<u>违背</u>了 Functor Law 1. 显然这种替换完全不符合使用者的本意. `fmap`时固定改变其他变量的值也违背了本意. 
+
+Functor Law 2: `fmap (f . g) = fmap f . fmap g`. 
+
+或者说对任意Functor `F`, 有`fmap (f . g) F = fmap f (fmap g F)`. 这就要求对Functor的多次`fmap`等价于所有操作函数的复合函数的单次`fmap`. 
+
+> [!note]
+> 这防止了内部操作的行为不完全局限于传入的操作函数. 例如, 如果`fmap g`会让元素`x`变成`g x + 1`, 那么再次`fmap f`的时候就会得到`(f $ g x + 1) + 1`; 但是`fmap (f . g)` 得到的是`(f g x) + 1`, 显然不等价. 应当老老实实应用函数, 不允许有额外的操作.
+
+## Applicative
+
+
+
+
+
+
+
+
+
+
 
 
 # 库, 工具与技巧
