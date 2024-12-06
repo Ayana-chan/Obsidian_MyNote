@@ -1100,7 +1100,7 @@ instance Functor ((->) r) where
 > [!tip]
 > `(->) r`可以看做`F a`, 因此fmap是对`a`(返回值)做加工.
 
-目标函数为双参函数的例子. (下面的type variable实际上是一样的, 只是为了区分) 其中`(+) :: a -> b -> c`被看做是`a -> (b -> c)`的"单参函数, 用其对`*100 :: d -> a`的结果进行加工, 于是替换了`a`, 得到了`d -> (b -> c)`, 是一个就算执行了乘法后还需要等待一个参数以执行加法的双参函数, 即`x * 100 + y`.
+目标函数为双参函数的例子. 此时就可以看出, `g x`只是被用来Curry `f` 的第一个参数. 从Functor的类型角度分析, (下面的type variable实际上是一样的, 只是为了区分) 其中`(+) :: a -> b -> c`被看做是`a -> (b -> c)`的"单参函数", 用其对`*100 :: d -> a`的结果进行加工, 即加工`a`, 最终成为`d -> (b -> c)`, 是一个就算执行了乘法后还需要等待一个参数以执行加法的双参函数, 即`x * 100 + y`.
 ```haskell
 ghci> let simple = (+) <$> (*100)
 ghci> :t simple
@@ -1183,7 +1183,9 @@ instance Applicative Maybe where
 
 可见, `<*>`是在内部使用<u>模式匹配</u>把`a -> b`提取出来之后, `fmap`到`f a`里面. 
 
-`pure f <*> x` **等价于** `fmap f x`, 得到的都是被Functor包裹的被传了参数`x`的函数`f`. 显然对于参数足够多的`f`, 对Functor包裹的参数`x`, `y`等, 有下面三个等价写法(最后一个利用了`<$>`写出了**Applicative Style**):
+### Applicative Style
+
+`pure f <*> x` **等价于** `fmap f x`, 得到的都是被Functor包裹的被传了参数`x`的函数`f`. 显然对于参数足够多的`f`, 对Functor包裹的参数`x`, `y`等, 有下面三个等价写法. 
 ```haskell
 -- 先让`pure f`原地造出 Applicative Functor
 pure f <*> x <*> y <*> ...
@@ -1194,8 +1196,10 @@ fmap f x <*> y <*> ...
 fmap f <$> x <*> y <*> ...
 ```
 
+其中最后一个利用了`<$>`写出了**applicative style**, 即开头的`f`只是个普通函数, 然后`<$>`起手, 接着连续`<*>`, 其效果就像是把所有Functor里面的东西拿出来传参给`f`.
+
 > [!tip]
-> 要求所有参数使用同一个Applicative Functor.
+> Applicative Style 要求所有参数使用同一个Applicative Functor.
 
 
 ### 例子
@@ -1224,11 +1228,10 @@ myAction :: IO String
 myAction = (++) <$> getLine <*> getLine  
 ```
 
----
 
-`(->) r`要求传入`f :: r -> a -> b` (即`(->) r (a -> b)`), 以生成这样一个函数: 对于传入的参数`x :: r`, 先计算原函数`y = g x :: a`(`g :: r -> a`), 再计算`f x y :: b`, 从而最终得到`r -> b`. 换句话说, `f`和`g`都是针对归根结底地`r`的函数, 但是使用`f <*> g`把`g`的计算结果作为`f`的参数.
+### 函数(`->`)的Applicative
 
-从Applicative的语义上分析, `f` 是 `a -> (b -> c)`, 是包裹了<u>函数</u>的Functor. `g` 是 `a -> b`, 是包裹了<u>变量</u>的普通Functor. Applicative 把 `f` 给apply到 `g` 上, 就得到了 `a -> c`.
+`(->) r`要求传入`f :: r -> a -> b` (即`(->) r (a -> b)`), 以生成这样一个函数: 对于传入的参数`x :: r`, 先计算原函数`y = g x :: a`(`g :: r -> a`), 再计算`f x y :: b`, 从而最终得到`r -> b`. 
 
 ```haskell
 instance Applicative ((->) r) where  
@@ -1238,14 +1241,26 @@ instance Applicative ((->) r) where
     f <*> g = \x -> f x (g x)  
 ```
 
-f的首个参数使用`fmap`一个函数来实现. 例如, 对`(+)`, 使用fmap把它应用到单参函数`+3`上, 就得到了双参函数`(3 + x) + y` (`x :: a`, `y :: b`, 则其为`a -> b -> c`); 然后将其apply给单参函数`*100 :: a -> b`, 则`b`被替换成`c`, 即 `*100`是传入`x`, 得到`y`, 然后被`(3 + x) + y`计算得到结果的. 因此最终式子为`(3 + x) + (100 * x)`.
+从Applicative的角度在类型上分析, `f` 是 `a -> (b -> c)`, 是包裹了<u>函数</u> `b -> c`的Functor. `g` 是 `a -> b`, 是包裹了<u>变量</u>`b`的普通Functor. Applicative 把 `f` 给apply到 `g` 上, 就得到了 `a -> c`. 
+
+**总结来说**, `f x`得到Functor包含的函数, `g x`则得到Functor包含的变量; 要将该变量传给函数完成转化, 则为`f x (g x)`.
+
+<u>连续</u>的apply就像是在`f x`后面一直加函数对应的**匿名函数表达式**. 但<u>函数类型上</u>, 函数参数一直被Curry, 会<u>每次apply缩减一个</u>, 直到<u>剩余一个</u>各匿名函数表达式通用的参数.
+
+f的<u>首个参数</u>可以通过`fmap`一个函数来实现. `fmap f g`得到`f'`为`f (g x)`, 那么接下来的apply`f' <*> h` 就得到 `f' x (h x)`, 也就是`f (g x) (h x)`. 
+
+因此, **applicative style** 就体现为这样的功能: 把后面的所有函数都绑到首个多参函数的各个参数上.
+
+例如, 对双参函数`(+)`, 把单参函数 `(+3)` 和 `*100` 对应的匿名函数作为`(+)`的两个参数, 形成了`(x + 3) + (x * 100)`.
 ```haskell
+-- (+) <$> (+3) :: Num a => a -> a -> a
 ghci> let cal = (+) <$> (+3) <*> (*100)
 ghci> :t cal
 cal :: Num b => b -> b
 ghci> cal 5
 508
 ```
+
 
 
 # 库, 工具与技巧
