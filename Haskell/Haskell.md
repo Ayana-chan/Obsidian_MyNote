@@ -116,6 +116,9 @@ fib' n = fibonacci n 1 0
 1|`>` `>>=`||
 0|||`$` `$!` `seq`
 
+`<*>`是左结合
+
+
 
 ## type 类型
 
@@ -176,7 +179,7 @@ data Maybe a = Nothing | Just a
 
 value constructor是<u>跟着type一起声明</u>的, 可以理解为赋予了这种值结构以一个名字. 如果值构造子只有一个, 那么完全可以让type名和value constructor名相同. 
 
-value constructor 就是个**函数** (不过其名字与参数可以被模式匹配)(而不是类型!). 名字要写成**大驼峰**.
+value constructor 就是个**函数** (不过其名字与参数可以被模式匹配)(而不是类型!). 名字要写成**大驼峰**. 一样可以被Curry, 也可以被赋值给其他函数.
 
 由无参value constructor组成的类型:
 ```haskell
@@ -606,6 +609,23 @@ ghci中可以使用`let a = 1`来定义常量，与脚本中`a = 1`相同。
 - 按照**索引**取List元素：`[1, 2, 3] !! 2`，索引从0开始。越界将报错。
 - List内部元素可比较时，可以使用`> >= ==`等运算符比较大小，将会按元素依次比较。
 
+使用`zipWith`来完成"两个List按元素计算"的操作:
+```haskell
+-- 定义两个列表
+list1 :: [Int]
+list1 = [1, 2, 3]
+
+list2 :: [Int]
+list2 = [4, 5, 6]
+
+-- 使用zipWith将两个列表的元素相加
+sumLists :: [Int]
+sumLists = zipWith (+) list1 list2  -- 结果是 [5, 7, 9]
+
+main :: IO ()
+main = print sumLists  -- 输出: [5, 7, 9]
+```
+
 List常用函数：
 - `head`返回首部，即首元素，结果是元素，列表为空将触发异常。
 - `tail`返回尾部，去掉首个元素后的部分，结果是列表，列表为空将触发异常。
@@ -633,6 +653,15 @@ List常用函数：
 ```haskell
 [[x, y] | x <- [1..10], y <- [10..20], x + y == 20]
 -- [[1,19],[2,18],[3,17],[4,16],[5,15],[6,14],[7,13],[8,12],[9,11],[10,10]]
+```
+
+### Non-deterministic 视角
+
+List可以被看做是 **non-deterministic 的计算**, 即计算结果不知道是什么(范围是里面的所有元素). 那么两个 non-deterministic 的计算互相再计算的话, 就更加具有不确定性了. 例如, 3长度的两个List相乘得到的是9个元素:
+```haskell
+ghci> [ x*y | x <- [2,5,10], y <- [8,10,11]] 
+-- 使用 applicative style 的话更明显
+ghci> (*) <$> [2,5,10] <*> [8,10,11][16,20,22,40,50,55,80,100,110]
 ```
 
 
@@ -955,10 +984,10 @@ do block中, 最后一个 action 不能绑定任何名字.
 ### return
 
 
-使用`return`把一个变量使用IO action包裹.
+使用`return`**函数**把一个变量使用IO action包裹.
 
 > [!notice]
-> 只有包裹作用, 不会改变控制流!!!
+> 是一个函数!!!只有包裹作用, 不会改变控制流!!!
 
 ```haskell
 -- 这么做没什么意义, 效果等价于 let a = "hello"
@@ -966,6 +995,18 @@ a <- return "hello"
 ```
 
 可以在一些返回值为IO action的函数里面生成返回值.
+
+例: 封装一个读取函数, 它读两行然后拼成一行输出:
+```haskell
+myAction :: IO String  
+myAction = do  
+    a <- getLine  
+    b <- getLine  
+    return $ a ++ b
+
+-- 或者使用applicative style
+myAction = (++) <$> getLine <*> getLine
+```
 
 例: 一行一行地读输入, 一读到就按词翻转后输出:
 ```haskell
@@ -994,6 +1035,7 @@ sequence, when
 Functor是一个typeclass, 只有kind为`* -> *`的type constructor才能实现它. 它要求可以对内部包含的变量进行操作(称作 **map over**), 且操作返回类型是任意类型.
 
 ```haskell
+ghci> :i Functor
 type Functor :: (* -> *) -> Constraint
 class Functor f where
   -- 对内部变量进行操作
@@ -1006,31 +1048,6 @@ class Functor f where
 > 这种map over操作是彻底的, 例如List `[a]`, 在加工过后一个`a`都不能留, 才能变成`[b]`.
 
 由于只能接收单参数的type constructor, 因此需要把多参type constructor给Curry了才能实现, 例如`Either`只能实现`instance Functor (Either a) where`.
-
-IO action可以对内部的值进行操作, 最后还是能通过`return`得到新的IO action. 它以Functor的形式实现这个功能:
-```haskell
-instance Functor IO where
-    fmap f action = do
-        result <- action
-        return (f result)
-
--- 直接读到翻转后的行
-line <- fmap reverse getLine
-
--- 更复杂的加工, 利用function combination
-line <- fmap (intersperse '-' . reverse . map toUpper) getLine 
-```
-
-function combination 把一个`a -> b`的函数变成一个`a -> c`的函数, 只需要给出一个`b -> c`的函数. 显然这也是个Functor, 可以定义成:
-```haskell
-instance Functor ((->) r) where  
-    fmap f g = (\x -> f (g x))  
-    -- 或者直接写成
-    -- fmap = (.)
-```
-
-> [!note]
-> 分析: 对任意`g :: r -> a`, 给出`f :: a -> b`, 返回一个单参函数`r -> b` (这里`x :: r`),  该函数的内容是先执行`g`再执行`f`.
 
 `fmap`可以被理解为对Functor的内部元素进行映射变换, 但也可以理解为是一种**lifting操作**. 显然, 它接受<u>一个</u>function, 然后返回这样的一个function: 接受一个Functor, 返回加工后的Functor. 也就是说, `fmap`是一个把`a -> b`变成`f a -> f b`的**lifting操作**.
 
@@ -1047,6 +1064,72 @@ fmap (replicate 3) :: Functor f => f a -> f [a]
 > 
 > 如果你把 functor 想做是输出值这件事，那你可以把 map over 一个 functor 这件事想成**在 functor 输出的后面再多加一层转换**。当我们做 fmap (+3) \[1,2,3\] 的时候，我们是把 (+3) 接到 \[1,2,3\] 后面，所以当我们查看任何一个 list 的输出的时候，(+3) 也会被套用在上面。另一个例子是对函数做 map over。当我们做 fmap (+3) (*3)，我们是把 (+3) 这个转换套用在 (*3) 后面。这样想的话会很自然就会把 fmap 跟函数合成关联起来（fmap (+3) (*3) 等价于 (+3) . (*3)，也等价于 \x -> ((x*3)+3)），毕竟我们是接受一个函数 (*3) 然后套用 (+3) 转换。最后的结果仍然是一个函数，只是当我们喂给他一个数字的时候，他会先乘上三然后做转换加上三。这基本上就是函数合成在做的事。
 
+使用`<$>`来当做`fmap`的中缀形式:
+```haskell
+(<$>) :: (Functor f) => (a -> b) -> f a -> f b  
+f <$> x = fmap f x  
+```
+
+
+### 例子
+
+**IO action** 可以对内部的值进行操作, 最后还是能通过`return`得到新的IO action. 它以Functor的形式实现这个功能:
+```haskell
+instance Functor IO where
+    fmap f action = do
+        result <- action
+        return (f result)
+
+-- 直接读到翻转后的行
+line <- fmap reverse getLine
+
+-- 更复杂的加工, 利用function combination
+line <- fmap (intersperse '-' . reverse . map toUpper) getLine 
+```
+
+---
+
+**function combination** 把一个`a -> b`的函数变成一个`a -> c`的函数, 只需要给出一个`b -> c`的函数. 显然这也是个Functor, 它定义成: 把原函数`g :: r -> a`应用参数`x :: r`的结果变成目标函数`f :: a -> b`的参数, 从而最终得到`r -> b`.
+```haskell
+instance Functor ((->) r) where  
+    fmap f g = (\x -> f (g x))  
+    -- 或者直接写成
+    -- fmap = (.)
+```
+
+> [!tip]
+> `(->) r`可以看做`F a`, 因此fmap是对`a`(返回值)做加工.
+
+目标函数为双参函数的例子. (下面的type variable实际上是一样的, 只是为了区分) 其中`(+) :: a -> b -> c`被看做是`a -> (b -> c)`的"单参函数, 用其对`*100 :: d -> a`的结果进行加工, 于是替换了`a`, 得到了`d -> (b -> c)`, 是一个就算执行了乘法后还需要等待一个参数以执行加法的双参函数, 即`x * 100 + y`.
+```haskell
+ghci> let simple = (+) <$> (*100)
+ghci> :t simple
+simple :: Num a => a -> a -> a
+ghci> simple 4 5
+405
+```
+
+---
+
+Functor的内部可以是一个**函数**, 例如函数List:
+```haskell
+[\x -> x + 1, \x -> x * 2] :: Num a => [a -> a]
+```
+
+如果fmap的操作函数是一个多参函数的话, 就可以让Functor内部的变量变成函数(变量用来Curry了). 例如从`[a]`使用`a -> a -> a`使其变成`[a -> a]`:
+```haskell
+fmap (*) [1,2,3,4] :: Num a => [a -> a]
+```
+
+对Functor内函数(`a -> b`)传`xxx` (`xxx :: a`)作为**参数**时, 可以采用`fmap (\f f xxx)` 来完成, 如:
+```haskell
+ghci> let a = fmap (*) [1,2,3,4]  
+ghci> :t a  
+a :: [Integer -> Integer] 
+-- 对任一内部函数, 把`9`传进去
+ghci> fmap (\f -> f 9) a  
+[9,18,27,36]  
+```
 
 ### Functor Law
 
@@ -1068,15 +1151,101 @@ Functor Law 2: `fmap (f . g) = fmap f . fmap g`.
 
 ## Applicative
 
+> [!info]
+> 其完整名称应该叫 Applicative Functor, 形容词 + 名词.
+
+对于一个内部为函数的Functor `F (a -> b)`, 函数的传参可以使用`fmap (\f f xxx)`来完成; 但是, 如果没有`xxx: a`, 而只有另一个Functor `yyy :: G a`呢? 换句话说, 如何对`Functor (a -> b)`以`Functor a`进行map over? 最暴力的解法是手动模式匹配, 但显然不美观.
+
+Applicative typeclass实现了这个功能. **只有实现了Functor的type才能实现Applicative**.
+
+```haskell
+ghci> :i Applicative
+type Applicative :: (* -> *) -> Constraint
+class Functor f => Applicative f where
+  pure :: a -> f a
+  (<*>) :: f (a -> b) -> f a -> f b
+  GHC.Base.liftA2 :: (a -> b -> c) -> f a -> f b -> f c
+  (*>) :: f a -> f b -> f b
+  (<*) :: f a -> f b -> f a
+```
+
+`pure` 可以**把一个变量塞进Applicative Functor里面**; 或者说: 把一个普通值放到一个默认 context 下, 且它是<u>能包含这个值的最小的context</u>. 
+
+`<*>` (叫做**apply**) (**左结合**)把`f a`应用到了`f (a -> b)`上, 产生了`f b`, 也就是上面所说的功能. 但也可以看做是把`f (a -> b)`给变成`f a -> f b`, 即把Applicative内部的函数变成Applicative之间的函数.
+
+`Maybe`的Applicative实现:
+```haskell
+instance Applicative Maybe where  
+    pure = Just  
+    Nothing <*> _ = Nothing  
+    (Just f) <*> something = fmap f something
+```
+
+可见, `<*>`是在内部使用<u>模式匹配</u>把`a -> b`提取出来之后, `fmap`到`f a`里面. 
+
+`pure f <*> x` **等价于** `fmap f x`, 得到的都是被Functor包裹的被传了参数`x`的函数`f`. 显然对于参数足够多的`f`, 对Functor包裹的参数`x`, `y`等, 有下面三个等价写法(最后一个利用了`<$>`写出了**Applicative Style**):
+```haskell
+-- 先让`pure f`原地造出 Applicative Functor
+pure f <*> x <*> y <*> ...
+-- 先使用`fmap f x`造出 Applicative Functor
+fmap f x <*> y <*> ...
+-- 利用`<$>`. Applicative style.
+-- 这些都相当于`f x y ...`的Functor参数版本.
+fmap f <$> x <*> y <*> ...
+```
+
+> [!tip]
+> 要求所有参数使用同一个Applicative Functor.
 
 
+### 例子
 
+```haskell
+ghci> [(+),(*)] <*> [1,2] <*> [3,4] 
+[4,5,5,6,3,4,6,8]
+```
 
+---
 
+List的 applicative style:
+```haskell
+ghci> (++) <$> ["ha","heh","hmm"] <*> ["?","!","."]  
+["ha?","ha!","ha.","heh?","heh!","heh.","hmm?","hmm!","hmm."] 
+ghci> (*) <$> [2,5,10] <*> [8,10,11] 
+-- 等价于: [ x*y | x <- [2,5,10], y <- [8,10,11]]
+[16,20,22,40,50,55,80,100,110]
+```
 
+---
 
+IO action也是个Applicative, 可以对内部返回值进行直接操作. 例如对两次读取直接进行拼接从而产生新的IO action:
+```haskell
+myAction :: IO String  
+myAction = (++) <$> getLine <*> getLine  
+```
 
+---
 
+`(->) r`要求传入`f :: r -> a -> b` (即`(->) r (a -> b)`), 以生成这样一个函数: 对于传入的参数`x :: r`, 先计算原函数`y = g x :: a`(`g :: r -> a`), 再计算`f x y :: b`, 从而最终得到`r -> b`.
+
+换句话说, `f`和`g`都是针对归根结底地`r`的函数, 但是使用`f <*> g`把`g`的计算结果作为`f`的参数.
+
+```haskell
+instance Applicative ((->) r) where  
+	-- 永远返回x的最小context
+    pure x = (\_ -> x)  
+    -- g对参数的计算结果被传到f上
+    f <*> g = \x -> f x (g x)  
+```
+
+f的首个参数使用`fmap`一个函数来实现. 例如, 对双参函数`(+)`, 使用fmap把 TODO
+```haskell
+ghci> let cal = (+) <$> (+3) <*> (*100)
+ghci> :t cal
+cal :: Num b => b -> b
+ghci> cal 5
+508
+```
 
 
 # 库, 工具与技巧
