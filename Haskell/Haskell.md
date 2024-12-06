@@ -1249,7 +1249,7 @@ instance Applicative ((->) r) where
 
 f的<u>首个参数</u>可以通过`fmap`一个函数来实现. `fmap f g`得到`f'`为`f (g x)`, 那么接下来的apply`f' <*> h` 就得到 `f' x (h x)`, 也就是`f (g x) (h x)`. 
 
-因此, **applicative style** 就体现为这样的功能: 把后面的所有函数都绑到首个多参函数的各个参数上.
+因此, **applicative style** 就体现为这样的功能: 把后面的所有函数逻辑都绑到首个多参函数的各个参数上.
 
 例如, 对双参函数`(+)`, 把单参函数 `(+3)` 和 `*100` 对应的匿名函数作为`(+)`的两个参数, 形成了`(x + 3) + (x * 100)`.
 ```haskell
@@ -1261,7 +1261,15 @@ ghci> cal 5
 508
 ```
 
-
+利用`\x y z -> [x,y,z]`把参数列表化, 可以看出在applicative style下被足够Curry的此函数变成了`a -> [a]`, 其中每一项都是按序指定的对应函数.
+```haskell
+ghci> let argList = \x y z -> [x,y,z]
+-- argList :: a -> a -> a -> [a]
+ghci> let funcList = argList <$> (+3) <*> (*2) <*> (/2)
+-- funcList :: Fractional a => a -> [a]
+ghci> funcList 5
+[8.0,10.0,2.5]
+```
 
 # 库, 工具与技巧
 
