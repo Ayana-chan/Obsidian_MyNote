@@ -1173,7 +1173,12 @@ class Functor f => Applicative f where
 
 `pure` 可以**把一个变量塞进Applicative Functor里面**; 或者说: 把一个普通值放到一个默认 context 下, 且它是<u>能包含这个值的最小的context</u>. 
 
-`<*>` (叫做**apply**) (**左结合**)把`f a`应用到了`f (a -> b)`上, 产生了`f b`, 也就是上面所说的功能. 但也可以看做是把`f (a -> b)`给变成`f a -> f b`, 即把Applicative内部的函数**lift**成Applicative之间的函数.
+`<*>` (叫做**apply**) (**左结合**)把`f a`应用到了`f (a -> b)`上, 产生了`f b`, 也就是上面所说的功能. 但也可以看做是把`f (a -> b)`给变成`f a -> f b`, 即把Applicative内部的函数**lift**成Applicative之间的函数. 
+
+> [!notice]
+> 同一个Applicative才能apply. 也因此, 一个type的apply行为会非常明确, 可以通过看其实现源码来确定.
+
+
 
 ### Applicative Style
 
@@ -1200,7 +1205,7 @@ fmap f <$> x <*> y <*> ...
 其中最后一个利用了`<$>`写出了**applicative style**, 即开头的`f`只是个普通函数, 然后`<$>`起手, 接着连续`<*>`, 其效果就像是把所有Functor里面的东西拿出来传参给`f`.
 
 > [!tip]
-> Applicative Style 要求所有参数使用同一个Applicative Functor.
+> Applicative Style 依然要求所有参数使用同一个Applicative Functor.
 
 
 ### 例子
@@ -1215,29 +1220,56 @@ instance Applicative Maybe where
 
 可见, 其`<*>`实现是在内部使用<u>模式匹配</u>把`a -> b`提取出来之后, `fmap`到`f a`里面. 
 
----
-
-```haskell
-ghci> [(+),(*)] <*> [1,2] <*> [3,4] 
-[4,5,5,6,3,4,6,8]
-```
+只要apply的**任一方**为`Nothing`, 则结果为`Nothing`. 因为如果是主动方为`Nothing`, 则无法提取需要用于`fmap`的函数; 如果被动方为`Nothing`, 则`fmap`结果为`Nothing`.
 
 ---
 
 List的apply会生成所有可能的组合, 这可以使用[Non-deterministic的视角](Haskell/Haskell.md#Non-deterministic%20视角)来理解.
 
 ```haskell
+instance Applicative [] where  
+    pure x = [x]  
+    fs <*> xs = [f x | f <- fs, x <- xs] 
+```
+
+```haskell
+-- 等价于 [x y | x <- [(+3),(*2)], y <- [7,8]]
 ghci> [(+3),(*2)] <*> [7,8]
 [10,11,14,16]
+```
+
+```haskell
+-- 先生成了`[10+, 20+, 10*, 20*]`, 然后分别应用到3和4上
+ghci> [(+),(*)] <*> [10,20] <*> [3,4] 
+[13,14,23,24,30,40,60,80]
 ```
 
 它的 applicative style:
 ```haskell
 ghci> (++) <$> ["ha","heh","hmm"] <*> ["?","!","."]  
 ["ha?","ha!","ha.","heh?","heh!","heh.","hmm?","hmm!","hmm."] 
+-- 等价于: [ x y | x <- [2*,5*,10*], y <- [8,10,11]]
 ghci> (*) <$> [2,5,10] <*> [8,10,11] 
--- 等价于: [ x*y | x <- [2,5,10], y <- [8,10,11]]
 [16,20,22,40,50,55,80,100,110]
+-- 等价于: [ x y | x <- [1:,2:,3:], y <- [[4,5,6],[7,8,9]]]
+ghci> (:) <$> [1, 2, 3] <*> [[4,5,6],[7,8,9]]
+[[1,4,5,6],[1,7,8,9],[2,4,5,6],[2,7,8,9],[3,4,5,6],[3,7,8,9]]
+```
+
+**ZipList** type 是List的一个包装(包一层单参 type constructor), 位于`Control.Applicative`, 目的是以另一种形式实现Applicative, 让apply函数变成**一一对应匹配(和`zipWith`一样)** 而不是完全组合. 使用`getZipList`从中取出所含的List.
+
+```haskell
+instance Applicative ZipList where  
+	pure x = ZipList (repeat x)  
+	ZipList fs <*> ZipList xs = ZipList (zipWith (\f x -> f x) fs xs)  
+```
+
+```haskell
+ghci> :m Control.Applicative
+ghci> let zl1 = ZipList [1,2,3]
+ghci> let zl2 = ZipList [50,100,150]
+ghci> getZipList $ (+) <$> zl1 <*> zl2
+[51,102,153]
 ```
 
 ---
@@ -1265,7 +1297,7 @@ instance Applicative ((->) r) where
 
 **总结来说**, `f x`得到Functor包含的函数, `g x`则得到Functor包含的变量; 要将该变量传给函数完成转化, 则为`f x (g x)`.
 
-<u>连续</u>的apply就像是在`f x`后面一直加函数对应的**匿名函数表达式**. 但<u>函数类型上</u>, 函数参数一直被Curry, 会<u>每次apply缩减一个</u>, 直到<u>剩余一个</u>各匿名函数表达式通用的参数.
+<u>连续</u>的apply就像是在`f x`后面一直加函数对应的**匿名函数表达式**(正如普通apply在其后添加变量一样). 但<u>函数类型上</u>, 函数参数一直被Curry, 会<u>每次apply缩减一个</u>, 直到<u>剩余一个</u>各匿名函数表达式通用的参数.
 
 f的<u>首个参数</u>可以通过`fmap`一个函数来实现. `fmap f g`得到`f'`为`f (g x)`, 那么接下来的apply`f' <*> h` 就得到 `f' x (h x)`, 也就是`f (g x) (h x)`. 
 
@@ -1281,15 +1313,73 @@ ghci> cal 5
 508
 ```
 
-利用`\x y z -> [x,y,z]`把参数列表化, 可以看出在applicative style下被足够Curry的此函数变成了`a -> [a]`, 其中每一项都是按序指定的对应函数.
+利用`(,,)`把参数元组化, 可以看出在applicative style下被足够Curry的此函数变成了`a -> (a, a, a)`, 其中元组的每一项都是<u>按序绑定</u>的对应函数将会计算出来的.
 ```haskell
-ghci> let argList = \x y z -> [x,y,z]
--- argList :: a -> a -> a -> [a]
-ghci> let funcList = argList <$> (+3) <*> (*2) <*> (/2)
--- funcList :: Fractional a => a -> [a]
+ghci> let funcList = (,,) <$> (+3) <*> (*2) <*> (/2)
+-- funcList :: Fractional a => a -> (a, a, a)
 ghci> funcList 5
-[8.0,10.0,2.5]
+(8.0,10.0,2.5)
 ```
+
+### liftA2
+
+其实现就是applicative style, 内涵一个函数和两个变量. 其参数为**一个双参函数和两个 Applicative Functor**. 其目的是将其封装为一个lifting操作, 即给出普通双参函数, 将其lift成 Applicative Functor的双参函数. 或者说, `liftA2`使一个双参函数可以直接<u>无视Functor的包装</u>, 直接对内部进行操作.
+
+```haskell
+liftA2 :: (Applicative f) => (a -> b -> c) -> f a -> f b -> f c 
+liftA2 f a b = f <$> a <*> b
+```
+
+例如, 有`3 : [4,5] = [3,4,5]`, 那么想要把`Just 3`和`Just [4,5]`合并, 就需要使用`liftA2`把`:`给lift一下:
+```haskell
+ghci> liftA2 (:) (Just 3) (Just [4,5])
+Just [3,4,5]
+```
+
+### sequenceA
+
+把元素为Applicative的List `[f a]` 给变成 普通元素的List的Applicative `f [a]`.
+
+```haskell
+sequenceA :: (Applicative f) => [f a] -> f [a]  
+sequenceA [] = pure []  
+sequenceA (x:xs) = (:) <$> x <*> sequenceA xs  
+```
+
+可见, 实现方式是通过递归, 使用`x:xs`把元素一个一个取出来, 使用`(:) <$> x`将其变成了 包含一个把`x`合并到新接收到的`[a]`上的函数的Applicative. 而其本身也返回的是`Applicative [a]`, 因此可以通过递归调用来将子串的返回值进行apply来完成目标功能.
+
+也可以使用fold实现该功能. 使用`liftA2 (:)`把`:` lift成了能处理Applicative包裹下的列表操作的函数, 于是就能简单地使用fold, 最后也能得到Applicative包裹下的结果列表.
+```haskell
+sequenceA = foldr (liftA2 (:)) (pure [])
+```
+
+如果`sequenceA`的参数是函数列表`[a -> b]`的话, 就会生成`a -> [b]`, 即接收一个参数, 将其应用到List中的每个函数上, 形成结果List.
+```haskell
+ghci> sequenceA [(+3),(+2),(+1)] 3 
+[6,5,4]
+```
+
+`Maybe`中只要有`Nothing`就只会得到`Nothing`, 因为`xxx <*> Nothing`永远返回`Nothing`:
+```haskell
+ghci> sequenceA [Just 3, Just 2, Just 1]  
+Just [3,2,1]  
+ghci> sequenceA [Just 3, Nothing, Just 1]  
+Nothing  
+```
+
+List之间的lifting后的 `:` 也依然会出现完全组合:
+```haskell
+ghci> sequenceA [[1,2,3],[4,5,6]]  
+[[1,4],[1,5],[1,6],[2,4],[2,5],[2,6],[3,4],[3,5],[3,6]]  
+ghci> sequenceA [[1,2,3],[4,5,6],[3,4,4],[]]  
+[]
+ghci> sequenceA [[1,2,3],[4,5,6], [7,8,9]]
+[[1,4,7],[1,4,8],[1,4,9],[1,5,7],[1,5,8],[1,5,9],[1,6,7],[1,6,8],[1,6,9],[2,4,7],[2,4,8],[2,4,9],[2,5,7],[2,5,8],[2,5,9],[2,6,7],[2,6,8],[2,6,9],[3,4,7],[3,4,8],[3,4,9],[3,5,7],[3,5,8],[3,5,9],[3,6,7],[3,6,8],[3,6,9]]
+```
+
+
+
+
 
 # 库, 工具与技巧
 
@@ -1298,6 +1388,7 @@ ghci> funcList 5
 位于`Control.Monad`.
 
 传入一个Bool和一个参数为`()`的Applicative, 返回的是同样的Applicative. 如果Bool为True, 则执行.
+TODO
 
 ```haskell
 ghci> import Control.Monad
@@ -1314,6 +1405,17 @@ main = do
         putChar c
         main
 ```
+
+## 构造元组
+
+`(,,)` 等价于 `\x y z -> (x,y,z)`, 即把各的参数分别写成元组的每一项. `,`可以写任意数量个.
+
+```haskell
+ghci> (,,,) 1 2 3 4
+(1,2,3,4)
+```
+
+
 
 
 # Module 模块
