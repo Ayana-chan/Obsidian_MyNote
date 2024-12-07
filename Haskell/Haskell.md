@@ -1100,6 +1100,8 @@ instance Functor ((->) r) where
 > [!tip]
 > `(->) r`可以看做`F a`, 因此fmap是对`a`(返回值)做加工.
 
+可以认为`g x`这一表达式是为了取出`g`的返回值, 然后把它扔给`f`加工.
+
 目标函数为双参函数的例子. 此时就可以看出, `g x`只是被用来Curry `f` 的第一个参数. 从Functor的类型角度分析, (下面的type variable实际上是一样的, 只是为了区分) 其中`(+) :: a -> b -> c`被看做是`a -> (b -> c)`的"单参函数", 用其对`*100 :: d -> a`的结果进行加工, 即加工`a`, 最终成为`d -> (b -> c)`, 是一个就算执行了乘法后还需要等待一个参数以执行加法的双参函数, 即`x * 100 + y`.
 ```haskell
 ghci> let simple = (+) <$> (*100)
@@ -1171,21 +1173,20 @@ class Functor f => Applicative f where
 
 `pure` 可以**把一个变量塞进Applicative Functor里面**; 或者说: 把一个普通值放到一个默认 context 下, 且它是<u>能包含这个值的最小的context</u>. 
 
-`<*>` (叫做**apply**) (**左结合**)把`f a`应用到了`f (a -> b)`上, 产生了`f b`, 也就是上面所说的功能. 但也可以看做是把`f (a -> b)`给变成`f a -> f b`, 即把Applicative内部的函数变成Applicative之间的函数.
-
-`Maybe`的Applicative实现:
-```haskell
-instance Applicative Maybe where  
-    pure = Just  
-    Nothing <*> _ = Nothing  
-    (Just f) <*> something = fmap f something
-```
-
-可见, `<*>`是在内部使用<u>模式匹配</u>把`a -> b`提取出来之后, `fmap`到`f a`里面. 
+`<*>` (叫做**apply**) (**左结合**)把`f a`应用到了`f (a -> b)`上, 产生了`f b`, 也就是上面所说的功能. 但也可以看做是把`f (a -> b)`给变成`f a -> f b`, 即把Applicative内部的函数**lift**成Applicative之间的函数.
 
 ### Applicative Style
 
-`pure f <*> x` **等价于** `fmap f x`, 得到的都是被Functor包裹的被传了参数`x`的函数`f`. 显然对于参数足够多的`f`, 对Functor包裹的参数`x`, `y`等, 有下面三个等价写法. 
+`pure f <*> x` **等价于** `fmap f x`, 得到的都是被Functor包裹的被传了参数`x`的函数`f`. 
+
+当`f`包含多个参数时, 其连续的apply相当于把各个Functor的内容按序传给(Curry)了`f`. 
+
+```haskell
+ghci> pure (+) <*> pure 3 <*> pure 5
+8
+```
+
+显然对于参数足够多的`f`, 对Functor包裹的参数`x`, `y`等, 有下面三个等价写法. 
 ```haskell
 -- 先让`pure f`原地造出 Applicative Functor
 pure f <*> x <*> y <*> ...
@@ -1204,6 +1205,18 @@ fmap f <$> x <*> y <*> ...
 
 ### 例子
 
+`Maybe`的Applicative实现:
+```haskell
+instance Applicative Maybe where  
+    pure = Just  
+    Nothing <*> _ = Nothing  
+    (Just f) <*> something = fmap f something
+```
+
+可见, 其`<*>`实现是在内部使用<u>模式匹配</u>把`a -> b`提取出来之后, `fmap`到`f a`里面. 
+
+---
+
 ```haskell
 ghci> [(+),(*)] <*> [1,2] <*> [3,4] 
 [4,5,5,6,3,4,6,8]
@@ -1211,7 +1224,14 @@ ghci> [(+),(*)] <*> [1,2] <*> [3,4]
 
 ---
 
-List的 applicative style:
+List的apply会生成所有可能的组合, 这可以使用[Non-deterministic的视角](Haskell/Haskell.md#Non-deterministic%20视角)来理解.
+
+```haskell
+ghci> [(+3),(*2)] <*> [7,8]
+[10,11,14,16]
+```
+
+它的 applicative style:
 ```haskell
 ghci> (++) <$> ["ha","heh","hmm"] <*> ["?","!","."]  
 ["ha?","ha!","ha.","heh?","heh!","heh.","hmm?","hmm!","hmm."] 
