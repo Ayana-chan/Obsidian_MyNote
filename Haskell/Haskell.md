@@ -1510,7 +1510,7 @@ class Semigroup a => Monoid a where
 
 `mappend`接收该Monoid type的两个值, 将其**合成一个值**(还是属于该type).
 
-`mconcat`是把该Monoid type的一个List合成单个结果(还是属于该type). 有<u>默认实现</u>, 是使用`mappend`从`mempty`开始给**fold**成结果. 一般不需要手动实现.
+`mconcat`是把该Monoid type的一个List合成单个结果(依然属于该type). 有<u>默认实现</u>, 是使用`mappend`从`mempty`开始给**fold**成结果. 一般不需要手动实现.
 
 当一个type有多种满足Monoid的二元函数与其identity时, 需要使用`newtype`分别实现.
 
@@ -1662,6 +1662,48 @@ instance Monoid (First a) where
 ## Monad TODO
 
 
+# Lazy
+
+下面这段cpp代码会死循环(最后出现segment fault), 因为`factBad(x)`调用`myIfBad`的时候就不得不先把`factBad(x-1)`算出来, 出现了死递归(x会一直减少但不可能进入实际比较).
+```cpp
+auto myIfBad(bool flag, int a, int b) -> int {
+    if (flag) {
+        return a;
+    }
+    return b;
+}
+
+auto factBad(int x) -> int {
+    return myIfBad(x == 0, 1, x * factBad(x - 1));
+}
+
+int main() {
+    std::cout << factBad(10) << std::endl;
+}
+```
+
+但使用无参闭包进行lazy化后就能执行, 它满足"不使用就无影响":
+```haskell
+auto myIf(bool flag, std::function<int()> a, std::function<int()> b) -> int {
+    if (flag) {
+        return a();
+    }
+    return b();
+}
+
+auto fact(int x) -> int {
+    return myIf(x == 0, []() { return 1; }, [x]() { return x * fact(x - 1); });
+}
+```
+
+java, cpp等语言都是在参数上eager, 但是条件表达式不eager.
+
+一个为了延迟计算(delay evaluation)的**无参函数**称为**thunk**. 用作动词: "thunk the expression", 表示将表达式包装延迟计算.
+
+
+
+
+
 # 库, 工具与技巧
 
 ## Foldable
@@ -1679,6 +1721,10 @@ foldl :: Foldable t => (b -> a -> b) -> b -> t a -> b
 foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
 ```
 - `foldl1`和`foldr1`分别将首或尾元素作为初值.
+- `foldl'` 和 `foldr'` 需要使用 `import Data.Foldable` 导入, 它们是对应fold函数的变型, 不使用lazy而是严格按照运算符顺序计算.
+
+> [!info]
+> 定义 `foldMap` **或** `foldr` 即可完成`Foldable`实现.
 
 更直观的理解:
 - `foldr (-) 1 [2,3,4]`: 把初值`1`放到**最后**, 写出`2 -' 3 -' 4 -' 1`, 然后函数**右结合**成`2 - (3 - (4 - 1))`. 得到答案`2`.
@@ -1701,7 +1747,7 @@ ghci> foldr (\c acc -> acc ++ [c]) "foo" ['a', 'b', 'c', 'd']
 ```
 
 > [!warning]
-> When it comes to lists, you always want to use either `foldl'` or `foldr` instead of `foldl`.
+> When it comes to **lists**, you always want to use either `foldl'` or `foldr` instead of `foldl`.
 
 在List上的两个`fold`函数实现:
 ```haskell
@@ -1742,17 +1788,43 @@ x1   f
 z   x1
 ```
 
-可见`foldl`和`foldr'`都会先找到最末端开始算, 因此禁止在无限数据结构中使用, 且在没有逆迭代器的数据结构下可能发生$O(n)$空间复制.
+- 可见`foldl`和`foldr'`都会先找到最末端开始算, 因此禁止在无限数据结构中使用, 且在没有逆迭代器的数据结构下需要$O(n)$的thunk.
+- `foldl'`的计算方式和其他普通程序语言的`fold`一样.
+
+对无限List, lazy且从左边开始的`foldr`在有限步骤内能确定结果(要求函数是short-circuiting的, 且对其第二个参数lazy)的情况下是可以穷尽计算的:
+```haskell
+ghci> foldr (&&) True (repeat False)
+False
+```
+
+要注意**strict**的非对称性, 如`++`的话不可交换, 只对其第一个参数strict, 那么`foldr`的时候传把元素放第一个参数性能会好得多. 换成`+`就没这问题. 见[Expectation of efficient left-to-right iteration](https://hackage.haskell.org/package/base-4.20.0.1/docs/Data-Foldable.html#g:8).
+```haskell
+-- 第一行更快
+myconcat xs = foldr (\a b -> a ++ b) [] xs
+revconcat xs = foldr (\a b -> b ++ a) [] xs
+-- 第二行不如正向拼接后翻转
+revconcat = foldr (++) [] . reverse
+```
 
 
-TODO: 勘误, 可能不会自动帮忙实现整个Foldable
-`Foldable` typeclass 可以使用fold系列函数. 而它可以通过仅提供`foldMap`来完成实现, 而`foldMap`**使用Monoid帮助fold数据**.
+Foldable可以通过仅提供`foldMap`来完成实现, 而`foldMap`**使用Monoid来fold数据**. 它要求提供一个函数把容器内的数据转化成Monoid, 然后使用对应的`mappend`将它们fold到`mempty`上.
 
 ```haskell
+-- a -> m 是源type到Monoid实现type的转化函数, 如`Sum`, `Product`等
+-- t a 是包含了源数据a的type变量, 如`[a]`
+-- 得到 a type 数据全部变成 m Monoid type 后的fold结果, 其type为m
 foldMap :: Monoid m => (a -> m) -> t a -> m
 ```
 
-例如, 对树的fold应当是遍历整棵树, 对每个节点使用给定的函数进行计算聚合. 由于递归调用的`foldMap`的结果被限制了是Monoid, 那么遍历顺序不会影响结果.
+例如, 使用`foldMap Sum`获取求和函数, 使用`foldMap (replicate 3)`获取重复3次的函数:
+```haskell
+ghci> foldMap Sum [1, 3, 5]
+Sum {getSum = 9}
+ghci> foldMap (replicate 3) [1, 2, 3]
+[1,1,1,2,2,2,3,3,3]
+```
+
+例如, 对树的fold应当是遍历整棵树, 对每个节点使用给定的函数进行计算聚合. 
 ```haskell
 data Tree a = Empty | Node a (Tree a) (Tree a) deriving (Show, Read, Eq)      
 
