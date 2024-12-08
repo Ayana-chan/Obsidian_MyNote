@@ -6,7 +6,6 @@ kanban-plugin: board
 
 ## BUAA课程
 
-- [ ] 数据挖掘论文阅读pre
 
 
 ## 科研
@@ -43,6 +42,7 @@ kanban-plugin: board
 - [ ] 数理统计作业
 - [ ] 数据挖掘作业
 - [ ] 科技写作pre
+- [ ] 数据挖掘论文阅读pre
 
 %% kanban:settings
 ```

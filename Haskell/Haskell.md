@@ -51,7 +51,13 @@ stack exec my-project-exe
 
 Haskell是强类型和静态类型的。
 
-Haskell是惰性的，如非特殊说明，函数真正需要结果以前不会被求值，加上引用透明，可以把程序看做数据的一系列变形。也就是说惰性语言中的计算只是一组初始数据和变换公式。
+Haskell是惰性的，如非特殊说明，函数真正需要结果以前不会被求值，加上引用透明，可以把程序看做数据的一系列变形。也就是说惰性语言中的计算只是一组初始数据和变换公式。例如下面这一段如果长度不一样(`a`)就不会执行内容比较(`b`):
+```haskell
+lengthCompare :: String -> String -> Ordering  
+lengthCompare x y = let a = length x `compare` length y   
+                        b = x `compare` y  
+                    in  if a == EQ then b else a  
+```
 
 在函数式编程语言中，变量一旦指定就不可以更改了，在命令式编程语言中，变量表示状态，如果状态不可变，那么能做的事情将非常有限。而函数式编程语言中，变量的含义更接近数学中的变量，`x=5`表示`x`就是`5`，而不是`x`处于`5`这个状态。
 
@@ -59,7 +65,9 @@ Haskell是惰性的，如非特殊说明，函数真正需要结果以前不会�
 
 所有的表达式都要求返回一个值. `if`语句也是个表达式, 因此必须有`else`.
 
-**type variable (类型变量)** 就是泛型, 由小写字母`a` `b` `c`等表示. 使用类型变量的函数称之为**多态函数**.
+**type variable (类型变量)** 就是泛型, 由小写字母`a` `b` `c`等表示. 使用类型变量的函数称之为**多态(polymorphic)函数**.
+
+
 
 ## 杂项
 
@@ -471,6 +479,8 @@ functionName arg1 arg2 = arg1 + arg2
 > [!info]
 > `'`也是函数名的合法字符，常常使用单引号来区分一个稍经修改但差别不大的函数。
 
+把反引号(`` ` ``)放在函数名首尾来把函数变成中缀, 例如``10 `elem` [1, 2, 10]``.
+
 <u>没有参数的函数</u>称之为**定义**(define)或者名字，定义后不可修改. 例如`otherwise`永远返回True.
 
 ### Curry 柯里化
@@ -506,6 +516,19 @@ divX = (10/)
 > [!notice]
 > 当想把函数类型作为一个函数的返回值时, 要意识到`->`是右结合的, 因此如果函数内生成函数类型返回值的逻辑过于复杂时, 想想是不是可以把东西都放到参数里面, 通过柯里化的逻辑来实现.
 
+### where
+
+可以使用`where`来定义局部变量, 从而无需使用`do`和`let`.
+
+```haskell
+lengthCompare :: String -> String -> Ordering  
+lengthCompare x y = (length x `compare` length y) `mappend`  
+                    (vowels x `compare` vowels y) `mappend`  
+                    (x `compare` y)  
+    where vowels = length . filter (`elem` "aeiou")  
+```
+
+
 ### 函数作为参数
 
 函数作为参数的时候就需要给`->`链加括号了, 如`(a -> a) -> a`表示 传入`a -> a`函数得到`a`变量 的函数.
@@ -534,14 +557,7 @@ zipWith' f (x:xs) (y:ys) = f x y : zipWith' f xs ys
 - `zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]` 将两个列表的对应元素应用函数后得到新列表。
 - `flip :: (a -> b -> c) -> b -> a -> c` 接受一个二元函数，将两个参数翻转并返回新的二元函数。
 
-fold系列操作把列表变成值.
-- foldl 可以把列表`[a]`从左到右聚合到初值`b`上, 且调用函数时初值在前元素在后.
-- foldl 可以把列表`[a]`从右到左(先取尾部)聚合到初值`b`上, 且调用函数时元素在前初值在后.
-```haskell
-foldl :: Foldable t => (b -> a -> b) -> b -> t a -> b
-foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
-```
-- `foldl1`和`foldr1`分别将首或尾元素作为初值.
+fold系列操作把列表变成值. 详见[Foldable](Haskell/Haskell.md#Foldable).
 
 scan系列操作保留fold每次的结果, 替换原元素.
 ```haskell
@@ -623,7 +639,8 @@ f . g = \x -> f (g x)
 
 **优先级仅低于函数调用**, 即`f . g a`会先进行`g a`. 
 - 这就导致如果`g`是`a -> b`的话, 会导致此句变成`f . b`, 是错误的. 因此, 需要`(f . g) a`, 或者`f . g $ a`.
-- 但有时是故意要这么做的, 为了方便对函数进行Curry, 因为这只支持单参函数, 所以必须给每个被串联的函数Curry成单参. 
+- `f . g $ a` 等价于 `f (g a)`, 可见`.`很多时候用于解决括号的嵌套.
+- 因为函数调用更优先, 因此对函数进行Curry很方便. 因为`.`只支持单参函数, 所以必须给每个被串联的函数Curry成单参. 
 - `.`可以写出**Pointfree Style**, 就是通过一系列单参函数的串联实现的(即定义过程中没有<u>真正的参数</u>出现在<u>代码</u>中).
 
 ```haskell
@@ -922,7 +939,7 @@ area shape = case shape of
         | otherwise               -> "矩形的面积是: " ++ show (width * height)
 ```
 
-### where
+### 利用where
 
 在函数进行模式匹配前, 可以**定义或预处理数据**, 使用`where`实现.
 
@@ -1082,7 +1099,7 @@ sequence, when
 
 ## Functor
 
-Functor是一个typeclass, 只有kind为`* -> *`的type constructor才能实现它. 它要求可以对内部包含的变量进行操作(称作 **map over**), 且操作返回类型是任意类型.
+Functor是一个typeclass, 只有kind为`* -> *`的(即单参数的)type constructor才能实现它. 它要求可以对内部包含的变量进行操作(称作 **map over**), 且操作返回类型是任意类型.
 
 ```haskell
 ghci> :i Functor
@@ -1210,7 +1227,7 @@ Functor Law 2: `fmap (f . g) = fmap f . fmap g`.
 
 对于一个内部为函数的Functor `F (a -> b)`, 函数的传参可以使用`fmap (\f f xxx)`来完成; 但是, 如果没有`xxx: a`, 而只有另一个Functor `yyy :: G a`呢? 换句话说, 如何对`Functor (a -> b)`以`Functor a`进行map over? 最暴力的解法是手动模式匹配, 但显然不美观.
 
-Applicative typeclass实现了这个功能. **只有实现了Functor的type才能实现Applicative**.
+Applicative typeclass实现了这个功能. **只有实现了Functor的type才能实现Applicative**. 同样只能接收单参数的type constructor.
 
 ```haskell
 ghci> :i Applicative
@@ -1472,13 +1489,248 @@ ghci> and $ sequenceA [(>4),(<10),odd] 7
 True
 ```
 
-## Monoids
+## Monoid
 
-TODO
+Monoid 要求一个type:
+- 参数类型都是它的一个二元函数拥有**结合律(associativity)**;
+- 该type存在某个**值**(这个值称为<u>此函数的</u>**identity**), 当其为此二元函数的其中一个参数的时候, <u>计算结果等于另一个参数</u>.
+
+**只接受 nullary** type constructor, 即完整type.
+
+```haskell
+type Monoid :: * -> Constraint
+class Semigroup a => Monoid a where
+  mempty :: a
+  mappend :: a -> a -> a
+  mconcat :: [a] -> a 
+  mconcat = foldr mappend mempty
+```
+
+`mempty`不接受任何参数, 因此是个<u>常数</u>, 它表示此Monoid的**identity**.
+
+`mappend`接收该Monoid type的两个值, 将其**合成一个值**(还是属于该type).
+
+`mconcat`是把该Monoid type的一个List合成单个结果(还是属于该type). 有<u>默认实现</u>, 是使用`mappend`从`mempty`开始给**fold**成结果. 一般不需要手动实现.
+
+当一个type有多种满足Monoid的二元函数与其identity时, 需要使用`newtype`分别实现.
+
+### Monoid Law
+
+仅仅是上面提到的**identity**和**结合律**.
+
+```haskell
+-- mempty 必须为 mappend函数的 identity
+mempty `mappend` x = x
+x `mappend` mempty = x
+-- mappend函数有结合律
+(x `mappend` y) `mappend` z = x `mappend` (y `mappend` z)
+```
+
+### 例子
+
+List是Monoid, 因为`[]`与任意List进行`++`都得到那个List本身; `++`不需要考虑顺序.
+```haskell
+instance Monoid [a] where  
+    mempty = []  
+    mappend = (++)  
+```
+
+---
+
+`Data.Monoid`有**Product**和**Sum**两个type, 分别实现**乘法**(`*` 和 `1`)和**加法**(`+` 和 `0`)的Monoid. Product的定义和Monoid实现:
+```haskell
+newtype Product a =  Product { getProduct :: a }  
+    deriving (Eq, Ord, Read, Show, Bounded)  
+
+instance Num a => Monoid (Product a) where  
+    mempty = Product 1  
+    Product x `mappend` Product y = Product (x * y)  
+```
+
+其使用:
+```haskell
+ghci> getProduct $ Product 3 `mappend` Product 9  
+27  
+ghci> getProduct $ Product 3 `mappend` mempty  
+3  
+ghci> getProduct $ Product 3 `mappend` Product 4 `mappend` Product 2  
+24 
+-- 使用 `map Product` 将其变成`[Product]`后,
+-- 进行mconcat, 再把结果(单一的Product)转回来.
+ghci> getProduct . mconcat . map Product $ [3,4,2]  
+24  
+```
+
+---
+
+Bool也有两种Monoid. 使用**Any**表示`False`不影响`||`, 使用**All**表示`True`不影响`&&`.
+```haskell
+newtype Any = Any { getAny :: Bool }  
+    deriving (Eq, Ord, Read, Show, Bounded)  
+
+instance Monoid Any where  
+    mempty = Any False  
+    Any x `mappend` Any y = Any (x || y)  
+```
+
+```haskell
+newtype All = All { getAll :: Bool }  
+        deriving (Eq, Ord, Read, Show, Bounded)  
+
+instance Monoid All where  
+        mempty = All True  
+        All x `mappend` All y = All (x && y)  
+```
+
+Any type的使用:
+```haskell
+ghci> getAny $ Any True `mappend` Any False  
+True  
+ghci> getAny $ mempty `mappend` Any True  
+True  
+ghci> getAny . mconcat . map Any $ [False, False, False, True]
+True  
+ghci> getAny $ mempty `mappend` mempty  
+False  
+```
+
+---
+
+`Ordering` type可以是Monoid, 其实现为:
+```haskell
+instance Monoid Ordering where  
+    mempty = EQ  
+    LT `mappend` _ = LT  
+    EQ `mappend` y = y  
+    GT `mappend` _ = GT  
+```
+
+这表示如果当前比较**不为**`EQ`的话, 就立刻返回结果, 否则返回另一个参数. 可以用于构建**有优先级顺序的比较**, 如字典序等.
+
+例如先比较字符串长度再比较其内容:
+```haskell
+import Data.Monoid
+
+strCompare :: String -> String -> Ordering  
+strCompare x y = (length x `compare` length y) `mappend`  
+                    (x `compare` y)  
+
+-- 等价于下面这个更复杂的写法
+strCompare' :: String -> String -> Ordering  
+strCompare' x y = let a = length x `compare` length y   
+                        b = x `compare` y  
+                    in  if a == EQ then b else a  
+```
+
+---
+
+当`a`为Monoid时, `Maybe a` 也可以定义成 Monoid, 其使用`Nothing`作为identity, **使用`a`的二元函数作为其二元函数**.
+
+```haskell
+instance Monoid a => Monoid (Maybe a) where  
+    mempty = Nothing  
+    Nothing `mappend` m = m  
+    m `mappend` Nothing = m  
+    Just m1 `mappend` Just m2 = Just (m1 `mappend` m2)  
+```
+
+这使得被`Maybe`包裹的两个Monoid的`mappend`**不需要手动解包**. 例如:
+```haskell
+ghci> Nothing `mappend` Just "andy"  
+Just "andy"  
+ghci> Just LT `mappend` Nothing  
+Just LT  
+ghci> Just (Sum 3) `mappend` Just (Sum 4)  
+Just (Sum {getSum = 7}) 
+ghci> getFirst . mconcat . map First $ [Nothing, Just 9, Just 10]  
+Just 9  
+```
+
+`First` type 则让`Maybe`换了一种Monoid实现, 让它**永远返回第一个`Just x`**.
+```haskell
+newtype First a = First { getFirst :: Maybe a }  
+    deriving (Eq, Ord, Read, Show) 
+
+instance Monoid (First a) where  
+    mempty = First Nothing  
+    First (Just x) `mappend` _ = First (Just x)  
+    First Nothing `mappend` x = x  
+```
+
+`Last`也是类似的定义但**永远返回最后一个`Just x`**.
 
 
 
 # 库, 工具与技巧
+
+## Foldable
+
+[Data.Foldable](https://hackage.haskell.org/package/base-4.20.0.1/docs/Data-Foldable.html)
+
+- foldl 可以把列表`[a]`从左到右聚合到初值`b`上, 且调用函数时**累计值在左**, 元素在右.
+- foldr 可以把列表`[a]`从右到左(先取尾部)聚合到初值`b`上, 且调用函数时**累计值在右**, 元素在左.
+```haskell
+-- foldl f z [x1, x2, ..., xn] == 
+-- (...((z `f` x1) `f` x2) `f`...) `f` xn
+foldl :: Foldable t => (b -> a -> b) -> b -> t a -> b
+-- foldr f z [x1, x2, ..., xn] == 
+-- x1 `f` (x2 `f` ... (xn `f` z)...)
+foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
+```
+- `foldl1`和`foldr1`分别将首或尾元素作为初值.
+
+```haskell
+-- 二者功能相同但函数参数反了
+ghci> foldl (\acc c -> acc ++ [c]) "foo" ['a', 'b', 'c', 'd']
+"fooabcd"
+ghci> foldr (\c acc -> acc ++ [c]) "foo" ['a', 'b', 'c', 'd']
+"foodcba"
+```
+
+> [!warning]
+> When it comes to lists, you always want to use either `foldl'` or `foldr` instead of `foldl`.
+
+在List上的两个`fold`函数实现:
+```haskell
+foldr :: (a -> b -> b) -> b -> [a] -> b
+foldr f z (x:xs) = f x (foldr f z xs)
+foldr f z [] = z
+
+foldl :: (b -> a -> b) -> b -> [a] -> b
+foldl f z (x:xs) = foldl f (f z x) xs
+foldl f z [] = z
+```
+
+
+
+
+
+
+
+
+TODO: 勘误, 可能不会自动帮忙实现整个Foldable
+`Foldable` typeclass 可以使用fold系列函数. 而它可以通过仅提供`foldMap`来完成实现, 而`foldMap`**使用Monoid帮助fold数据**.
+
+```haskell
+foldMap :: Monoid m => (a -> m) -> t a -> m
+```
+
+例如, 对树的fold应当是遍历整棵树, 对每个节点使用给定的函数进行计算聚合. 由于递归调用的`foldMap`的结果被限制了是Monoid, 那么遍历顺序不会影响结果.
+```haskell
+data Tree a = Empty | Node a (Tree a) (Tree a) deriving (Show, Read, Eq)      
+
+instance Foldable Tree where  
+	-- 空树
+    foldMap f Empty = mempty  
+    -- 前序遍历
+    foldMap f (Node x l r) = foldMap f l `mappend`  
+                                f x           `mappend`  
+                                foldMap f r  
+```
+
+
+
+
 
 ## when
 
