@@ -1890,7 +1890,19 @@ int main()
 
 string的substr是$O(n)$的，会直接拷贝出子串；但string_view的substr是$O(1)$的，不会发生拷贝。
 
-## iterator迭代器
+## iterator 迭代器
+
+### reverse_iterator
+
+[std::reverse\_iterator - cppreference.com](https://en.cppreference.com/w/cpp/iterator/reverse_iterator)
+
+`reverse_iterator`是反向迭代器, 可以<u>由一个普通迭代器创建</u>. 
+
+如果反向迭代器`r`由普通迭代器`i`创建, 那么(在可解引用的情况下)总是满足`&*r == &*(i-1)`, 即反向迭代器总是左偏一格. 应该是为了保证`rbegin`(末尾元素)和`rend`(首元素的前一格)的用法与`begin`和`end`一致).
+
+![](assets/1733748421721.png)
+
+使用`r.base()`可以获取其对应的**普通迭代器**(注意会右偏一格).
 
 ### distance()
 
@@ -2057,6 +2069,29 @@ std::vector<T>& operator|(std::vector<T>& v, std::invocable<T&> auto const &func
 }
 ```
 
+### ranges 库函数使用
+
+`std::ranges`下的有些函数需要导入`#include <algorithm>`才有.
+
+#### 查找容器最后一个目标值的位置
+
+[std::ranges::find\_last, std::ranges::find\_last\_if, std::ranges::find\_last\_if\_not - cppreference.com](https://en.cppreference.com/w/cpp/algorithm/ranges/find_last)
+
+利用`ranges::find_last`, 在一个`ranges::forward_range`上寻找最后一个等于目标值的项, 返回以此项为开头的子range. 之后使用`ranges::distance`求range的begin之差以获取下标值.
+```cpp
+std::vector<int> vec = {0, 0, 1, 0, 1, 0};
+auto aim_rit = std::ranges::find_last(vec, 1);
+int aim_idx = std::ranges::distance(vec.begin(), aim_rit.begin());
+assert(aim_idx == 4);
+```
+
+更高效的方式是从后往前查询. 使用`ranges::find`查找第一个满足要求的东西. 这两个`find`都支持传入迭代器(满足`forward_iterator`的东西). 传入目标的**反向迭代器**, 就能实现**反向查询**. 最后计算下标时, 使用`base()`把反向迭代器转成正向迭代器以简单求得下标.
+```cpp
+std::vector<int> vec = {0, 0, 1, 0, 1, 0};
+auto aim_rit = std::ranges::find(vec.rbegin(), vec.rend(), 1);
+int aim_idx = std::ranges::distance(vec.begin(), aim_rit.base()) - 1;
+assert(aim_idx == 4);
+```
 
 ## piecewise_construct
 
