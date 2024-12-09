@@ -46,6 +46,32 @@ stack build
 stack exec my-project-exe
 ```
 
+# 数学
+
+## 群
+
+若集合$G \neq \varnothing$, 在$G$上的二元运算 $\cdot : G \times G \rightarrow G$ (称为群的乘法, 结果称为积) 构成的代数结构$G(G, \cdot)$, 满足:
+1. **封闭性 (Closure)**: 运算结果依然在集合内. $\forall a, b \in G, a \cdot b \in G$.
+2. **结合律 (Associativity)**: 运算有结合律. $\forall a,b,c\in G, (a\cdot b)\cdot c=a\cdot(b\cdot c)$.
+3. **幺元 (Identity)**(单位元): <u>幺元</u>$e$对任意元素的左右乘都为元素本身.$\exists e \in G, \forall a\in G, e\cdot a=a\cdot e=a$.
+4. **逆元**：$\forall a\in G,\exists b\in G, a\cdot b=b\cdot a=e$. $b$称为$a$的<u>逆元</u>,记为$a^{-1}$.
+则$(G, \cdot)$称为一个**群 (Group)** 或**乘法群**, 简记为$G$.
+
+- 若只满足 Closure 和 Associativity, 则称为**半群 (Semi-group)**.
+- 若只满足Closure, Associativity 和 Identity, 则称为**含幺半群 (Monoid)**.
+
+若群$G$满足**交换律**, 即$\forall a,b \in G, a \cdot b = b \cdot a$, 则称为**阿贝尔群 (Abelian Group)** 或**交换群**或**加群**.
+
+若对于两个群$\left(G,\cdot\right)$ 和$\left(H,\times\right)$,有映射$f:G\to H$ 满足以下条件：$\forall a,b \in G, f(a\cdot b)=f(a)\times f(b)$, 则称<u>映射</u>$f$为群$(G,\cdot)$<u>到</u>群$(H,\times)$的**同态**。
+
+- 如果映射$f$为<u>单射</u>，则称$f$为**单同态**。
+- 如果映射$f$为<u>双射</u>，则称$f$为**同构**。
+
+如果$e_G$是$G$的幺元，$e_H$是$H$的幺元, 则上述同态$f$满足：
+$$f(e_G)=e_H$$
+
+
+
 # 语法
 ## 基础
 
@@ -737,6 +763,17 @@ ghci> [ x*y | x <- [2,5,10], y <- [8,10,11]]
 ghci> (*) <$> [2,5,10] <*> [8,10,11][16,20,22,40,50,55,80,100,110]
 ```
 
+### NonEmpty
+
+表示非空List的typeclass. 使用`:|`运算符构造, 它等价于一次`:`, 毕竟一次元素添加操作意味着产出的List必然非空.
+
+位于`Data.List.NonEmpty`.
+
+```haskell
+type NonEmpty :: * -> *
+data NonEmpty a = a :| [a]
+```
+
 
 ## Range
 
@@ -1103,9 +1140,242 @@ reverseWords = unwords . map reverse . words
 sequence, when
 
 
+## Semigroup
+
+[Data.Semigroup](https://downloads.haskell.org/ghc/latest/docs/libraries/base-4.20.0.0-1f57/Data-Semigroup.html)
+
+Semigroup(**半群**)要求存在 <u>参数和返回值类型都是它(Closure封闭的)</u> 的一个二元函数拥有**结合律(associativity)**. 
+
+提供`<>`的实现即可.
+
+```haskell
+class Semigroup a where
+        (<>) :: a -> a -> a
+        sconcat :: NonEmpty a -> a
+        stimes :: Integral b => b -> a -> a
+```
+
+`<>`就是所要求的封闭的**结合律**的二元函数.
+```haskell
+ghci> Just [1, 2, 3] <> Just [4, 5, 6]
+Just [1,2,3,4,5,6]
+```
+
+`sconcat` 把非空的List(`[a]`) 使用`<>`折叠成单一变量`a`.
+```haskell
+ghci> :m Data.List.NonEmpty
+ghci> sconcat $ Just [1, 2, 3] :| [Nothing, Just [4, 5, 6]]
+Just [1,2,3,4,5,6]
+```
+
+`stimes` 把输入`a`重复`b`次, 使用`<>`折叠. 复杂度是$O(\log n)$. 库中提供了若干`stimesXxx`函数作为替换实现, 以在特殊情景(约束)下<u>降低复杂度</u>.
+```haskell
+ghci> stimes 4 [1]
+[1,1,1,1]
+```
+
+> [!tip]
+> 当一个type有多种满足Semigroup的二元函数时, 需要使用`newtype`分别实现. Monoid也一样.
+
+### Semigroup Law
+
+Associativity:
+```haskell
+(x <> y) <> z = x <> (y <> z)
+```
+
+## Monoid
+
+[Data.Monoid](https://downloads.haskell.org/ghc/latest/docs/libraries/base-4.20.0.0-1f57/Data-Monoid.html)
+
+Monoid(**幺半群**) 基于Semigroup, 只比它多了Identity的要求. 它要求一个type:
+- *Semigroup的要求*: 存在 <u>参数和返回值类型都是它(Closure封闭的)</u> 的一个二元函数拥有**结合律(associativity)**;
+- *额外要求*: 该type存在某个**值**(这个值称为<u>此函数的</u>**identity(幺元)**), 当其为此二元函数的其中一个参数的时候, <u>计算结果等于另一个参数</u>.
+
+```haskell
+type Monoid :: * -> Constraint
+class Semigroup a => Monoid a where
+  mempty :: a
+  
+  -- Use `<>` instead of `mappend`.
+  mappend :: a -> a -> a
+  mappend = (<>)
+  
+  mconcat :: [a] -> a 
+  mconcat = foldr mappend mempty
+```
+
+`mempty`不接受任何参数, 因此是个<u>常数</u>, 它表示此Monoid的**identity**.
+
+`mappend`等价于`<>`, **不应当使用**, 它未来会被删除.
+
+`mconcat`是把该Monoid type的一个List合成单个结果(依然属于该type). 有<u>默认实现</u>, 是使用`mappend`从`mempty`开始给**fold**成结果.
+
+### Monoid Law
+
+Right Identity:
+```haskell
+x <> mempty = x
+```
+
+Left Identity:
+```haskell
+mempty <> x = x
+```
+
+Associativity (Semigroup's law)
+```haskell
+(x <> y) <> z = x <> (y <> z)
+```
+
+Concatenation:
+```haskell
+mconcat = foldr (<>) empty
+```
+
+
+### 例子
+
+> 使用`<>`替换了所有示例的`mappend`, 但为了方便, 定义仍然使用`mappend`.
+
+List是Monoid, 因为`[]`与任意List进行`++`都得到那个List本身; `++`不需要考虑顺序.
+```haskell
+instance Monoid [a] where  
+    mempty = []  
+    mappend = (++)  
+```
+
+---
+
+`Data.Monoid`有**Product**和**Sum**两个type, 分别实现**乘法**(`*` 和 `1`)和**加法**(`+` 和 `0`)的Monoid. Product的定义和Monoid实现:
+```haskell
+newtype Product a =  Product { getProduct :: a }  
+    deriving (Eq, Ord, Read, Show, Bounded)  
+
+instance Num a => Monoid (Product a) where  
+    mempty = Product 1  
+    Product x `mappend` Product y = Product (x * y)  
+```
+
+其使用:
+```haskell
+ghci> getProduct $ Product 3 <> Product 9  
+27  
+ghci> getProduct $ Product 3 <> mempty  
+3  
+ghci> getProduct $ Product 3 <> Product 4 <> Product 2  
+24 
+-- 使用 `map Product` 将其变成`[Product]`后,
+-- 进行mconcat, 再把结果(单一的Product)转回来.
+ghci> getProduct . mconcat . map Product $ [3,4,2]  
+24  
+```
+
+---
+
+Bool也有两种Monoid. 使用**Any**表示`False`不影响`||`, 使用**All**表示`True`不影响`&&`.
+```haskell
+newtype Any = Any { getAny :: Bool }  
+    deriving (Eq, Ord, Read, Show, Bounded)  
+
+instance Monoid Any where  
+    mempty = Any False  
+    Any x `mappend` Any y = Any (x || y)  
+```
+
+```haskell
+newtype All = All { getAll :: Bool }  
+        deriving (Eq, Ord, Read, Show, Bounded)  
+
+instance Monoid All where  
+        mempty = All True  
+        All x `mappend` All y = All (x && y)  
+```
+
+Any type的使用:
+```haskell
+ghci> getAny $ Any True <> Any False  
+True  
+ghci> getAny $ mempty <> Any True  
+True  
+ghci> getAny . mconcat . map Any $ [False, False, False, True]
+True  
+ghci> getAny $ mempty <> mempty  
+False  
+```
+
+---
+
+`Ordering` type可以是Monoid, 其实现为:
+```haskell
+instance Monoid Ordering where  
+    mempty = EQ  
+    LT `mappend` _ = LT  
+    EQ `mappend` y = y  
+    GT `mappend` _ = GT  
+```
+
+这表示如果当前比较**不为**`EQ`的话, 就立刻返回结果, 否则返回另一个参数. 可以用于构建**有优先级顺序的比较**, 如字典序等.
+
+例如先比较字符串长度再比较其内容:
+```haskell
+import Data.Monoid
+
+strCompare :: String -> String -> Ordering  
+strCompare x y = (length x `compare` length y) <>  
+                    (x `compare` y)  
+
+-- 等价于下面这个更复杂的写法
+strCompare' :: String -> String -> Ordering  
+strCompare' x y = let a = length x `compare` length y   
+                        b = x `compare` y  
+                    in  if a == EQ then b else a  
+```
+
+---
+
+当`a`为Monoid时, `Maybe a` 也可以定义成 Monoid, 其使用`Nothing`作为identity, **使用`a`的二元函数作为其二元函数**.
+
+```haskell
+instance Monoid a => Monoid (Maybe a) where  
+    mempty = Nothing  
+    Nothing `mappend` m = m  
+    m `mappend` Nothing = m  
+    Just m1 `mappend` Just m2 = Just (m1 `mappend` m2)  
+```
+
+这使得被`Maybe`包裹的两个Monoid的`mappend`**不需要手动解包**. 例如:
+```haskell
+ghci> Nothing <> Just "andy"  
+Just "andy"  
+ghci> Just LT <> Nothing  
+Just LT  
+ghci> Just (Sum 3) <> Just (Sum 4)  
+Just (Sum {getSum = 7}) 
+ghci> getFirst . mconcat . map First $ [Nothing, Just 9, Just 10]  
+Just 9  
+```
+
+`First` type 则让`Maybe`换了一种Monoid实现, 让它**永远返回第一个`Just x`**.
+```haskell
+newtype First a = First { getFirst :: Maybe a }  
+    deriving (Eq, Ord, Read, Show) 
+
+instance Monoid (First a) where  
+    mempty = First Nothing  
+    First (Just x) `mappend` _ = First (Just x)  
+    First Nothing `mappend` x = x  
+```
+
+`Last`也是类似的定义但**永远返回最后一个`Just x`**.
+
 ## Functor
 
-Functor是一个typeclass, 只有kind为`* -> *`的(即单参数的)type constructor才能实现它. 它要求可以对内部包含的变量进行操作(称作 **map over**), 且操作返回类型是任意类型.
+[Control.Monad (Functor)](https://downloads.haskell.org/ghc/latest/docs/libraries/base-4.20.0.0-1f57/Control-Monad.html)
+
+Functor(**函子**)是一个typeclass, 只有kind为`* -> *`的(即单参数的)type constructor才能实现它. 它要求可以对内部包含的变量进行操作(称作 **map over**), 且操作返回类型是任意类型.
+
+只需要实现`fmap`.
 
 ```haskell
 ghci> :i Functor
@@ -1210,14 +1480,20 @@ ghci> fmap (\f -> f 9) a
 
 Functor应当满足两个Functor Law. 这是设计上的要求, 不会被编译器检查.
 
-Functor Law 1: `fmap id = id`. 
+Identity: 
+```haskell
+fmap id = id
+``` 
 
 意为Functor应当满足: 对一个Functor使用`id`函数进行`fmap`, 等价于对Functor本身调用`id`函数. 简单来说, 使用`id`的`fmap`应该什么都不做.
 
 > [!note]
 > 这防止了额外固定操作. 例如, `Maybe`应当在`Nothing`的时候什么都不做, 但如果在进行`fmap`的时候, 把`Nothing`全换成某个默认值, 那也<u>不会违背</u>Functor typeclass, 但是<u>违背</u>了 Functor Law 1. 显然这种替换完全不符合使用者的本意. `fmap`时固定改变其他变量的值也违背了本意. 
 
-Functor Law 2: `fmap (f . g) = fmap f . fmap g`. 
+Composition: 
+```haskell
+fmap (f . g) = fmap f . fmap g
+```
 
 或者说对任意Functor `F`, 有`fmap (f . g) F = fmap f (fmap g F)`. 这就要求对Functor的多次`fmap`等价于所有操作函数的复合函数的单次`fmap`. 
 
@@ -1235,7 +1511,9 @@ Functor Law 2: `fmap (f . g) = fmap f . fmap g`.
 
 Applicative typeclass实现了这个功能. **只有实现了Functor的type才能实现Applicative**. 同样只能接收单参数的type constructor.
 
-> [!info]
+只需同时实现`pure`和`<*>`.
+
+> [!tip]
 > Applicative表示有一个拥有context的type, 可以对其进行操作并保留context.
 
 ```haskell
@@ -1498,181 +1776,13 @@ ghci> and $ sequenceA [(>4),(<10),odd] 7
 True
 ```
 
-## Monoid
-
-Monoid 要求一个type:
-- 参数类型都是它的一个二元函数拥有**结合律(associativity)**;
-- 该type存在某个**值**(这个值称为<u>此函数的</u>**identity**), 当其为此二元函数的其中一个参数的时候, <u>计算结果等于另一个参数</u>.
-
-**只接受 nullary** type constructor, 即完整type.
-
-```haskell
-type Monoid :: * -> Constraint
-class Semigroup a => Monoid a where
-  mempty :: a
-  mappend :: a -> a -> a
-  mconcat :: [a] -> a 
-  mconcat = foldr mappend mempty
-```
-
-`mempty`不接受任何参数, 因此是个<u>常数</u>, 它表示此Monoid的**identity**.
-
-`mappend`接收该Monoid type的两个值, 将其**合成一个值**(还是属于该type).
-
-`mconcat`是把该Monoid type的一个List合成单个结果(依然属于该type). 有<u>默认实现</u>, 是使用`mappend`从`mempty`开始给**fold**成结果. 一般不需要手动实现.
-
-当一个type有多种满足Monoid的二元函数与其identity时, 需要使用`newtype`分别实现.
-
-### Monoid Law
-
-仅仅是上面提到的**identity**和**结合律**.
-
-```haskell
--- mempty 必须为 mappend函数的 identity
-mempty `mappend` x = x
-x `mappend` mempty = x
--- mappend函数有结合律
-(x `mappend` y) `mappend` z = x `mappend` (y `mappend` z)
-```
-
-### 例子
-
-List是Monoid, 因为`[]`与任意List进行`++`都得到那个List本身; `++`不需要考虑顺序.
-```haskell
-instance Monoid [a] where  
-    mempty = []  
-    mappend = (++)  
-```
-
----
-
-`Data.Monoid`有**Product**和**Sum**两个type, 分别实现**乘法**(`*` 和 `1`)和**加法**(`+` 和 `0`)的Monoid. Product的定义和Monoid实现:
-```haskell
-newtype Product a =  Product { getProduct :: a }  
-    deriving (Eq, Ord, Read, Show, Bounded)  
-
-instance Num a => Monoid (Product a) where  
-    mempty = Product 1  
-    Product x `mappend` Product y = Product (x * y)  
-```
-
-其使用:
-```haskell
-ghci> getProduct $ Product 3 `mappend` Product 9  
-27  
-ghci> getProduct $ Product 3 `mappend` mempty  
-3  
-ghci> getProduct $ Product 3 `mappend` Product 4 `mappend` Product 2  
-24 
--- 使用 `map Product` 将其变成`[Product]`后,
--- 进行mconcat, 再把结果(单一的Product)转回来.
-ghci> getProduct . mconcat . map Product $ [3,4,2]  
-24  
-```
-
----
-
-Bool也有两种Monoid. 使用**Any**表示`False`不影响`||`, 使用**All**表示`True`不影响`&&`.
-```haskell
-newtype Any = Any { getAny :: Bool }  
-    deriving (Eq, Ord, Read, Show, Bounded)  
-
-instance Monoid Any where  
-    mempty = Any False  
-    Any x `mappend` Any y = Any (x || y)  
-```
-
-```haskell
-newtype All = All { getAll :: Bool }  
-        deriving (Eq, Ord, Read, Show, Bounded)  
-
-instance Monoid All where  
-        mempty = All True  
-        All x `mappend` All y = All (x && y)  
-```
-
-Any type的使用:
-```haskell
-ghci> getAny $ Any True `mappend` Any False  
-True  
-ghci> getAny $ mempty `mappend` Any True  
-True  
-ghci> getAny . mconcat . map Any $ [False, False, False, True]
-True  
-ghci> getAny $ mempty `mappend` mempty  
-False  
-```
-
----
-
-`Ordering` type可以是Monoid, 其实现为:
-```haskell
-instance Monoid Ordering where  
-    mempty = EQ  
-    LT `mappend` _ = LT  
-    EQ `mappend` y = y  
-    GT `mappend` _ = GT  
-```
-
-这表示如果当前比较**不为**`EQ`的话, 就立刻返回结果, 否则返回另一个参数. 可以用于构建**有优先级顺序的比较**, 如字典序等.
-
-例如先比较字符串长度再比较其内容:
-```haskell
-import Data.Monoid
-
-strCompare :: String -> String -> Ordering  
-strCompare x y = (length x `compare` length y) `mappend`  
-                    (x `compare` y)  
-
--- 等价于下面这个更复杂的写法
-strCompare' :: String -> String -> Ordering  
-strCompare' x y = let a = length x `compare` length y   
-                        b = x `compare` y  
-                    in  if a == EQ then b else a  
-```
-
----
-
-当`a`为Monoid时, `Maybe a` 也可以定义成 Monoid, 其使用`Nothing`作为identity, **使用`a`的二元函数作为其二元函数**.
-
-```haskell
-instance Monoid a => Monoid (Maybe a) where  
-    mempty = Nothing  
-    Nothing `mappend` m = m  
-    m `mappend` Nothing = m  
-    Just m1 `mappend` Just m2 = Just (m1 `mappend` m2)  
-```
-
-这使得被`Maybe`包裹的两个Monoid的`mappend`**不需要手动解包**. 例如:
-```haskell
-ghci> Nothing `mappend` Just "andy"  
-Just "andy"  
-ghci> Just LT `mappend` Nothing  
-Just LT  
-ghci> Just (Sum 3) `mappend` Just (Sum 4)  
-Just (Sum {getSum = 7}) 
-ghci> getFirst . mconcat . map First $ [Nothing, Just 9, Just 10]  
-Just 9  
-```
-
-`First` type 则让`Maybe`换了一种Monoid实现, 让它**永远返回第一个`Just x`**.
-```haskell
-newtype First a = First { getFirst :: Maybe a }  
-    deriving (Eq, Ord, Read, Show) 
-
-instance Monoid (First a) where  
-    mempty = First Nothing  
-    First (Just x) `mappend` _ = First (Just x)  
-    First Nothing `mappend` x = x  
-```
-
-`Last`也是类似的定义但**永远返回最后一个`Just x`**.
-
 ## Monad
 
-Monad typeclass是为了实现: 有一个包装后的值(monadic value), 和一个接收普通值返回被包装后的值的函数, 把此函数应用到包装内的值, 并且只返回一层包装(也是 monadic value). 强制使用`fmap`会得到`f f a`两层包装.
+[Control.Monad](https://downloads.haskell.org/ghc/latest/docs/libraries/base-4.20.0.0-1f57/Control-Monad.html#t:Monad)
 
-**只有Applicative才能实现Monad**. 只需要定义`>>=`即可.
+Monad typeclass是为了实现: 有一个包装后的值(**monadic value**), 和一个接收普通值返回被包装后的值的函数(**monadic function**, `Monad m => a -> m b`), 把此函数应用到包装内的值, 并且只返回一层包装(也是 monadic value). 强制使用`fmap`会得到`f f a`两层包装. **只有Applicative才能实现Monad**. 
+
+只需要实现`>>=`.
 
 ```haskell
 type Monad :: (* -> *) -> Constraint
@@ -1689,7 +1799,10 @@ class Applicative m => Monad m where
 `>>`利用bind拼接Monad, 会让bind的目标函数永远返回第二个Monad, 注意要考虑bind的时候目标函数是否会被执行. 类似于命令式语言的分号`;`, 只会执行不会取值, 这在do block里面有更多体现.
 
 > [!note]
-> 普通变量的函数只需要给返回值加上return包装就能用于Monad.
+> 普通变量的函数只需要给返回值加上return包装就能用于Monad. 可以使用复合来包装: `return . f`.
+
+> [!tip]
+> Monad 可以通过 monadic function **凭空生成**.
 
 Monad和Applicative有如下关系:
 - `return = pure`, 在这里是把普通变量用Monad包装.
@@ -1701,7 +1814,7 @@ Monad和Applicative有如下关系:
 > [!info]
 > `do`是一个强大的语法糖.
 
-Monad想要bind的目标函数`a -> m b`内部很可能也是使用bind来实现的, 或者说组合多个Monad就会出现这种情况, 此时会出现<u>括号嵌套和临时的lambda</u>. 例如把两个Maybe给bind到一个二元函数(`show x ++ y`)中:
+Monad想要bind的 monadic function 的内部很可能也是使用bind来实现的, 或者说组合多个Monad就会出现这种情况, 此时会出现<u>括号嵌套和临时的lambda</u>. 例如把两个Maybe给bind到一个二元函数(`show x ++ y`)中:
 ```haskell
 foo :: Maybe String  
 foo = Just 3   >>= (\x -> 
@@ -1732,23 +1845,58 @@ do可以通过递归的形式解糖, 每次把第一行扔出去, 直到简单�
 
 ### Monad Law
 
-Left Identity:
+Left Identity (Left Unit Law): 把变量装入Monad再应用`a -> m b`**等价于直接应用**. 因此Monad计算的开头可以不使用`return`生成初始Monad, 而是直接应用monadic function.
 ```haskell
 return a >>= k = k a
 ```
 
-Right Identity:
+Right Identity (Right Unit Law): Monad bind到return上得到它本身. 即Monad是**自相似**的几何结构.
 ```haskell
 m >>= return = m
 ```
 
-Associativity:
+Associativity: `>>=`计算有**特殊的结合律**, 需要写成lambda, 但可以使用`<=<`让其更简洁.
 ```haskell
-m >>= (\x -> k x >>= h) = (m >>= k) >>= h
+(m >>= k) >>= h = m >>= (\x -> k x >>= h)
 ```
 
-通过Associativity, 两个 monadic functions 可以**复合**, 保证连续bind这两个函数(等号右边)<u>等价于</u>bind复合后的函数(等号左边). TODO
+> [!info]
+> 可以推得:
+> ```haskell
+> fmap f xs = xs >>= return . f
+> ```
 
+通过Associativity, 可以认为两个 monadic function 可以特殊地**复合**, 保证连续bind这两个函数(等号右边)<u>等价于</u>bind复合后的函数(等号左边). 使用`<=<`复合两个 monadic function (在`>>=`计算意义上):
+```haskell
+(<=<) :: (Monad m) => (b -> m c) -> (a -> m b) -> (a -> m c)
+f <=< g = (\x -> g x >>= f)
+```
+
+由于Monad可以看做是monadic function的结果, 因此Monad的<u>Associativity</u>其实表示的是`<=<`有**结合律**:
+```haskell
+(f <=< g) <=< h == f <=< (g <=< h)
+```
+
+同样从另外两个law可以得到:
+```haskell
+-- Left Identity
+return <=< f = f
+-- Right Identity
+f <=< return = f
+```
+
+这种一连串的`<=<`复合就像是`.`复合的Monad版本, 它会得到一个单参函数, 输入一个普通变量, 然后进行一连串的Monad计算后输出结果Monad.
+```haskell
+ghci> f x = Just (x + 3)
+ghci> g x = Just (x * 2)
+ghci> h x = Just (x + 5)
+-- f(g(h(7)))
+ghci> ((f <=< g) <=< h) 7
+Just 27
+-- 结合律
+ghci> (f <=< (g <=< h)) 7
+Just 27
+```
 
 
 ### Maybe Monad
@@ -1756,6 +1904,7 @@ m >>= (\x -> k x >>= h) = (m >>= k) >>= h
 `Maybe`的Monad实现就是把内部值用模式匹配取出来传给函数即可. 这使得一些<u>可能失败的函数</u>(即可能返回`Nothing`的函数)对一个变量进行**连续**的`>>=`的时候, 如果有**任一**时刻出现失败, 那么结果必然是失败.
 ```haskell
 instance Monad Maybe where  
+	return x = Just x
     Nothing >>= f = Nothing  
     Just x >>= f  = f x  
 ```
@@ -1780,6 +1929,12 @@ Nothing
 ```
 
 ### List Monad TODO
+
+```haskell
+instance Monad [] where  
+    return x = [x]  
+    xs >>= f = concat (map f xs)  
+```
 
 
 # Lazy
