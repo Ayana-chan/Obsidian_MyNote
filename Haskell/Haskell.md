@@ -367,6 +367,10 @@ getZipList :: ZipList a -> [a]
 > [!note]
 > 把newtype理解为类型变换是没有大问题的.
 
+> [!note]
+> 单纯别名的话使用`type`.
+
+
 
 #### 用于更换 type variable 顺序
 
@@ -618,6 +622,8 @@ putStrLn $ reverse line
 ```
 
 而`&`是把`$`的输入反过来, 入参`x`写在前面, 目标函数`f`写在后面. 语义上是让左边求得参数x, 右边求和函数`f`, 然后把`x`传给`f`. 目标是**让一个参数被连续应用多个函数**, 即`x & f1 & .. & fn`等价于`fn (.. (f1 x))`.
+
+位于`Data.Function`.
 
 ```haskell
 -- 定义
@@ -1229,6 +1235,9 @@ Functor Law 2: `fmap (f . g) = fmap f . fmap g`.
 
 Applicative typeclass实现了这个功能. **只有实现了Functor的type才能实现Applicative**. 同样只能接收单参数的type constructor.
 
+> [!info]
+> Applicative表示有一个拥有context的type, 可以对其进行操作并保留context.
+
 ```haskell
 ghci> :i Applicative
 type Applicative :: (* -> *) -> Constraint
@@ -1242,7 +1251,7 @@ class Functor f => Applicative f where
 
 `pure` 可以**把一个变量塞进Applicative Functor里面**; 或者说: 把一个普通值放到一个默认 context 下, 且它是<u>能包含这个值的最小的context</u>. 
 
-`<*>` (叫做**apply**) (**左结合**)把`f a`应用到了`f (a -> b)`上, 产生了`f b`, 也就是上面所说的功能. 但也可以看做是把`f (a -> b)`给变成`f a -> f b`, 即把Applicative内部的函数**lift**成Applicative之间的函数. 
+`<*>` (叫做**apply**函数) (**左结合**)把`f a`应用到了`f (a -> b)`上, 产生了`f b`, 也就是上面所说的功能. 但也可以看做是把`f (a -> b)`给变成`f a -> f b`, 即把Applicative内部的函数**lift**成Applicative之间的函数. 
 
 > [!notice]
 > 同一个Applicative才能apply. 也因此, 一个type的apply行为会非常明确, 可以通过看其实现源码来确定.
@@ -1659,7 +1668,96 @@ instance Monoid (First a) where
 
 `Last`也是类似的定义但**永远返回最后一个`Just x`**.
 
-## Monad TODO
+## Monad
+
+Monad typeclass是为了实现: 有一个包装后的值(monadic value), 和一个接收普通值返回被包装后的值的函数, 把此函数应用到包装内的值, 并且只返回一层包装(也是 monadic value). 强制使用`fmap`会得到`f f a`两层包装.
+
+**只有Applicative才能实现Monad**. 只需要定义`>>=`即可.
+
+```haskell
+type Monad :: (* -> *) -> Constraint
+class Applicative m => Monad m where
+  (>>=) :: m a -> (a -> m b) -> m b
+  (>>) :: m a -> m b -> m b
+  m >> k = m >>= \_ -> k -- m >>= const k
+  return :: a -> m a
+  return = pure
+```
+
+`>>=`称为**bind**函数, 或者`flatMap`. 它提供了`a -> m b`的**连续应用**的可能性.
+
+`>>`利用bind拼接Monad, 会让bind的目标函数永远返回第二个Monad, 注意要考虑bind的时候目标函数是否会被执行. 类似于命令式语言的分号`;`, 只会执行不会取值, 这在do block里面有更多体现.
+
+> [!note]
+> 普通变量的函数只需要给返回值加上return包装就能用于Monad.
+
+Monad和Applicative有如下关系:
+- `return = pure`, 在这里是把普通变量用Monad包装.
+- `m1 <*> m2 = m1 >>= (\x1 -> m2 >>= (\x2 -> return (x1 x2)))`.
+
+`Maybe`的Monad实现就是把内部值用模式匹配取出来传给函数即可. 这使得一些<u>可能失败的函数</u>(即可能返回`Nothing`的函数)对一个变量进行**连续**的`>>=`的时候, 如果有**任一**时刻出现失败, 那么结果必然是失败.
+```haskell
+instance Monad Maybe where  
+    Nothing >>= f = Nothing  
+    Just x >>= f  = f x  
+```
+
+```haskell
+ghci> return "WHAT" :: Maybe String  
+Just "WHAT"  
+ghci> Just 9 >>= \x -> return (x*10)  
+Just 90  
+ghci> Nothing >>= \x -> return (x*10)  
+Nothing 
+```
+
+`>>`表现为, 连续的`Maybe`中只要出现Nothing就返回Nothing, 否则返回最后一项.
+```haskell
+ghci> Nothing >> Just 3  
+Nothing  
+ghci> Just 3 >> Just 4  
+Just 4  
+ghci> Just 3 >> Nothing  
+Nothing  
+```
+
+
+### do block
+
+> [!info]
+> `do`是一个强大的语法糖.
+
+Monad想要bind的目标函数`a -> m b`内部很可能也是使用bind来实现的, 或者说组合多个Monad就会出现这种情况, 此时会出现<u>括号嵌套和临时的lambda</u>. 例如把两个Maybe给bind到一个二元函数(`show x ++ y`)中:
+```haskell
+foo :: Maybe String  
+foo = Just 3   >>= (\x -> 
+      Just "!" >>= (\y -> 
+      Just (show x ++ y))) 
+```
+
+等价于:
+```haskell
+foo :: Maybe String  
+foo = do  
+    x <- Just 3  
+    y <- Just "!"  
+    Just (show x ++ y)  
+```
+
+do可以通过递归的形式解糖, 每次把第一行扔出去, 直到简单返回最后一行. 在最后的解糖结果表达式中, 第一行是最外面一层, 最后一行是最里面的入参.
+
+- `<-`把Monad里的东西绑定, 绑定出的是**lambda表达式的参数**, 可以理解为Monad里面的被包含type的一个单位. 因此`Monad a`绑定后的type就是`a`, 无论此Monad内部如何存放`a`. 
+	- 即`do { x <- m1; m2 x }` 等价于 `m1 >>= (\x -> do { m2 x } )`.
+- 在`do`里面出现了不绑定的行(即普通表达式)时, 相当于使用`>>`, 只是**执行**, 其结果不被考虑. 
+	- 即`do { m1; m2 }` 等价于 `m1 >> do { m2 }`.
+- `do`里面可以有**let表达式**, 相当于在外部书写, 只是为了写代码更流畅所以允许写里面.
+	- 即`do { let s1; m1 s1 }` 等价于 `let s1 in do { m1 s1 }`.
+	- 或`do { let s1; m1 s1 }` 等价于 `do { m1 s1 } where s1`.
+- `do`要求最后一行决定返回类型, 因此**最后一行不进行绑定**. 
+	- 即`do { m1 }` 等价于 `m1`.
+
+
+
 
 
 # Lazy
