@@ -1695,32 +1695,6 @@ Monad和Applicative有如下关系:
 - `return = pure`, 在这里是把普通变量用Monad包装.
 - `m1 <*> m2 = m1 >>= (\x1 -> m2 >>= (\x2 -> return (x1 x2)))`.
 
-`Maybe`的Monad实现就是把内部值用模式匹配取出来传给函数即可. 这使得一些<u>可能失败的函数</u>(即可能返回`Nothing`的函数)对一个变量进行**连续**的`>>=`的时候, 如果有**任一**时刻出现失败, 那么结果必然是失败.
-```haskell
-instance Monad Maybe where  
-    Nothing >>= f = Nothing  
-    Just x >>= f  = f x  
-```
-
-```haskell
-ghci> return "WHAT" :: Maybe String  
-Just "WHAT"  
-ghci> Just 9 >>= \x -> return (x*10)  
-Just 90  
-ghci> Nothing >>= \x -> return (x*10)  
-Nothing 
-```
-
-`>>`表现为, 连续的`Maybe`中只要出现Nothing就返回Nothing, 否则返回最后一项.
-```haskell
-ghci> Nothing >> Just 3  
-Nothing  
-ghci> Just 3 >> Just 4  
-Just 4  
-ghci> Just 3 >> Nothing  
-Nothing  
-```
-
 
 ### do block
 
@@ -1756,8 +1730,56 @@ do可以通过递归的形式解糖, 每次把第一行扔出去, 直到简单�
 - `do`要求最后一行决定返回类型, 因此**最后一行不进行绑定**. 
 	- 即`do { m1 }` 等价于 `m1`.
 
+### Monad Law
+
+Left Identity:
+```haskell
+return a >>= k = k a
+```
+
+Right Identity:
+```haskell
+m >>= return = m
+```
+
+Associativity:
+```haskell
+m >>= (\x -> k x >>= h) = (m >>= k) >>= h
+```
+
+通过Associativity, 两个 monadic functions 可以**复合**, 保证连续bind这两个函数(等号右边)<u>等价于</u>bind复合后的函数(等号左边). TODO
 
 
+
+### Maybe Monad
+
+`Maybe`的Monad实现就是把内部值用模式匹配取出来传给函数即可. 这使得一些<u>可能失败的函数</u>(即可能返回`Nothing`的函数)对一个变量进行**连续**的`>>=`的时候, 如果有**任一**时刻出现失败, 那么结果必然是失败.
+```haskell
+instance Monad Maybe where  
+    Nothing >>= f = Nothing  
+    Just x >>= f  = f x  
+```
+
+```haskell
+ghci> return "WHAT" :: Maybe String  
+Just "WHAT"  
+ghci> Just 9 >>= \x -> return (x*10)  
+Just 90  
+ghci> Nothing >>= \x -> return (x*10)  
+Nothing 
+```
+
+`>>`表现为, 连续的`Maybe`中只要出现Nothing就返回Nothing, 否则返回最后一项.
+```haskell
+ghci> Nothing >> Just 3  
+Nothing  
+ghci> Just 3 >> Just 4  
+Just 4  
+ghci> Just 3 >> Nothing  
+Nothing  
+```
+
+### List Monad TODO
 
 
 # Lazy
