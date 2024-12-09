@@ -1973,7 +1973,7 @@ auto fact(int x) -> int {
 
 java, cpp等语言都是在参数上eager, 但是条件表达式不eager.
 
-一个为了延迟计算(delay evaluation)的**无参函数**称为**thunk**. 用作动词: "thunk the expression", 表示将表达式包装延迟计算.
+一个为了延迟计算(delay evaluation)的**无参函数**称为**thunk**. 用作动词: "thunk the expression", 表示将表达式包装延迟计算. 并不是朴素的无参函数, 它可能会有记忆化等特性.
 
 
 
