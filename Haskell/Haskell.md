@@ -50,11 +50,20 @@ stack exec my-project-exe
 
 ## 群
 
+设$(S, *)$为一个带有二元运算$*$的集合$S$ (称为**原群**), 则:
+- 同时满足下面两条的称为**幺元**(单位元):
+	- $e$是**左幺元**, 如果$\forall a \in S, e * a = a$.
+	- $e$是**右幺元**, 如果$\forall a \in S, a * e = a$.
+- 同时满足下面两条的称为**零元**:
+	- $\theta$是**左零元**, 如果$\forall a \in S, \theta * a = \theta$.
+	- $\theta$是**右零元**, 如果$\forall a \in S, a * \theta = \theta$.
+
+
 若集合$G \neq \varnothing$, 在$G$上的二元运算 $\cdot : G \times G \rightarrow G$ (称为群的乘法, 结果称为积) 构成的代数结构$G(G, \cdot)$, 满足:
 1. **封闭性 (Closure)**: 运算结果依然在集合内. $\forall a, b \in G, a \cdot b \in G$.
 2. **结合律 (Associativity)**: 运算有结合律. $\forall a,b,c\in G, (a\cdot b)\cdot c=a\cdot(b\cdot c)$.
-3. **幺元 (Identity)**(单位元): <u>幺元</u>$e$对任意元素的左右乘都为元素本身.$\exists e \in G, \forall a\in G, e\cdot a=a\cdot e=a$.
-4. **逆元**：$\forall a\in G,\exists b\in G, a\cdot b=b\cdot a=e$. $b$称为$a$的<u>逆元</u>,记为$a^{-1}$.
+3. **幺元 (Identity)**: 存在<u>幺元</u>$e$对任意元素的左右乘都为元素本身.$\exists e \in G, \forall a\in G, e\cdot a=a\cdot e=a$.
+4. **逆元**：存在$b$称为$a$的<u>逆元</u>,记为$a^{-1}$. $\forall a\in G,\exists b\in G, a\cdot b=b\cdot a=e$. 
 则$(G, \cdot)$称为一个**群 (Group)** 或**乘法群**, 简记为$G$.
 
 - 若只满足 Closure 和 Associativity, 则称为**半群 (Semi-group)**.
@@ -1065,6 +1074,9 @@ fib' n = fibonacci n 1 0
 
 ### IO Action
 
+> [!info]
+> IO Action 是一个**Monad**, 更是一个MonadFail和MonadPlus.
+
 ```haskell
 main :: IO ()
 main = do
@@ -1097,21 +1109,13 @@ getLine :: IO String
 > [!tip]
 > `putStrLn`没有返回值因此也不会对其绑定.
 
-任何一段程序一旦依赖着 I/O 数据的话, 那段程序也会被视为 **I/O code**.
+一个IO action会在被**传给main**并且执行程序的时候**触发**. TODO: 待测试
 
-TODO: 学完monad整理这个, 尤其是do block的意思
-
-一个IO action会在被**绑定到 `main` 这个名字**并且执行程序的时候**触发**. 
-
-do block中, 最后一个 action 不能绑定任何名字.
 
 ### return
 
 
 使用`return`**函数**把一个变量使用IO action包裹.
-
-> [!notice]
-> 是一个函数!!!只有包裹作用, 不会改变控制流!!!
 
 ```haskell
 -- 这么做没什么意义, 效果等价于 let a = "hello"
@@ -1149,12 +1153,22 @@ reverseWords :: String -> String
 reverseWords = unwords . map reverse . words
 ```
 
-### TODO 利用工具函数
+### sequence
 
-sequence, when
+`sequence`函数可以用于把多个IO action串成一个, 从而简化多步骤的IO操作的编写(包括输入输出).
 
+```haskell
+main = do
+    rs <- sequence [getLine, getLine, getLine]
+    print rs
 
-
+-- 等价于分开写
+main = do
+    a <- getLine
+    b <- getLine
+    c <- getLine
+    print [a,b,c]
+```
 
 
 # 特殊 typeclass
@@ -1808,9 +1822,11 @@ class Applicative f => Alternative f where
   empty :: f a
   (<|>) :: f a -> f a -> f a
   
+  -- One or more.
   some :: f a -> f [a]
   some v = (:) <$> v <*> many v
-  
+
+  -- Zero or more.
   many :: f a -> f [a]
   many v = some v <|> pure []
 ```
@@ -1821,6 +1837,24 @@ class Applicative f => Alternative f where
 
 > [!info]
 > [MonadPlus](Haskell/Haskell.md#MonadPlus)是Alternative和Monad的简单拼接, 能扩展出很多功能.
+
+`some`会在`v`为 一个<u>不执行apply目标函数</u>的值 的时候中断, 例如Nothing. `some`最少返回空.
+
+`many`调用`some`, 就算`some`返回空, 也起码有`pure []`, 因此最少返回单一结果.
+
+```haskell
+ghci> some Nothing
+Nothing
+ghci> many Nothing
+Just []
+ghci> some []
+[]
+ghci> many []
+[[]]
+```
+
+> [!warning]
+> 依然没搞懂some和many的用法, 说是可以用于parser.
 
 ### Alternative Law
 
@@ -2254,6 +2288,20 @@ main = do
 ### unless
 
 仅仅是把`when`的对错反过来.
+
+
+## sequence
+
+sequence把 多个Monad组合 合成 一个包含组合的Monad, 例如把`[m a]`变成`m [a]`.
+
+```haskell
+sequence :: (Traversable t, Monad m) => t (m a) -> m (t a)
+```
+
+```haskell
+sequence :: Monad m => [m a] -> m [a]
+sequence :: [IO a] -> IO [a]
+```
 
 
 ## Foldable
