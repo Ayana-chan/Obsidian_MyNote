@@ -1,6 +1,8 @@
 [Haskell趣学指南\_w3cschool](https://www.w3cschool.cn/hsriti/)
 # 安装与使用
 
+## 安装
+
 使用科大源安装GHCup: [GHCup - USTC Mirror Help](https://mirrors.ustc.edu.cn/help/ghcup.html)
 
 [配置 Haskell 开发环境（2023） | Zhichao Guan’s Home Page](https://higher-order.fun/cn/2023/08/27/InstallHaskell.html)
@@ -20,6 +22,12 @@ Error: [S-7282]
 
        <stderr>: commitAndReleaseBuffer: invalid argument (cannot encode character '\8226')
 ```
+
+## 链接
+
+标准库查询: [Haskell Hierarchical Libraries](https://downloads.haskell.org/ghc/latest/docs/libraries/)
+
+检索库内容(包括第三方库): [Hoogle](https://hoogle.haskell.org/)
 
 # ghci
 
@@ -2439,13 +2447,7 @@ instance Foldable Tree where
 
 # Module 模块
 
-
-标准库: [Haskell Hierarchical Libraries](https://downloads.haskell.org/ghc/latest/docs/libraries/)
-
-检索库内容(包括第三方库): [Hoogle](https://hoogle.haskell.org/)
-
 [haskell org Modules](https://www.haskell.org/onlinereport/haskell2010/haskellch5.html)
-
 
 ## 导入模块
 
