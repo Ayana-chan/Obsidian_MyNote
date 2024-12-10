@@ -89,7 +89,7 @@ lengthCompare x y = let a = length x `compare` length y
 
 函数式编程语言的一般思路：先取一个初始集合，对其进行变形、执行过滤条件（map and reduce）得到最终结果。
 
-所有的表达式都要求返回一个值. `if`语句也是个表达式, 因此必须有`else`.
+所有的表达式都要求返回一个值. `if`语句也是个表达式, 因此必须有`else`. 如果`else`情况不应该做任何事情, 也不知道该如何返回值的话, 应该使用`when`.
 
 **type variable (类型变量)** 就是泛型, 由小写字母`a` `b` `c`等表示. 使用类型变量的函数称之为**多态(polymorphic)函数**.
 
@@ -754,13 +754,27 @@ List常用函数：
 -- [[1,19],[2,18],[3,17],[4,16],[5,15],[6,14],[7,13],[8,12],[9,11],[10,10]]
 ```
 
+这是一个语法糖, 最后会被转化成 [List Monad](Haskell/Haskell.md#List%20Monad) 操作.
+
 ### Non-deterministic 视角
 
-List可以被看做是 **non-deterministic 的计算**, 即计算结果不知道是什么(范围是里面的所有元素). 那么两个 non-deterministic 的计算互相再计算的话, 就更加具有不确定性了. 例如, 3长度的两个List相乘得到的是9个元素:
+List可以被看做是 **non-deterministic 的计算**, 即计算结果不知道是什么(范围是里面的所有元素). 那么两个 non-deterministic 的计算互相再计算的话, 就更加具有不确定性了. 
+
+例如, 3长度的两个List相乘得到的是9个元素:
 ```haskell
 ghci> [ x*y | x <- [2,5,10], y <- [8,10,11]] 
 -- 使用 applicative style 的话更明显
 ghci> (*) <$> [2,5,10] <*> [8,10,11][16,20,22,40,50,55,80,100,110]
+```
+
+两个长度为2的List的元组组合生成长度为4的List:
+```haskell
+listOfTuples :: [(Int,Char)]  
+listOfTuples = do  
+    n <- [1,2]  
+    ch <- ['a','b']  
+    return (n,ch) 
+-- [(1,'a'),(1,'b'),(2,'a'),(2,'b')] 
 ```
 
 ### NonEmpty
@@ -1140,6 +1154,11 @@ reverseWords = unwords . map reverse . words
 sequence, when
 
 
+
+
+
+# 特殊 typeclass
+
 ## Semigroup
 
 [Data.Semigroup](https://downloads.haskell.org/ghc/latest/docs/libraries/base-4.20.0.0-1f57/Data-Semigroup.html)
@@ -1414,6 +1433,30 @@ f <$> x = fmap f x
 ```
 
 
+### Functor Law
+
+Functor应当满足两个Functor Law. 这是设计上的要求, 不会被编译器检查.
+
+Identity: 
+```haskell
+fmap id = id
+``` 
+
+意为Functor应当满足: 对一个Functor使用`id`函数进行`fmap`, 等价于对Functor本身调用`id`函数. 简单来说, 使用`id`的`fmap`应该什么都不做.
+
+> [!note]
+> 这防止了额外固定操作. 例如, `Maybe`应当在`Nothing`的时候什么都不做, 但如果在进行`fmap`的时候, 把`Nothing`全换成某个默认值, 那也<u>不会违背</u>Functor typeclass, 但是<u>违背</u>了 Functor Law 1. 显然这种替换完全不符合使用者的本意. `fmap`时固定改变其他变量的值也违背了本意. 
+
+Composition: 
+```haskell
+fmap (f . g) = fmap f . fmap g
+```
+
+或者说对任意Functor `F`, 有`fmap (f . g) F = fmap f (fmap g F)`. 这就要求对Functor的多次`fmap`等价于所有操作函数的复合函数的单次`fmap`. 
+
+> [!note]
+> 这防止了内部操作的行为不完全局限于传入的操作函数. 例如, 如果`fmap g`会让元素`x`变成`g x + 1`, 那么再次`fmap f`的时候就会得到`(f $ g x + 1) + 1`; 但是`fmap (f . g)` 得到的是`(f g x) + 1`, 显然不等价. 应当老老实实应用函数, 不允许有额外的操作.
+
 ### 例子
 
 **IO action** 可以对内部的值进行操作, 最后还是能通过`return`得到新的IO action. 它以Functor的形式实现这个功能:
@@ -1476,30 +1519,6 @@ ghci> fmap (\f -> f 9) a
 [9,18,27,36]  
 ```
 
-### Functor Law
-
-Functor应当满足两个Functor Law. 这是设计上的要求, 不会被编译器检查.
-
-Identity: 
-```haskell
-fmap id = id
-``` 
-
-意为Functor应当满足: 对一个Functor使用`id`函数进行`fmap`, 等价于对Functor本身调用`id`函数. 简单来说, 使用`id`的`fmap`应该什么都不做.
-
-> [!note]
-> 这防止了额外固定操作. 例如, `Maybe`应当在`Nothing`的时候什么都不做, 但如果在进行`fmap`的时候, 把`Nothing`全换成某个默认值, 那也<u>不会违背</u>Functor typeclass, 但是<u>违背</u>了 Functor Law 1. 显然这种替换完全不符合使用者的本意. `fmap`时固定改变其他变量的值也违背了本意. 
-
-Composition: 
-```haskell
-fmap (f . g) = fmap f . fmap g
-```
-
-或者说对任意Functor `F`, 有`fmap (f . g) F = fmap f (fmap g F)`. 这就要求对Functor的多次`fmap`等价于所有操作函数的复合函数的单次`fmap`. 
-
-> [!note]
-> 这防止了内部操作的行为不完全局限于传入的操作函数. 例如, 如果`fmap g`会让元素`x`变成`g x + 1`, 那么再次`fmap f`的时候就会得到`(f $ g x + 1) + 1`; 但是`fmap (f . g)` 得到的是`(f g x) + 1`, 显然不等价. 应当老老实实应用函数, 不允许有额外的操作.
-
 ## Applicative
 
 [Control.Applicative](https://hackage.haskell.org/package/base-4.20.0.1/docs/Control-Applicative.html)
@@ -1514,7 +1533,7 @@ Applicative typeclass实现了这个功能. **只有实现了Functor的type才�
 只需同时实现`pure`和`<*>`.
 
 > [!tip]
-> Applicative表示有一个拥有context的type, 可以对其进行操作并保留context.
+> Applicative表示有一个拥有context的type, 可以对其进行操作并保留context. 因为全程都在<u>同一个Applicative</u>的包裹下, 因此context是一致的.
 
 ```haskell
 ghci> :i Applicative
@@ -1534,6 +1553,7 @@ class Functor f => Applicative f where
 > [!notice]
 > 同一个Applicative才能apply. 也因此, 一个type的apply行为会非常明确, 可以通过看其实现源码来确定.
 
+`liftA2`提供了更方便的`f a -> f b -> f c`函数的获取方式. 换句话说, Applicative**都能使用**形如`f a -> f b -> f c`的东西. 详见[liftA2](Haskell/Haskell.md#liftA2).
 
 
 ### Applicative Style
@@ -1563,6 +1583,28 @@ fmap f <$> x <*> y <*> ...
 > [!tip]
 > Applicative Style 依然要求所有参数使用同一个Applicative Functor.
 
+
+### Applicative Law
+
+Identity: 
+```haskell
+pure id <*> v = v
+```
+
+Composition:
+```haskell
+pure (.) <*> u <*> v <*> w = u <*> (v <*> w)
+```
+
+Homomorphism:
+```haskell
+pure f <*> pure x = pure (f x)
+```
+
+Interchange:
+```haskell
+u <*> pure y = pure ($ y) <*> u
+```
 
 ### 例子
 
@@ -1685,28 +1727,6 @@ ghci> funcList 5
 (8.0,10.0,2.5)
 ```
 
-### Applicative Law
-
-Identity: 
-```haskell
-pure id <*> v = v
-```
-
-Composition:
-```haskell
-pure (.) <*> u <*> v <*> w = u <*> (v <*> w)
-```
-
-Homomorphism:
-```haskell
-pure f <*> pure x = pure (f x)
-```
-
-Interchange:
-```haskell
-u <*> pure y = pure ($ y) <*> u
-```
-
 ### liftA2
 
 其内部实现就是applicative style, 内涵一个函数和两个变量. 其参数为**一个双参函数和两个 Applicative Functor**. 其目的是将其封装为一个lifting操作, 即给出普通双参函数, 将其lift成 Applicative Functor的双参函数. 或者说, `liftA2`使一个双参函数可以直接<u>无视Functor的包装</u>, 直接对内部进行操作.
@@ -1776,6 +1796,106 @@ ghci> and $ sequenceA [(>4),(<10),odd] 7
 True
 ```
 
+## Alternative
+
+Alternative 是 **Applicative的Monoid**. 相比于Monoid, 实现Alternative的type必须包含一个type variable, 且由Applicative保证其可操作性.
+
+需要提供`empty`和`<|>`的实现.
+
+```haskell
+type Alternative :: (* -> *) -> Constraint
+class Applicative f => Alternative f where
+  empty :: f a
+  (<|>) :: f a -> f a -> f a
+  
+  some :: f a -> f [a]
+  some v = (:) <$> v <*> many v
+  
+  many :: f a -> f [a]
+  many v = some v <|> pure []
+```
+
+`empty`是`<|>`的 **identity**.
+
+`<|>`是一个有**结合律**的且以`empty`为identity的**二元函数**.
+
+> [!info]
+> [MonadPlus](Haskell/Haskell.md#MonadPlus)是Alternative和Monad的简单拼接, 能扩展出很多功能.
+
+### Alternative Law
+
+```haskell
+-- Identity
+empty <|> a     == a
+a     <|> empty == a
+-- Associativity
+u <|> (v <|> w) = (u <|> v) <|> w
+```
+
+### 例子
+
+List 是 Alternative. 它会把所有List**拼接**起来. 因此空List不会产生任何影响.
+```haskell
+instance Alternative [] where
+    empty = []
+    (<|>) = (++)
+```
+
+```haskell
+ghci> [1,2] <|> [3,4]
+[1,2,3,4]
+ghci> [1,2] <|> empty
+[1,2]
+```
+
+---
+
+ZipList 是 Alternative. 相比于List, ZipList会把后面的元素用前面的同下标的元素给**覆盖**掉.
+```haskell
+instance Alternative ZipList where
+   empty = ZipList []
+   ZipList xs <|> ZipList ys = ZipList (xs ++ drop (length xs) ys)
+```
+
+```haskell
+ghci> getZipList $ ZipList [1,2] <|> ZipList [3,4,5,6]
+[1,2,5,6]
+ghci> getZipList $ ZipList [1,2,3,4] <|> ZipList [3,4,5,6]
+[1,2,3,4]
+```
+
+---
+
+Maybe 是 Alternative. 它永远选择**第一个非Nothing的东西**(或在全为Nothing的时候返回Nothing). 因此`Nothing`不会产生任何影响.
+```haskell
+instance Alternative Maybe where
+    empty = Nothing
+    Nothing <|> r = r
+    l       <|> _ = l
+```
+
+```haskell
+ghci> Just 2 <|> Just 3
+Just 2
+ghci> Nothing <|> Just 2
+Just 2
+```
+
+### asum
+
+`asum`函数用于折叠Alternative. 过程类似于foldMap利用Monoid进行折叠, 但不需要转化.
+```haskell
+asum :: (Foldable t, Alternative f) => t (f a) -> f a
+asum = foldr (<|>) empty
+```
+
+```haskell
+ghci> asum [Nothing, Just 5, Just 3]
+Just 5
+ghci> asum [[2],[3],[4,5]]
+[2,3,4,5]
+```
+
 ## Monad
 
 [Control.Monad](https://downloads.haskell.org/ghc/latest/docs/libraries/base-4.20.0.0-1f57/Control-Monad.html#t:Monad)
@@ -1796,7 +1916,7 @@ class Applicative m => Monad m where
 
 `>>=`称为**bind**函数, 或者`flatMap`. 它提供了`a -> m b`的**连续应用**的可能性.
 
-`>>`利用bind拼接Monad, 会让bind的目标函数永远返回第二个Monad, 注意要考虑bind的时候目标函数是否会被执行. 类似于命令式语言的分号`;`, 只会执行不会取值, 这在do block里面有更多体现.
+`>>`利用bind拼接Monad, 会让bind的目标函数永远返回第二个Monad, 注意要考虑bind的时候目标函数是否会被执行, 也因此可以用于判断Monad内容是不是"正常"(即查看是否失败). 类似于命令式语言的分号`;`, 只会执行不会取值, 这在do-notation里面有更多体现. 
 
 > [!note]
 > 普通变量的函数只需要给返回值加上return包装就能用于Monad. 可以使用复合来包装: `return . f`.
@@ -1808,40 +1928,6 @@ Monad和Applicative有如下关系:
 - `return = pure`, 在这里是把普通变量用Monad包装.
 - `m1 <*> m2 = m1 >>= (\x1 -> m2 >>= (\x2 -> return (x1 x2)))`.
 
-
-### do block
-
-> [!info]
-> `do`是一个强大的语法糖.
-
-Monad想要bind的 monadic function 的内部很可能也是使用bind来实现的, 或者说组合多个Monad就会出现这种情况, 此时会出现<u>括号嵌套和临时的lambda</u>. 例如把两个Maybe给bind到一个二元函数(`show x ++ y`)中:
-```haskell
-foo :: Maybe String  
-foo = Just 3   >>= (\x -> 
-      Just "!" >>= (\y -> 
-      Just (show x ++ y))) 
-```
-
-等价于:
-```haskell
-foo :: Maybe String  
-foo = do  
-    x <- Just 3  
-    y <- Just "!"  
-    Just (show x ++ y)  
-```
-
-do可以通过递归的形式解糖, 每次把第一行扔出去, 直到简单返回最后一行. 在最后的解糖结果表达式中, 第一行是最外面一层, 最后一行是最里面的入参.
-
-- `<-`把Monad里的东西绑定, 绑定出的是**lambda表达式的参数**, 可以理解为Monad里面的被包含type的一个单位. 因此`Monad a`绑定后的type就是`a`, 无论此Monad内部如何存放`a`. 
-	- 即`do { x <- m1; m2 x }` 等价于 `m1 >>= (\x -> do { m2 x } )`.
-- 在`do`里面出现了不绑定的行(即普通表达式)时, 相当于使用`>>`, 只是**执行**, 其结果不被考虑. 
-	- 即`do { m1; m2 }` 等价于 `m1 >> do { m2 }`.
-- `do`里面可以有**let表达式**, 相当于在外部书写, 只是为了写代码更流畅所以允许写里面.
-	- 即`do { let s1; m1 s1 }` 等价于 `let s1 in do { m1 s1 }`.
-	- 或`do { let s1; m1 s1 }` 等价于 `do { m1 s1 } where s1`.
-- `do`要求最后一行决定返回类型, 因此**最后一行不进行绑定**. 
-	- 即`do { m1 }` 等价于 `m1`.
 
 ### Monad Law
 
@@ -1855,7 +1941,7 @@ Right Identity (Right Unit Law): Monad bind到return上得到它本身. 即Monad
 m >>= return = m
 ```
 
-Associativity: `>>=`计算有**特殊的结合律**, 需要写成lambda, 但可以使用`<=<`让其更简洁.
+Associativity: `>>=`计算有**特殊的结合律**, 需要写成lambda, 但可以使用`<=<`让其更简洁. 这保证了bind不会出现意想不到的额外作用.
 ```haskell
 (m >>= k) >>= h = m >>= (\x -> k x >>= h)
 ```
@@ -1899,6 +1985,39 @@ Just 27
 ```
 
 
+### do-notation
+
+> [!info]
+> `do`是一个强大的语法糖.
+
+Monad想要bind的 monadic function 的内部很可能也是使用bind来实现的, 或者说组合多个Monad就会出现这种情况, 此时会出现<u>临时的lambda</u>. 例如把两个Maybe给bind到一个二元函数(`show x ++ y`)中:
+```haskell
+foo :: Maybe String  
+-- Just 3 >>= (\x -> Just "!" >>= (\y -> Just (show x ++ y)))
+foo = Just 3 >>= \x -> Just "!" >>= \y -> Just (show x ++ y)
+```
+
+使用do可以更简洁地等价表示成:
+```haskell
+foo :: Maybe String  
+foo = do  
+    x <- Just 3  
+    y <- Just "!"  
+    Just (show x ++ y)  
+```
+
+do可以通过递归的形式解糖, 每次把第一行扔出去, 直到简单返回最后一行. 在最后的解糖结果表达式中, 第一行是最外面一层, 最后一行是最里面的入参.
+
+- `<-`把Monad里的东西绑定, 绑定出的是**lambda表达式的参数**, 可以理解为Monad里面的被包含type的一个单位. 因此`Monad a`绑定后的type就是`a`, 无论此Monad内部如何存放`a`. 
+	- 即`do { x <- m1; m2 x }` 等价于 `m1 >>= (\x -> do { m2 x } )`.
+- 在`do`里面出现了不绑定的行(即普通表达式)时, 相当于使用`>>`, 只是**执行**, 其结果不被考虑. 
+	- 即`do { m1; m2 }` 等价于 `m1 >> do { m2 }`.
+- `do`里面可以有**let表达式**, 相当于在外部书写, 只是为了写代码更流畅所以允许写里面.
+	- 即`do { let s1; m1 s1 }` 等价于 `let s1 in do { m1 s1 }`.
+	- 或`do { let s1; m1 s1 }` 等价于 `do { m1 s1 } where s1`.
+- `do`要求最后一行决定返回类型, 因此**最后一行不进行绑定**. 
+	- 即`do { m1 }` 等价于 `m1`.
+
 ### Maybe Monad
 
 `Maybe`的Monad实现就是把内部值用模式匹配取出来传给函数即可. 这使得一些<u>可能失败的函数</u>(即可能返回`Nothing`的函数)对一个变量进行**连续**的`>>=`的时候, 如果有**任一**时刻出现失败, 那么结果必然是失败.
@@ -1928,7 +2047,7 @@ ghci> Just 3 >> Nothing
 Nothing  
 ```
 
-### List Monad TODO
+### List Monad
 
 ```haskell
 instance Monad [] where  
@@ -1936,6 +2055,68 @@ instance Monad [] where
     xs >>= f = concat (map f xs)  
 ```
 
+```haskell
+ghci> [3,4,5] >>= \x -> [x,-x]  
+[3,-3,4,-4,5,-5]  
+ghci> [] >>= \x -> ["bad","mad","rad"] 
+[]
+```
+
+两个List Monad放到一个二元函数内的时候(使用do-notation), 更可以体现其non-deterministic:
+```haskell
+ghci> [1,2] >>= \n -> ['a','b'] >>= \ch -> return (n,ch)  
+[(1,'a'),(1,'b'),(2,'a'),(2,'b')] 
+-- 等价于
+listOfTuples :: [(Int,Char)]  
+listOfTuples = do  
+    n <- [1,2]  
+    ch <- ['a','b']  
+    return (n,ch) 
+-- 等价于
+[ (n,ch) | n <- [1,2], ch <- ['a','b'] ]
+```
+
+可见, **list comprehension是个语法糖**, 其中的`<-`就是do-notation的绑定操作, `|`左边就是将被return包装的返回值, 因此整个语句最后会变成`>>=`语句.
+
+## MonadFail
+
+表示可能失败的Monad. 
+
+```haskell
+type MonadFail :: (* -> *) -> Constraint
+class Monad m => MonadFail m where
+  fail :: String -> m a
+```
+
+其**law**是保证`fail s`是`>>=`的 **left zero**. 这保证<u>失败后会取消后面的所有操作</u>.
+```haskell
+fail s >>= f = fail s
+```
+
+如果这还是个MonadPlus, 那么应当把`fail`实现成永远返回`mzero`, 毕竟这恰好就是 left zero.
+```haskell
+fail _ = mzero
+```
+
+## MonadPlus
+
+MonadPlus是 **Alternative 和 Monad 的简单拼接**, 即其内新增的东西都等价于Alternative里的东西.
+
+不需要提供任何实现, 因此在Monad是Alternative的时候可以直接声明它是MonadPlus.
+
+```haskell
+type MonadPlus :: (* -> *) -> Constraint
+class (Alternative m, Monad m) => MonadPlus m where
+  mzero :: m a
+  mzero = empty
+  
+  mplus :: m a -> m a -> m a
+  mplus = (<|>)
+```
+
+`mzero`可以代表**失败**情况, 因此功能上强于MonadFail.
+
+`mplus`被解释为Choice, 是个有identity的可结合的二元函数.
 
 # Lazy
 
@@ -1980,6 +2161,100 @@ java, cpp等语言都是在参数上eager, 但是条件表达式不eager.
 
 
 # 库, 工具与技巧
+
+## 构造元组
+
+`(,,)` 等价于 `\x y z -> (x,y,z)`, 即把各的参数分别写成元组的每一项. `,`可以写任意数量个.
+
+```haskell
+ghci> (,,,) 1 2 3 4
+(1,2,3,4)
+```
+
+
+
+
+## Conditional execution of monadic expressions
+
+[Control.Monad: Conditional execution of monadic expressions](https://downloads.haskell.org/ghc/latest/docs/libraries/base-4.20.0.0-1f57/Control-Monad.html#g:5)
+### guard
+
+`guard`函数会进行**条件判断**:
+- 为真时返回`pure ()`(最简地标记"成功")
+- 否则返回`empty`(表示"失败").
+因此也要求type实现了**Alternative**以指明**identity**作为失败标志.
+```haskell
+guard :: (Alternative f) => Bool -> f () 
+guard True = pure () 
+guard False = empty
+```
+
+```haskell
+ghci> guard (5 > 2) :: Maybe ()
+Just ()
+ghci> guard (1 > 2) :: Maybe ()
+Nothing
+ghci> guard (5 > 2) :: [()]
+[()]
+ghci> guard (1 > 2) :: [()]
+[]
+```
+
+MonadPlus往往会在Empty时采取另一种行为, 而`>>`就是用来检测Monad内容是否"正常"的. 因此`guard`配合`>>`可以用于通过条件判断来决定是否执行`>>`右侧的东西. 
+
+在`do`语句里面, `guard`体现为: 如果判断失败, 则**直接返回失败值**, 不再继续执行.
+
+```haskell
+ghci> [1..50] >>= (\x -> guard ('7' `elem` show x) >> return x) 
+[7,17,27,37,47]
+ghci> do { x <- [1..50]; guard ('7' `elem` show x); return x }
+[7,17,27,37,47]
+ghci> [ x | x <- [1..50], '7' `elem` show x ]
+[7,17,27,37,47]
+```
+
+```haskell
+safeDiv :: Int -> Int -> Maybe Int
+safeDiv x y | y /= 0    = Just (x `div` y)
+            | otherwise = Nothing
+-- 等价于
+safeDiv :: Int -> Int -> Maybe Int
+safeDiv x y = do
+  guard (y /= 0) -- 判断失败则直接返回Nothing
+  return (x `div` y)
+```
+
+### when
+
+进行条件判断, 如果判定失败, 则**Applicative**被<u>灭杀</u>成`pure`, 失去其之前构建的其他信息.
+
+```haskell
+when :: Applicative f => Bool -> f () -> f ()
+when p s = if p then s else pure ()
+```
+
+例如`putStrLn String`会得到`IO ()`, 直接丢给main的话就能输出字符串内容了, 但是如果`when`判定失败就相当于返回了`return ()`, 什么都不会输出.
+```haskell
+main :: IO ()
+main = do
+    let x = 10
+    when (x > 5) $ putStrLn "x is greater than 5"
+    when (x < 5) $ putStrLn "x is less than 5"
+```
+
+```haskell
+main :: IO ()
+main = do
+    c <- getChar
+    when (c /= ' ') $ do
+        putChar c
+        main
+```
+
+### unless
+
+仅仅是把`when`的对错反过来.
+
 
 ## Foldable
 
@@ -2081,6 +2356,7 @@ revconcat xs = foldr (\a b -> b ++ a) [] xs
 revconcat = foldr (++) [] . reverse
 ```
 
+### foldMap
 
 Foldable可以通过仅提供`foldMap`来完成实现, 而`foldMap`**使用Monoid来fold数据**. 它要求提供一个函数把容器内的数据转化成Monoid, 然后使用对应的`mappend`将它们fold到`mempty`上.
 
@@ -2111,44 +2387,6 @@ instance Foldable Tree where
                                 f x           `mappend`  
                                 foldMap f r  
 ```
-
-
-
-
-
-## when
-
-位于`Control.Monad`.
-
-传入一个Bool和一个参数为`()`的Applicative, 返回的是同样的Applicative. 如果Bool为True, 则执行.
-TODO
-
-```haskell
-ghci> import Control.Monad
-ghci> :t when
-when :: Applicative f => Bool -> f () -> f ()
-```
-
-```haskell
-import Control.Monad
-
-main = do
-    c <- getChar
-    when (c /= ' ') $ do
-        putChar c
-        main
-```
-
-## 构造元组
-
-`(,,)` 等价于 `\x y z -> (x,y,z)`, 即把各的参数分别写成元组的每一项. `,`可以写任意数量个.
-
-```haskell
-ghci> (,,,) 1 2 3 4
-(1,2,3,4)
-```
-
-
 
 
 # Module 模块
