@@ -61,7 +61,15 @@ print(data)
 
 项目里使用相对路径的话就容易在使用Embeddable Python的时候报错.
 
+# 问题
 
+## pip无法运行
+
+安装了多个python环境的话, 运行pip时很有可能会报`Fatal error in launcher: Unable to create process using ...`, 此时可以通过**强制重装**此python的pip来解决:
+
+```bash
+python -m pip install --upgrade --force-reinstall pip
+```
 
 
 
