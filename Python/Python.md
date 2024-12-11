@@ -57,7 +57,7 @@ print(data)
 
 要把`python38._pth`里的`import site`的注释给去掉, 才能让其正常工作.
 
-要在`python38._pth`里面加上项目路径(没有import): `../MyProName`.
+要在`python38._pth`里面加上项目路径(没有import): `../MyProName`. 这指示了python搜索模块的根目录, 因此如果有很多程序入口的话, 要全都配置上.
 
 项目里使用相对路径的话就容易在使用Embeddable Python的时候报错.
 
@@ -68,7 +68,7 @@ print(data)
 安装了多个python环境的话, 运行pip时很有可能会报`Fatal error in launcher: Unable to create process using ...`, 此时可以通过**强制重装**此python的pip来解决:
 
 ```bash
-python -m pip install --upgrade --force-reinstall pip
+python -m pip install --upgrade --force-reinstall pip
 ```
 
 
