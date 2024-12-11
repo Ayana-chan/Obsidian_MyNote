@@ -59,10 +59,10 @@ stack exec my-project-exe
 ## 群
 
 设$(S, *)$为一个带有二元运算$*$的集合$S$ (称为**原群**), 则:
-- 同时满足下面两条的称为**幺元**(单位元):
+- 同时满足下面两条的称为**幺元(identity)** 或 **单位元(unit)**:
 	- $e$是**左幺元**, 如果$\forall a \in S, e * a = a$.
 	- $e$是**右幺元**, 如果$\forall a \in S, a * e = a$.
-- 同时满足下面两条的称为**零元**:
+- 同时满足下面两条的称为**零元(zero element)**:
 	- $\theta$是**左零元**, 如果$\forall a \in S, \theta * a = \theta$.
 	- $\theta$是**右零元**, 如果$\forall a \in S, a * \theta = \theta$.
 
@@ -279,6 +279,12 @@ module Shapes( 
 	surface
 ) where
 ```
+
+### Algebraic Data Type
+
+在这里"algebra"指和与积.
+- 和(sum)表示alternation, 即`A | B`, 只能是其一. 例如`data Pair = I Int | D Double`, 只是一个数字, 使用 tag `I`和`D` 来区分两种情况.
+- 积(product)表示combination, 即`A B`, 二者都有. 例如`data Pair = P Int Double`, 把两个type都包进来, 并使用 tag `P` 来进行相关操作.
 
 ### Record Syntax
 
@@ -1950,15 +1956,17 @@ Monad typeclass是为了实现: 有一个包装后的值(**monadic value**), 和
 type Monad :: (* -> *) -> Constraint
 class Applicative m => Monad m where
   (>>=) :: m a -> (a -> m b) -> m b
+  
   (>>) :: m a -> m b -> m b
   m >> k = m >>= \_ -> k -- m >>= const k
+  
   return :: a -> m a
   return = pure
 ```
 
 `>>=`称为**bind**函数, 或者`flatMap`. 它提供了`a -> m b`的**连续应用**的可能性.
 
-`>>`利用bind拼接Monad, 会让bind的目标函数永远返回第二个Monad, 注意要考虑bind的时候目标函数是否会被执行, 也因此可以用于判断Monad内容是不是"正常"(即查看是否失败). 类似于命令式语言的分号`;`, 只会执行不会取值, 这在do-notation里面有更多体现. 
+`>>`利用bind拼接Monad, 会让bind的目标函数永远返回第二个Monad, 注意要考虑bind的时候目标函数是否会被执行, 也因此可以用于判断Monad内容是不是"正常"(即查看是否失败). 类似于命令式语言的分号`;`, 只会执行不会取值, 这在do-notation里面有更多体现. 使用`MonadFail`可以更好地定义失败的情况.
 
 > [!note]
 > 普通变量的函数只需要给返回值加上return包装就能用于Monad. 可以使用复合来包装: `return . f`.
@@ -1973,12 +1981,12 @@ Monad和Applicative有如下关系:
 
 ### Monad Law
 
-Left Identity (Left Unit Law): 把变量装入Monad再应用`a -> m b`**等价于直接应用**. 因此Monad计算的开头可以不使用`return`生成初始Monad, 而是直接应用monadic function.
+Left Identity (Left Unit Law): 把变量装入Monad再应用`a -> m b`**等价于直接应用**. 即`return`是其**特殊的左幺元**. 因此Monad计算的开头可以不使用`return`生成初始Monad, 而是直接应用monadic function. 
 ```haskell
 return a >>= k = k a
 ```
 
-Right Identity (Right Unit Law): Monad bind到return上得到它本身. 即Monad是**自相似**的几何结构.
+Right Identity (Right Unit Law): Monad bind到return上得到它本身. 即Monad是**自相似**的几何结构. 即`return`是其**特殊的右幺元**
 ```haskell
 m >>= return = m
 ```
@@ -1987,6 +1995,9 @@ Associativity: `>>=`计算有**特殊的结合律**, 需要写成lambda, 但可�
 ```haskell
 (m >>= k) >>= h = m >>= (\x -> k x >>= h)
 ```
+
+> [!tip]
+> 类似于Monoid的三个Law, 这也是为什么说Monad是**自函子(endofunctor)范畴上的一个幺半群(monoid)**. 不过这里的幺半群指的是范畴论里的而不是群论里的.
 
 > [!info]
 > 可以推得:
@@ -2000,18 +2011,18 @@ Associativity: `>>=`计算有**特殊的结合律**, 需要写成lambda, 但可�
 f <=< g = (\x -> g x >>= f)
 ```
 
-由于Monad可以看做是monadic function的结果, 因此Monad的<u>Associativity</u>其实表示的是`<=<`有**结合律**:
-```haskell
-(f <=< g) <=< h == f <=< (g <=< h)
-```
-
-同样从另外两个law可以得到:
+由于Monad可以看做是monadic function的结果, 因此可以把 Monad Law 写成:
 ```haskell
 -- Left Identity
 return <=< f = f
 -- Right Identity
 f <=< return = f
+-- Associativity
+(f <=< g) <=< h == f <=< (g <=< h)
 ```
+
+> [!note]
+> 可见 monadic function `Monad m => a -> m b` 是在`<=<`运算上的Monoid.
 
 这种一连串的`<=<`复合就像是`.`复合的Monad版本, 它会得到一个单参函数, 输入一个普通变量, 然后进行一连串的Monad计算后输出结果Monad.
 ```haskell
@@ -2021,7 +2032,7 @@ ghci> h x = Just (x + 5)
 -- f(g(h(7)))
 ghci> ((f <=< g) <=< h) 7
 Just 27
--- 结合律
+-- 结合律, 因此都不需要加括号
 ghci> (f <=< (g <=< h)) 7
 Just 27
 ```
