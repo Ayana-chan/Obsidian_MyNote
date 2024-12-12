@@ -1951,6 +1951,8 @@ auto it1 = upper_bound(nums.begin(), nums.end() , 10);
 ```
 
 可以理解为，这两个函数都找到一个从小到大的有序容器中**等于**目标值的元素的范围`[lower, upper)`，然后`lower_bound`返回`lower`，`upper_bound`返回`upper`。
+- 若**没有等于**的, 则`lower = upper`, 表示大于目标的第一个下标. 
+- 若**找不到**, 则返回`end`.
 
 要在从大到小的数组里面查找的话，要使用`greater<int>()`：
 ```cpp
@@ -2033,7 +2035,7 @@ for (int i :
 }
 ```
 
-range adaptors 是懒求值的.
+range adaptors 是**懒求值**的, 或者说取的都是引用(`xxx_view`).
 
 自己实现管道运算符:
 ```cpp
@@ -2092,6 +2094,18 @@ auto aim_rit = std::ranges::find(vec.rbegin(), vec.rend(), 1);
 int aim_idx = std::ranges::distance(vec.begin(), aim_rit.base()) - 1;
 assert(aim_idx == 4);
 ```
+
+#### 部分二分查找
+
+如果一个容器只有一部分有序, 只需要在这一部分里面查找, 则:
+```cpp
+std::vector<int> vec = {9, 8, 1, 2, 3, 4, 5, 3, 2, 1};
+auto part_vec = vec | std::views::drop(2) | std::views::take(5);
+auto aim_it = std::ranges::lower_bound(vec, 3);
+auto index = std::ranges::distance(vec.begin(), aim_it);
+assert(index == 4);
+```
+
 
 ## piecewise_construct
 
