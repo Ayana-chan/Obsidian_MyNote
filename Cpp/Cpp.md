@@ -2095,9 +2095,9 @@ int aim_idx = std::ranges::distance(vec.begin(), aim_rit.base()) - 1;
 assert(aim_idx == 4);
 ```
 
-#### 部分二分查找
+#### 截取容器进行二分查找
 
-如果一个容器只有一部分有序, 只需要在这一部分里面查找, 则:
+如果一个容器只有一部分有序, 只需要在这一部分里面查找, 那么:
 ```cpp
 std::vector<int> vec = {9, 8, 1, 2, 3, 4, 5, 3, 2, 1};
 auto part_vec = vec | std::views::drop(2) | std::views::take(5);
@@ -2115,6 +2115,8 @@ assert(index == 4);
 
 
 ## inline
+
+[inline specifier - cppreference.com](https://en.cppreference.com/w/cpp/language/inline)
 
 TODO
 
