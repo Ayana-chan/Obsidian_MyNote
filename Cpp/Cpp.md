@@ -2130,8 +2130,30 @@ class X {
 }
 ```
 
+## 多可能值
 
-## 异常
+### std::variant
+
+[std::variant - cppreference.com](https://en.cppreference.com/w/cpp/utility/variant)
+
+是一个 **type-safe union**, 能存取任意类型, 存取时使用泛型参数进行类型检查, 检查失败会返回异常.
+
+### std::optional
+
+[std::optional - cppreference.com](https://en.cppreference.com/w/cpp/utility/optional)
+
+有或没有某个值. 没有值时, 它包含的是`std::nullopt_t`.
+
+### std::expected
+
+[std::expected - cppreference.com](https://en.cppreference.com/w/cpp/utility/expected)
+
+就是Rust的`Result<T, E>`.
+
+
+
+
+## 异常 TODO
 
 [std::exception - cppreference.com](https://en.cppreference.com/w/cpp/error/exception)
 
