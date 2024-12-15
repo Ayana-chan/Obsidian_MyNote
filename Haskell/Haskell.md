@@ -2516,6 +2516,44 @@ data Shape = Circle Point Float | Rectangle Point Point deriving (Sho
 ```
 
 
+# 调试
+
+## trace
+
+`Debug.Trace`模块提供`trace`函数, 使其可以在不破坏程序逻辑的情况下输出指定文本. 这是不纯的操作, 因此仅在调试时使用.
+
+`trace`接收一个字符串和一个普通值, 会输出字符串, 然后返回普通值本身.
+```haskell
+trace :: String -> a -> a
+```
+
+例如, 要给`subStringToIndex s n = take n s`添加调试信息的话, 就先使用`trace`输出字符串, 然后把`take n s`直接写在后面作为参数, 这样`take n s`依然会是结果.
+```haskell
+subStringToIndex :: String -> Int -> String
+subStringToIndex s n = trace ("para s is " ++ show s)  take n s 
+```
+
+在**Monad操作**中(尤其是do-notation里面), 可以使用`traceM`来在输出文本时返回空Monad, 这个Monad往往会通过`>>`丢掉.
+```haskell
+traceM :: Monad m => String -> m ()
+```
+
+例如, 要打印包装在`State` Monad里面的字符串, 就需要使用`traceM`. 它会返回`State ()`并且丢弃, 满足检查.
+```haskell
+monadicSubStringToIndex ::  Int -> State String String
+monadicSubStringToIndex n = do
+    s1 <- get
+    traceM $ "original string is " ++ show s1
+    return $ take n s1
+
+main :: IO ()
+main = putStrLn $ show $ runState (monadicSubStringToIndex 2) "abcde"
+```
+
+
+
+
+
 
 
 
