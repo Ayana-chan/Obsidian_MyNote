@@ -23,6 +23,18 @@ Error: [S-7282]
        <stderr>: commitAndReleaseBuffer: invalid argument (cannot encode character '\8226')
 ```
 
+[Get Started](https://www.haskell.org/get-started/)
+
+## vscode
+
+[Vscode Haskell](https://marketplace.visualstudio.com/items?itemName=haskell.haskell)
+
+`stack.yaml`中, 使用科大源:
+```yaml
+snapshot:
+  url: http://mirrors.ustc.edu.cn/stackage/stackage-snapshots/lts/22/43.yaml
+```
+
 ## 链接
 
 标准库查询: [Haskell Hierarchical Libraries](https://downloads.haskell.org/ghc/latest/docs/libraries/)

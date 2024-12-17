@@ -2157,6 +2157,10 @@ class X {
 
 [std::exception - cppreference.com](https://en.cppreference.com/w/cpp/error/exception)
 
+- 错误应当被当场处理的(对其进行分支性的操作), 则不该用异常.
+- 若要中止后序所有逻辑 并 进入一段独立的处理流程, 则都该设为异常.
+
+
 ## 并发编程
 
 conditional variable的第一个参数是lock，第二个参数是返回bool的函数。被notify时，会自动上锁，然后检查函数返回值是否为true，是的话继续执行，不是的话释放锁继续等待。最开始进入wait之前也会检查一次函数返回值。 这是为了让锁来保护函数的参数（条件），避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
