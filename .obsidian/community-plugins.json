@@ -6,7 +6,6 @@
   "obsidian-outliner",
   "obsidian-git",
   "obsidian-mind-map",
-  "table-editor-obsidian",
   "cmenu-plugin",
   "nldates-obsidian",
   "obsidian-minimal-settings",
@@ -14,5 +13,6 @@
   "cm-chs-patch",
   "meld-encrypt",
   "obsidian-enhancing-export",
-  "obsidian-pandoc"
+  "obsidian-pandoc",
+  "table-editor-obsidian"
 ]
