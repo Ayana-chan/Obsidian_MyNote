@@ -4,6 +4,12 @@ strong,
   color: rgb(211, 211, 179);
 }
 
+/* 斜体 */
+em,
+.cm-em {
+  color: rgb(209, 185, 174);
+}
+
 /* 公式 */
 mjx-math {
   color: #eff4e9;
