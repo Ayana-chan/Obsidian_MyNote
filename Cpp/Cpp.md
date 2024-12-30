@@ -1519,7 +1519,7 @@ auto [x, y] = return_multiple_values();
 配合自动推导返回值类型的特性, 可以使其看起来像是能让函数返回多个变量:
 ```cpp
 auto return_multiple_values() {
-	return std:make_tuple(11, 7);
+	return std::make_tuple(11, 7);
 }
 
 int main() {
@@ -2161,13 +2161,13 @@ class X {
 - 若要中止后序所有逻辑 并 进入一段独立的处理流程, 则都该设为异常.
 
 
-## 并发编程
+# 并发编程
 
 conditional variable的第一个参数是lock，第二个参数是返回bool的函数。被notify时，会自动上锁，然后检查函数返回值是否为true，是的话继续执行，不是的话释放锁继续等待。最开始进入wait之前也会检查一次函数返回值。 这是为了让锁来保护函数的参数（条件），避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
 
 unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结束后自动释放锁。千万不要对它们使用unlock，否则会很难debug，特别是在不小心unlock了它们包裹的mutex而不是它们本身的时候。
 
-### 线程局部存储 thread_local
+## 线程局部存储 thread_local
 
 在声明变量的时候在前面标上`thread_local`即可让该变量变成线程局部存储变量, 即只需声明一次, 但每个线程都能独立地拥有此变量. 
 
