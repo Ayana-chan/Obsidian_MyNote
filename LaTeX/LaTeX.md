@@ -147,6 +147,24 @@ xxxxxxxxxxx
 
 ![](assets/uTools_1699850328974.png)
 
+
+# 公式
+
+使用`\mathop`包裹普通文字就能将其视为数学符号, 其上下标会被写在正上方正下方. 例如:
+```latex
+$$\mathop{mysym}_{i>0}^{abc}$$
+```
+$$\mathop{mysym}_{i>0}^{abc}$$
+
+
+
+
+
+
+
+
+
+
 # Beamer
 
 示例：
