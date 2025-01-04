@@ -150,14 +150,22 @@ xxxxxxxxxxx
 
 # 公式
 
+不同数学字体:
+- `R`: $R$
+- `\mathbf{R}`: $\mathbf{R}$
+- `\mathbb{R}`: $\mathbb{R}$
+- `\mathcal{R}`: $\mathcal{R}$
+
 使用`\mathop`包裹普通文字就能将其视为数学符号, 其上下标会被写在正上方正下方. 例如:
 ```latex
 $$\mathop{mysym}_{i>0}^{abc}$$
 ```
 $$\mathop{mysym}_{i>0}^{abc}$$
-
-
-
+空格:
+- 对照: $ab$
+- `\quad`: $a \quad b$
+- `\,`: $a \, b$
+- `\ `: $a \  b$
 
 
 
