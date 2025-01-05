@@ -5,7 +5,8 @@
   "enabledCssSnippets": [
     "spread-elements",
     "mystyle",
-    "MyStyle"
+    "MyStyle",
+    "MyStyleNotInPdf"
   ],
   "baseFontSize": 16,
   "accentColor": "",
