@@ -12,7 +12,8 @@
   "better-word-count",
   "cm-chs-patch",
   "meld-encrypt",
-  "obsidian-enhancing-export",
   "obsidian-pandoc",
-  "table-editor-obsidian"
+  "table-editor-obsidian",
+  "obsidian-annotator",
+  "better-export-pdf"
 ]
