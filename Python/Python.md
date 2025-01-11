@@ -73,10 +73,23 @@ python -m pip install --upgrade --force-reinstall pip
 
 
 
+# 库安装记录
 
+## pymc
 
+pymc在py3出了之后改名pymc3, 但后来又改回pymc.
 
+这里记录python 3.9的pymc3. 使用conda的话创建空环境即可:
+```bash
+conda create -n pymc3_env python=3.9
+```
 
+给一些版本降级, 防止报错`distutils.msvccompiler`找不到:
+```bash
+pip install setuptools==58.0.0 wheel==0.36.2
+```
 
-
-
+然后安装pymc3:
+```bash
+pip install pymc3
+```
