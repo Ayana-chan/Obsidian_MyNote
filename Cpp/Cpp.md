@@ -2167,6 +2167,12 @@ conditional variable的第一个参数是lock，第二个参数是返回bool的�
 
 unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结束后自动释放锁。千万不要对它们使用unlock，否则会很难debug，特别是在不小心unlock了它们包裹的mutex而不是它们本身的时候。
 
+## Memory Order TODO
+
+[std::memory\_order - cppreference.com](https://en.cppreference.com/w/cpp/atomic/memory_order)
+
+[CMU-15418 Memory Consistency 笔记](../CMU15418_CS149%20Parallel%20Computer%20Architecture%20and%20Programming/课堂笔记.md#Lec%2013%20-%20Memory%20Consistency)
+
 ## 线程局部存储 thread_local
 
 在声明变量的时候在前面标上`thread_local`即可让该变量变成线程局部存储变量, 即只需声明一次, 但每个线程都能独立地拥有此变量. 
