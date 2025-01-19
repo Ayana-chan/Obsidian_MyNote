@@ -2173,6 +2173,10 @@ unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结
 
 [CMU-15418 Memory Consistency 笔记](../CMU15418_CS149%20Parallel%20Computer%20Architecture%20and%20Programming/课堂笔记.md#Lec%2013%20-%20Memory%20Consistency)
 
+TODO: IRIW没有reorder
+
+TODO: 更新笔记的Release Consistency部分, release和acquire对应了内存架构的什么? 可能是: 线程1的acquire获得锁了, 必然能观测到刚进行release的线程0在release之前的操作.
+
 ## 线程局部存储 thread_local
 
 在声明变量的时候在前面标上`thread_local`即可让该变量变成线程局部存储变量, 即只需声明一次, 但每个线程都能独立地拥有此变量. 
