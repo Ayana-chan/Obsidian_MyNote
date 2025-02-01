@@ -13,5 +13,6 @@
   "monospaceFontFamily": "JetBrains Mono",
   "textFontFamily": "iA Writer Quattro S,苹方",
   "baseFontSizeAction": true,
-  "showViewHeader": true
+  "showViewHeader": true,
+  "showRibbon": true
 }
