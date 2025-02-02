@@ -1976,7 +1976,18 @@ class Applicative m => Monad m where
   return = pure
 ```
 
-`>>=`称为**bind**函数, 或者`flatMap`. 它提供了`a -> m b`的**连续应用**的可能性.
+`>>=`称为**bind**函数, 或者`flatMap`. 是**左结合**的. 它提供了monadic function(`a -> m b`)的**连续应用**的可能性. 
+
+> [!info]
+> lambda表达式的优先级极低, 因此下面的式子被解释为:
+> - `f >>= \x -> b >>= g`
+> - `f >>= (\x -> (b >>= g))`.
+>
+> 因此带闭包且不加括号的`>>=`式子实际上是**嵌套调用**, 每一层嵌套相当于使用lambda的参数来"定义"一个"变量"(`>>=`左边的Monad里面的值), 而这"变量"<u>可以被内部的lambda捕获到</u>; 先执行嵌套外层的代码, 再往内层走. 所以do-notation的基本结构就是嵌套的`>>=`式, 使其可以"绑定"变量, 并且像命令式语言一样从前往后执行.
+>
+> 注意与普通的`f >>= g >>= h`区分. 该式没有出现广域的变量, 仅仅是对一个Monad<u>从左往右</u>**连续应用monadic函数**.
+> 
+> 如果内层操作<u>依赖外层变量</u>的话, 就必须使用嵌套形式, 而此时一般就会写成do-notation.
 
 `>>`利用bind拼接Monad, 会让bind的目标函数永远返回第二个Monad, 注意要考虑bind的时候目标函数是否会被执行, 也因此可以用于判断Monad内容是不是"正常"(即查看是否失败). 类似于命令式语言的分号`;`, 只会执行不会取值, 这在do-notation里面有更多体现. 使用`MonadFail`可以更好地定义失败的情况.
 
@@ -1990,7 +2001,6 @@ Monad和Applicative有如下关系:
 - `return = pure`, 在这里是把普通变量用Monad包装.
 - `m1 <*> m2 = m1 >>= (\x1 -> m2 >>= (\x2 -> return (x1 x2)))`.
 
-
 ### Monad Law
 
 Left Identity (Left Unit Law): 把变量装入Monad再应用`a -> m b`**等价于直接应用**. 即`return`是其**特殊的左幺元**. 因此Monad计算的开头可以不使用`return`生成初始Monad, 而是直接应用monadic function. 
@@ -2003,7 +2013,7 @@ Right Identity (Right Unit Law): Monad bind到return上得到它本身. 即Monad
 m >>= return = m
 ```
 
-Associativity: `>>=`计算有**特殊的结合律**, 需要写成lambda, 但可以使用`<=<`让其更简洁. 这保证了bind不会出现意想不到的额外作用.
+Associativity: `>>=`计算有**特殊的结合律**, 需要写成lambda, 但可以使用`<=<`让其更简洁. 这保证了bind不会出现额外作用.
 ```haskell
 (m >>= k) >>= h = m >>= (\x -> k x >>= h)
 ```
