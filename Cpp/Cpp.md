@@ -482,45 +482,6 @@ int &&k1 = i; //编译失败
 int &&k2 = static_cast<int&&>(i); //编译成功
 ```
 
-### 引用折叠 (Reference Collapsing)
-
-- X& &、X& &&、X&& &都折叠成X&。
-- X&& &&折叠为X&&。
-
-```cpp
-typedef int&  lref;
-typedef int&& rref;
-int n;
- 
-lref&  r1 = n; // int&
-lref&& r2 = n; // int&
-rref&  r3 = n; // int&
-rref&& r4 = 1; // int&&
-```
-
-> [!note]
-> - 只要带了引用, 就永远不会被折叠成非引用.
-> - 带有左值引用的会一直是左值引用, <u>只有纯粹的右值引用的叠加才是右值引用</u>.
-
-### 万能引用 (universal reference)
-
-由于引用折叠机制, 一个引用带上`&&`之后, 得到的引用类别由引用本身决定, 同时带上引用之后永远不会被推导为非引用, 因此在模板函数中使用`T&&`可以接收任何引用：
-```cpp
-template<typename T> 
-void f(T&&);
-
-int i = 42;
-f(i); // 实例化`f(int &)`
-f(std::move(i)); // 实例化`f(int &&)`
-```
-
-万能引用接收右值参数的时候，在函数体内(形参)就会变成左值（具名右值引用）。使用`std::forward<T>(x)`可以让其回归右值引用，且对左值情况没有任何影响，从而正确地触发拷贝操作/移动操作。
-
-`auto &&`也能做到类似的事情. 于是可以在for循环中写成:
-```cpp
-for(auto &&elem: vec) {...}
-```
-
 
 
 ## std::move
@@ -559,7 +520,7 @@ static_cast<std::remove_reference<decltype(arg)>::type&&>(arg)
 
 [std::forward - cppreference.com](https://en.cppreference.com/w/cpp/utility/forward)
 
-`forward`能把一个函数形参还原成它在此函数被调用时传入的值的data category，从而触发不同的函数。
+`forward`能把一个函数形参还原成它在此函数被调用时传入的值的data category，从而触发不同的函数。结合[万能引用](Cpp/Cpp.md#万能引用%20universal%20reference)使用.
 
 它能转发[forwarding references](https://en.cppreference.com/w/cpp/language/reference#Forwarding_references). 这些东西在形式上是：
 ```cpp
@@ -1055,7 +1016,13 @@ struct c {
 NULL可能会被定义为0，若有两个同名不同参的函数（重载），一个的参数类型为指针、另一个的参数类型为int，则传入NULL时可能执行参数类型为int的那一个函数。
 ## 命名空间
 
-`using namespace xxx`表示使用xxx整个命名空间；而`using xxx:fx`表示使用xxx命名空间下的fx。
+`using namespace xxx`表示使用xxx整个命名空间；而`using xxx::fx`表示使用xxx命名空间下的fx。
+
+## 作用域解析运算符 `::`
+
+通常用于命名空间.
+
+`::f`表示使用全局作用域下的`f`(而不是当前局部内的). 这即使不在命名空间的情况下也生效(例如区分局部和全局变量).
 
 ## 字面量
 
@@ -1418,48 +1385,6 @@ template<class InputIterator, class OutputIterator>
 
 目标不应在`[first,last)`当中。
 
-## decltype
-
-将参数的类型返回，用于推断类型。
-
-```cpp
-// sum的类型就是函数f返回的类型
-decltype(f()) sum = x;
-```
-
-decltype返回类型说明符（如int、double之类）。
-
-参数可以为表达式。参数中的表达式并没有真被计算，函数也不会真被执行，而只是单纯由编译器分析。
-
-`decltype(e)`(其中`e`的类型为`T`)的**推导规则**有五条：
-1. 如果是一个<u>未加括号</u>的**标识符表达式**（结构化绑定除外）或者<u>未加括号</u>的**类成员访问**，则`decltype(e)`推断出的类型是`e`的类型`T`。如果并不存在这样的类型，或者e是一组重载函数，则无法进行推导。
-2. 如果`e`是一个函数调用或者仿函数调用，那么`decltype(e)`推断出的类型是其返回值的类型。
-3. 如果`e`是一个类型为T的左值，则`decltype(e)`是`T&`。
-4. 如果`e`是一个类型为T的将亡值，则`decltype(e)`是`T&&o`
-5. 除去以上情况，则`decltype(e)`是`T`。
-
-> [!info]
-> 使用括号可以恢复变量本身的各种类型信息(最重要的就是变回左值).
-
-```cpp
-const int&& foo();
-int i;
-struct A {
-	double x;
-};
-const A* a = new A();
-
-decltype(foo()); // const int&&
-decltype(i); // int
-decltype(a->x); // double
-decltype((a->x)); // const double&
-```
-
-使用`decltype(auto)`可以借用`decltype`的规则对变量类型进行推导.
-```cpp
-auto x1=(i); // int
-decltype(auto)x2 (i); // int&
-```
 
 ## 后置返回值类型
 
@@ -2151,8 +2076,6 @@ class X {
 就是Rust的`Result<T, E>`.
 
 
-
-
 ## 异常 TODO
 
 [std::exception - cppreference.com](https://en.cppreference.com/w/cpp/error/exception)
@@ -2161,47 +2084,186 @@ class X {
 - 若要中止后序所有逻辑 并 进入一段独立的处理流程, 则都该设为异常.
 
 
-# 并发编程
-
-conditional variable的第一个参数是lock，第二个参数是返回bool的函数。被notify时，会自动上锁，然后检查函数返回值是否为true，是的话继续执行，不是的话释放锁继续等待。最开始进入wait之前也会检查一次函数返回值。 这是为了让锁来保护函数的参数（条件），避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
-
-unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结束后自动释放锁。千万不要对它们使用unlock，否则会很难debug，特别是在不小心unlock了它们包裹的mutex而不是它们本身的时候。
-
-## Memory Order TODO
-
-[std::memory\_order - cppreference.com](https://en.cppreference.com/w/cpp/atomic/memory_order)
-
-[CMU-15418 Memory Consistency 笔记](../CMU15418_CS149%20Parallel%20Computer%20Architecture%20and%20Programming/课堂笔记.md#Lec%2013%20-%20Memory%20Consistency)
-
-TODO: IRIW没有reorder
-
-TODO: 更新笔记的Release Consistency部分, release和acquire对应了内存架构的什么? 可能是: 线程1的acquire获得锁了, 必然能观测到刚进行release的线程0在release之前的操作.
-
-## 线程局部存储 thread_local
-
-在声明变量的时候在前面标上`thread_local`即可让该变量变成线程局部存储变量, 即只需声明一次, 但每个线程都能独立地拥有此变量. 
-
-行为有点像`static`, 只会被初始化一次, 通常在线程结束时销毁. 其地址在运行时决定. 可以但不建议将其指针传递给其他线程.
-
-
-
 # 模板
 
 模板代码本身什么都不能做，它需要被使用后知道要生成哪些实例。并且所有实例都自带inline，不会重复定义。
 
 （在预编译之后）声明和实现必须在同一个文件里面。如果把声明放在头文件、把实现放在cpp文件，则另一个cpp文件只会include头文件而会忽视cpp文件，于是只能通过模板函数声明推导出函数声明语句，而不会推导实现语句，使得实例（如`f<int>()`)会找不到实现。
-## 函数模板
-### 基本使用
 
-
+模板函数:
 ```cpp
+// 声明
 template <typename T> 
 void f(const T &t); 
 
+// 实现
 template <typename T> 
-void f(const T &t) {} // 当然，文件内部没有声明依赖关系的时候，声明和实现可以合并
+void f(const T &t) {...} 
+// 文件内部没有声明依赖关系的时候，声明和实现可以合并
 ```
 
+## 推导
+
+[模板实参推导 - cppreference.com](https://zh.cppreference.com/w/cpp/language/template_argument_deduction)
+
+推导本身不带隐式类型转换, 因此在许多地方得手动写明模板参数类型, 或者在传参的时候使用显式类型转换.
+```cpp
+max<double>(1, 1.2); 
+max<std::string>("luse"s, "乐");
+max(static_cast<double>(1), 1.2);
+```
+
+### 引用折叠 (reference collapsing)
+
+- X& &、X& &&、X&& &都折叠成X&。
+- X&& &&折叠为X&&。
+
+```cpp
+typedef int&  lref;
+typedef int&& rref;
+int n;
+ 
+lref&  r1 = n; // int&
+lref&& r2 = n; // int&
+rref&  r3 = n; // int&
+rref&& r4 = 1; // int&&
+```
+
+> [!note]
+> - 只要带了引用, 就永远不会被折叠成非引用.
+> - 带有左值引用的会一直是左值引用, <u>只有纯粹的右值引用的叠加才是右值引用</u>.
+
+### 万能引用 (universal reference)
+
+特殊的模板推导机制: 如果 `P` 是到无 cv 限定模板形参的右值引用（也就是[转发引用](https://zh.cppreference.com/w/cpp/language/reference#.E8.BD.AC.E5.8F.91.E5.BC.95.E7.94.A8 "cpp/language/reference")）且对应函数的调用实参是左值，那么将到 `A` 的左值引用类型用于 `A` 的位置进行推导. 这个特殊机制使得传入普通左值时也能被推导成左值引用.
+
+由于引用折叠机制, 一个引用带上`&&`之后, 得到的引用类别由引用本身决定, 同时带上引用之后永远不会被推导为非引用, 因此在模板函数中使用`T&&`可以接收任何引用：
+```cpp
+template<typename T> 
+void f(T&&);
+
+int i = 42;
+f(i); // 实例化`f(int &)`
+f(std::move(i)); // 实例化`f(int &&)`
+```
+
+万能引用接收右值参数的时候，在函数体内(形参)就会变成左值（具名右值引用）。使用`std::forward<T>(x)`可以让其回归右值引用，且对左值情况没有任何影响，从而正确地触发拷贝操作/移动操作。
+
+`auto &&`也能做到类似的事情. 于是可以在for循环中写成:
+```cpp
+for(auto &&elem: vec) {...}
+```
+
+### 类型参数间推导及简化
+
+使用三目表达式的话, 由于它要求第二项和第三项之间能进行隐式类型转换, 因此能给出两个类型之间的"公共类型".
+```cpp
+template<typename T1,typename T2,typename RT = 
+    decltype(true ? T1{} : T2{}) >
+RT max(const T1& a, const T2& b) { // RT 是 std::string
+    return a > b ? a : b;
+}
+
+int main(){
+    auto ret = ::max("1", "2"s);
+    std::cout << ret << '\n';
+}
+```
+
+既然使用了decltype, 那么理应就能将其直接写在函数签名里面. 要注意此时只能使用<u>完整形参类型</u>, 即`const T1&`和`const T2&`, 而非之前使用的`T1`和`T2`.
+```cpp
+template<typename T1,typename T2>
+auto max(const T1& a, const T2& b) -> decltype(true ? a : b){
+    return a > b ? a : b;
+}
+```
+
+利用返回类型推导, 进一步简化:
+```cpp
+decltype(auto) max(const auto& a, const auto& b)  {
+    return a > b ? a : b;
+}
+```
+
+
+## auto
+
+[使用模板实参推导](https://zh.cppreference.com/w/cpp/language/template_argument_deduction#.E5.85.B6.E4.BB.96.E8.AF.AD.E5.A2.83)来推导auto类型.
+
+```cpp
+int a = 100;
+const int b = 100;
+auto a1 = 3; // a1为int
+auto a2 = a; // a2为int
+auto& a3 = a;// a3为int&,左引用
+auto&& a4 = a;// a4为int&,左引用
+auto&& a5 = 102;// a5为int&&,右引用
+auto&& a6 = b;// a6为const int&,左引用
+const auto& a7 = b;// a7为const int&,左引用
+const auto&& a8 = 103;// a8为const int&&,右引用
+auto* p1 = &a;// p1为int*
+const auto* p2 = &a;// p2为const int*
+auto p3 = &TestType::v1; // p3为int TestType::*,成员对象指针
+```
+
+## decltype
+
+将参数的类型返回，用于推断类型。
+
+```cpp
+// sum的类型就是函数f返回的类型
+decltype(f()) sum = x;
+```
+
+decltype返回类型说明符（如int、double之类）。
+
+参数可以为表达式。参数中的表达式并没有真被计算，函数也不会真被执行，而只是单纯由编译器分析。
+
+`decltype(e)`(其中`e`的类型为`T`)的**推导规则**有五条：
+1. 如果是一个<u>未加括号</u>的**标识符表达式**（结构化绑定除外）或者<u>未加括号</u>的**类成员访问**，则`decltype(e)`推断出的类型是`e`的类型`T`。如果并不存在这样的类型，或者e是一组重载函数，则无法进行推导。
+2. 如果`e`是一个函数调用或者仿函数调用，那么`decltype(e)`推断出的类型是其返回值的类型。
+3. 如果`e`是一个类型为T的左值，则`decltype(e)`是`T&`。
+4. 如果`e`是一个类型为T的将亡值，则`decltype(e)`是`T&&`.
+5. 除去以上情况，则`decltype(e)`是`T`。
+
+> [!info]
+> 使用括号可以恢复变量本身的各种类型信息(最重要的就是变回左值).
+
+```cpp
+const int&& foo();
+int i;
+struct A {
+	double x;
+};
+const A* a = new A();
+
+decltype(foo()); // const int&&
+decltype(i); // int
+decltype(a->x); // double, 把成员变量自己的类型拿出来了
+decltype((a->x)); // const double&, 是整个访问表达式给出的结果
+```
+
+### decltype(auto)
+
+相当于直接把auto替换成后面的表达式, 然后进行decltype推导. 会保留cv限定符.
+
+```cpp
+auto x1=(i); // int
+decltype(auto)x2 (i); // int&
+```
+
+```cpp
+int a11 = 100;
+const int& refa = a11;
+decltype(auto) da1 = refa; // da1为a11的const左引用
+decltype(auto) da11 = a11; // int型，拷贝
+decltype(auto) da111 = (a11); // int&型，引用
+std::vector<int> vec = { 100,101 };
+auto va = vec[0]; //拷贝
+decltype(auto) da2 = vec[0]; // da2为int型左引用
+```
+
+TODO: 非类型模板形参
 ## using
 
 using可以替代typedef, 但其最大的作用是创建**别名模板(alias template)**.
@@ -2215,7 +2277,7 @@ typedef std::map<std::string, int> map_int_t;
 using map_int_t = std::map<std::string, int>;
 ```
 
-## 函数模板的默认模板参数
+## 默认模板参数
 
 ```cpp
 template <typename T = int>
@@ -2395,6 +2457,30 @@ int main()
 }
 ```
 
+
+
+
+# 并发编程
+
+conditional variable的第一个参数是lock，第二个参数是返回bool的函数。被notify时，会自动上锁，然后检查函数返回值是否为true，是的话继续执行，不是的话释放锁继续等待。最开始进入wait之前也会检查一次函数返回值。 这是为了让锁来保护函数的参数（条件），避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
+
+unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结束后自动释放锁。千万不要对它们使用unlock，否则会很难debug，特别是在不小心unlock了它们包裹的mutex而不是它们本身的时候。
+
+## Memory Order TODO
+
+[std::memory\_order - cppreference.com](https://en.cppreference.com/w/cpp/atomic/memory_order)
+
+[CMU-15418 Memory Consistency 笔记](../CMU15418_CS149%20Parallel%20Computer%20Architecture%20and%20Programming/课堂笔记.md#Lec%2013%20-%20Memory%20Consistency)
+
+TODO: IRIW没有reorder
+
+TODO: 更新笔记的Release Consistency部分, release和acquire对应了内存架构的什么? 可能是: 线程1的acquire获得锁了, 必然能观测到刚进行release的线程0在release之前的操作.
+
+## 线程局部存储 thread_local
+
+在声明变量的时候在前面标上`thread_local`即可让该变量变成线程局部存储变量, 即只需声明一次, 但每个线程都能独立地拥有此变量. 
+
+行为有点像`static`, 只会被初始化一次, 通常在线程结束时销毁. 其地址在运行时决定. 可以但不建议将其指针传递给其他线程.
 
 
 
