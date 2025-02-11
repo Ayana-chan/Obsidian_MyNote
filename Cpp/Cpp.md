@@ -936,7 +936,7 @@ int main() {
 }
 ```
 
-无法支持(或者发出警告)**隐式缩窄转换**(即强表达类型转成弱的), 如`int`转成`char`时:
+无法支持(或者发出警告)**隐式**[窄化转换](https://zh.cppreference.com/w/cpp/language/list_initialization#.E7.AA.84.E5.8C.96.E8.BD.AC.E6.8D.A2)(即强表达类型转成弱的), 如`int`转成`char`时:
 ```cpp
 int x = 9;
 char c1 = 9; // Correct
@@ -2088,7 +2088,7 @@ class X {
 
 模板代码本身什么都不能做，它需要被使用后知道要生成哪些实例。并且所有实例都自带inline，不会重复定义。
 
-（在预编译之后）声明和实现必须在同一个文件里面。如果把声明放在头文件、把实现放在cpp文件，则另一个cpp文件只会include头文件而会忽视cpp文件，于是只能通过模板函数声明推导出函数声明语句，而不会推导实现语句，使得实例（如`f<int>()`)会找不到实现。
+（在预编译之后）**声明和实现必须在同一个文件里面**。如果把声明放在头文件、把实现放在cpp文件，则另一个cpp文件只会include头文件而会忽视cpp文件，于是只能通过模板函数声明推导出函数声明语句，而不会推导实现语句，使得实例（如`f<int>()`)会找不到实现。一般把模板写在**头文件**`.h`里面, 也可以按约定写在`.hpp`文件里.
 
 模板函数:
 ```cpp
@@ -2157,6 +2157,10 @@ for(auto &&elem: vec) {...}
 ### 类型参数间推导及简化
 
 使用三目表达式的话, 由于它要求第二项和第三项之间能进行隐式类型转换, 因此能给出两个类型之间的"公共类型".
+
+> [!note]
+> 这个功能可以使用[std::common_type_t](https://zh.cppreference.com/w/cpp/types/common_type)完成.
+
 ```cpp
 template<typename T1,typename T2,typename RT = 
     decltype(true ? T1{} : T2{}) >
@@ -2263,7 +2267,6 @@ auto va = vec[0]; //拷贝
 decltype(auto) da2 = vec[0]; // da2为int型左引用
 ```
 
-TODO: 非类型模板形参
 ## using
 
 using可以替代typedef, 但其最大的作用是创建**别名模板(alias template)**.
@@ -2310,40 +2313,43 @@ int main(){
 }
 ```
 
+## 非类型模板形参
 
-## 特化
-
-有时候对模板类型的操作不能通用，需要单独特殊处理，则可以用特化。
+即传**值**的模板参数. 也可以有默认值.
 
 ```cpp
-#include <cstring>
+template<std::size_t N>
+void f() { std::cout << N << '\n'; }
 
-template <typename T>
-void add(T &t1, const T &t2) {
-  t1 += t2;
-}
-
-template <> // 模板特化也要用模板前缀，但由于已经全部特化了，所以参数为空
-void add<char *>(char *&t1, char *const &t2) { // 特化要指定模板参数，模板体中也要使用具体的类型
-  std::strcat(t1, t2);
-}
-
-void Demo() {
-  int a = 1, b = 3;
-  add(a, b); // add<int>是通过通用模板生成的，因此本质是a += b，符合预期
-
-  char c1[16] = "abc";
-  char c2[] = "123";
-
-  add(c1, c2); // add<char *>有定义特化，所以直接调用特化函数，因此本质是strcat(c1, c2)，符合预期
-}
+f<100>();
 ```
 
-确定了<u>所有模板参数</u>后即为**全特化**。全特化已经是个实例，因此要当成普通函数/类来对待。如果要和模板函数/类一起写在头文件的话，要提防重复定义，如手动加上inline。
+## 重载函数模板
+
+模板函数和普通函数之间可以重载, 且通常优先选择普通函数.
+
+```cpp
+template<typename T>
+void test(T) { std::puts("template"); }
+
+void test(int) { std::puts("int"); }
+
+test(1);        // 匹配到test(int)
+test(1.2);      // 匹配到模板
+test("1");      // 匹配到模板
+```
 
 ## 可变参数模板
 
-使得模板类型参数可以有任意多个, 参数类型可以不一致. 它可获取参数个数(使用`sizeof...`).
+[形参包](https://zh.cppreference.com/w/cpp/language/pack): 
+- **模板形参包**是接受零个或更多个模板实参（非类型、类型或模板）的模板形参。
+- **函数形参包**是接受零个或更多个函数实参的函数形参。
+
+这使得模板类型参数可以有任意多个, 且参数类型可以不一致. 
+
+通过`sizeof...`获取其参数个数.
+
+使用[包展开](https://zh.cppreference.com/w/cpp/language/pack#.E5.8C.85.E5.B1.95.E5.BC.80)获得其中的参数.
 
 ```cpp
 template<class ...Args> 
@@ -2360,7 +2366,85 @@ public:
 };
 ```
 
-递归计算:
+```cpp
+void f(const char*, int, double) { puts("值"); }
+void f(const char**, int*, double*) { puts("&"); }
+
+template<typename...Args>
+void sum(Args...args){  // const char * args0, int args1, double args2
+    f(args...);   // 相当于 f(args0, args1, args2)
+    f(&args...);  // 相当于 f(&args0, &args1, &args2)
+}
+
+int main() {
+    sum("luse", 1, 1.2);
+}
+```
+
+`&args...`中的`&arg`就是**模式**, 会被展开为模式实例. `&arg`模式会给每个展开的参数前面加上`&`以取其地址. 
+
+利用模式来打印所有参数. 
+- 使用参数操作的结果创建了一个没用的数组`_[]`; 
+- 为了满足语法要求, 使用`(xxx,0)` (逗号运算符会返回最后一个表达式作为值)来让每一个参数的操作都会返回`0`, 从而可以构造数组;
+- 加一个`0`作为默认元素, 防止在形参包为空的情况下构造空数组(非良构).
+```cpp
+template<typename...Args>
+void print(const Args&...args){    // const char (&args0)[5], const int & args1, const double & args2
+    int _[]{ 0, (std::cout << args << ' ' ,0)... };
+}
+
+int main() {
+    print("luse", 1, 1.2);
+}
+
+// 优化: 别名 + 弃值表达式`(void)`, 创建直接丢弃的临时数组
+template<typename...Args>
+void print(const Args&...args){
+    using Arr = int[];
+    (void)Arr{ 0, (std::cout << args << ' ' ,0)... };
+}
+```
+
+例: 打印数组的若干个下标下的值:
+```cpp
+template<typename T,std::size_t N, typename...Args>
+void f(const T (&array)[N], Args...index) {
+	// 以模式`array[xxx]`展开
+    print(array[index]...); //print是上面写的
+}
+
+int main() {
+    int array[10]{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    f(array, 1, 3, 5);
+}
+```
+
+sum的实现:
+```cpp
+#include <iostream>
+#include <type_traits>
+
+// RT是所有参数都可隐式转换的公共类型
+template<typename...Args,typename RT = std::common_type_t<Args...>>
+RT sum(const Args&...args) {
+	// 参数转数组
+	// 要使用显式转换, 否则会被列表初始化的窄化转换机制给限制
+    RT _[]{ static_cast<RT>(args)... };
+	// 可以直接std::accumulate
+    RT n{};
+    for (int i = 0; i < sizeof...(args); ++i) {
+        n += _[i];
+    }
+    return n;
+}
+
+int main() {
+    double ret = sum(1, 2, 3, 4, 5, 6.7);
+    std::cout << ret << '\n';       // 21.7
+}
+```
+
+递归计算sum:
 ```cpp
 // 递归终点, 只剩一个参数的时候
 template<class T>
@@ -2393,6 +2477,36 @@ int main() {
 
 `(args + ...)`是向右折叠, 先计算最靠右的参数. `(... + args)`就是向左折叠.
 
+
+## 特化
+
+有时候对模板类型的操作不能通用，需要单独特殊处理，则可以用特化。
+
+```cpp
+#include <cstring>
+
+template <typename T>
+void add(T &t1, const T &t2) {
+  t1 += t2;
+}
+
+template <> // 模板特化也要用模板前缀，但由于已经全部特化了，所以参数为空
+void add<char *>(char *&t1, char *const &t2) { // 特化要指定模板参数，模板体中也要使用具体的类型
+  std::strcat(t1, t2);
+}
+
+void Demo() {
+  int a = 1, b = 3;
+  add(a, b); // add<int>是通过通用模板生成的，因此本质是a += b，符合预期
+
+  char c1[16] = "abc";
+  char c2[] = "123";
+
+  add(c1, c2); // add<char *>有定义特化，所以直接调用特化函数，因此本质是strcat(c1, c2)，符合预期
+}
+```
+
+确定了<u>所有模板参数</u>后即为**全特化**。全特化已经是个实例，因此要当成普通函数/类来对待。如果要和模板函数/类一起写在头文件的话，要提防重复定义，如手动加上inline。
 
 ## concept
 
