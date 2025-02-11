@@ -2347,31 +2347,20 @@ test("1");      // 匹配到模板
 
 这使得模板类型参数可以有任意多个, 且参数类型可以不一致. 
 
+> [!note]
+> - 是`typename... Args` 而不是 `typename ...Args`
+> - 是`Args &&...args` 而不是 `Args&&... args`
+
 通过`sizeof...`获取其参数个数.
 
 使用[包展开](https://zh.cppreference.com/w/cpp/language/pack#.E5.8C.85.E5.B1.95.E5.BC.80)获得其中的参数.
 
 ```cpp
-template<class ...Args> 
-void foo(Args ...args) { 
-	cout << sizeof...(args) << endl;
-} 
-
-template<class ...Args> // 类型模板形参包
-class bar {
-public:
-	bar(Args ...args){ // 函数形参包
-		foo(args...); // 形参包展开
-	}
-};
-```
-
-```cpp
 void f(const char*, int, double) { puts("值"); }
 void f(const char**, int*, double*) { puts("&"); }
 
-template<typename...Args>
-void sum(Args...args){  // const char * args0, int args1, double args2
+template<typename... Args>
+void sum(Args... args){  // const char * args0, int args1, double args2
     f(args...);   // 相当于 f(args0, args1, args2)
     f(&args...);  // 相当于 f(&args0, &args1, &args2)
 }
