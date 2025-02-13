@@ -1231,6 +1231,23 @@ cpp20对常量表达式要求的放松:
 
 在函数或闭包内定义**静态局部变量**, 就可以让这些变量(被放在全局存储)仅仅在此上下文被使用, 每次调用函数都能访问此变量, 且永远不会被释放或重置.
 
+定义类静态成员的时候, 需要声明和定义分离, 但是在cpp17后, 可以加上inline或constexpr(后者自动蕴含了inline), 就无需分离.
+
+```cpp
+struct X1{
+    static int n;
+};
+int X1::n;
+
+struct X2 {
+    inline static int n;
+};
+
+struct X3 {
+    constexpr static int n = 1; // constexpr 必须初始化，并且它还有 const 属性
+};
+```
+
 
 ## ROV & NROV
 
@@ -2076,7 +2093,7 @@ class X {
 就是Rust的`Result<T, E>`.
 
 
-## 异常 TODO
+# 异常 TODO
 
 [std::exception - cppreference.com](https://en.cppreference.com/w/cpp/error/exception)
 
@@ -2090,7 +2107,10 @@ class X {
 
 （在预编译之后）**声明和实现必须在同一个文件里面**。如果把声明放在头文件、把实现放在cpp文件，则另一个cpp文件只会include头文件而会忽视cpp文件，于是只能通过模板函数声明推导出函数声明语句，而不会推导实现语句，使得实例（如`f<int>()`)会找不到实现。一般把模板写在**头文件**`.h`里面, 也可以按约定写在`.hpp`文件里.
 
-函数模板:
+## 各种模板基础
+
+### 函数模板
+
 ```cpp
 // 声明
 template <typename T> 
@@ -2102,7 +2122,8 @@ void f(const T &t) {...}
 // 文件内部没有声明依赖关系的时候，声明和实现可以合并
 ```
 
-类模板:
+### 类模板
+
 ```cpp
 template<typename T>
 struct Test {};
@@ -2128,6 +2149,47 @@ int main(){
 }
 ```
 
+### 变量模板
+
+```cpp
+template<typename T>
+T v;
+```
+
+变量模板实例化后就是个全局变量.
+
+变量模板即使都有默认实参, 也不能省略`<>`.
+
+```cpp
+template<typename T>
+constexpr T v{};
+
+v<int>; // 相当于 constexpr int v = 0;
+```
+
+```cpp
+template<std::size_t...values>
+constexpr std::size_t array[]{ values... };
+
+int main() {
+    for (const auto& i : array<1, 2, 3, 4, 5>) {
+        std::cout << i << ' ';
+    }
+}
+```
+
+可以用于类静态成员变量:
+```cpp
+struct limits{
+    template<typename T>
+    static const T min; // 静态数据成员模板的声明
+};
+
+// 同样地, 可以使用inline或constexpr, 从而无需分离
+template<typename T>
+const T limits::min = {}; // 静态数据成员模板的定义
+```
+
 
 ## 推导
 
@@ -2135,7 +2197,8 @@ int main(){
 
 cpp17加入了**类模板实参推导(CTAD)**([类模板实参推导（CTAD）(C++17 起) - cppreference.com](https://zh.cppreference.com/w/cpp/language/class_template_argument_deduction)), 使其通常可以像函数模板一样推导. 但是<u>类成员变量不提供自动推导</u>, 即使模板形参全都有默认实参了, 也必须加上空的`<>`.
 
-
+> [!info]
+> 虽然有的编译器可能允许在类成员变量里面不写`<>`, 但还是别这么写.
 
 推导本身不带隐式类型转换, 因此在许多地方得手动写明模板参数类型, 或者在传参的时候使用显式类型转换.
 ```cpp
@@ -2185,7 +2248,7 @@ f(std::move(i)); // 实例化`f(int &&)`
 for(auto &&elem: vec) {...}
 ```
 
-### 例: 类型参数间推导及简化
+### 函数模板: 例: 类型参数间推导及简化
 
 使用三目表达式的话, 由于它要求第二项和第三项之间能进行隐式类型转换, 因此能给出两个类型之间的"公共类型".
 
@@ -2262,6 +2325,17 @@ struct array {
 template<typename T, typename ...Args>
 array(T t,Args...) -> array<T, sizeof...(Args) + 1>;
 ```
+
+> [!note]
+> 数组无法互相构造(拷贝), 因此传数组(包括字符串字面量)的时候*很可能*会被隐式转换为指针.
+> ```cpp
+> int a = 0;
+> int b = a;            // OK!
+> 
+> int arr[1]{1};
+> int arr2[1] = arr;    // Error!
+> int arr3[1] = {arr};  // Error!
+> ```
 
 ## auto
 
@@ -2538,6 +2612,42 @@ int main() {
 ```
 
 `(args + ...)`是向右折叠, 先计算最靠右的参数. `(... + args)`就是向左折叠.
+
+
+## 类模板: 模板模板形参
+
+在类模板的`template`里面再整`template`, 实际上就是在给一个模板形参定义模板形参, 如`template<typename Ty,template<typename T> typename C >` 就是`Type<Ty, C<T>>`; 虽然最终需要推导`Ty`, `C`和`T`, 但对`Type`来说只有`Ty`和`C`两个形参, 而`T`仅仅用来声明`C`是有一个形参的.
+
+```cpp
+template<typename T>
+struct my_array{
+    T arr[10];
+};
+
+template<typename Ty,template<typename T> typename C >
+struct Array {
+    C<Ty> array;
+};
+
+Array<int, my_array>arr;
+// 即 my_array<int>, 也即 int arr[10]
+```
+
+同样可以指定默认实参, 但是也要求此实参有一个形参, 如`template<typename Ty, template<typename T> typename C = my_array >`
+
+同样支持形参包.
+
+结合非类型模板形参:
+```cpp
+template<std::size_t N>
+struct X {};
+
+// 这里省略了 template<std::size_t N> 的名字 N
+template<template<std::size_t> typename C>
+struct Test {};
+
+Test<X>arr;
+```
 
 
 ## 特化
