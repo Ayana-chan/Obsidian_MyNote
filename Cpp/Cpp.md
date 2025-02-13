@@ -2090,7 +2090,7 @@ class X {
 
 （在预编译之后）**声明和实现必须在同一个文件里面**。如果把声明放在头文件、把实现放在cpp文件，则另一个cpp文件只会include头文件而会忽视cpp文件，于是只能通过模板函数声明推导出函数声明语句，而不会推导实现语句，使得实例（如`f<int>()`)会找不到实现。一般把模板写在**头文件**`.h`里面, 也可以按约定写在`.hpp`文件里.
 
-模板函数:
+函数模板:
 ```cpp
 // 声明
 template <typename T> 
@@ -2102,9 +2102,40 @@ void f(const T &t) {...}
 // 文件内部没有声明依赖关系的时候，声明和实现可以合并
 ```
 
+类模板:
+```cpp
+template<typename T>
+struct Test {};
+
+int main(){
+    Test<void> t;
+    Test<int> t2;
+    //Test t;       // Error!
+}
+```
+
+```cpp
+template<typename T>
+struct Test{
+    T t;
+};
+
+int main(){
+	// Test<void> t;  // Error!
+	Test<int> t2;     
+	// Test t3;       // Error!
+	Test t4{ 1 };     // C++17 OK！
+}
+```
+
+
 ## 推导
 
 [模板实参推导 - cppreference.com](https://zh.cppreference.com/w/cpp/language/template_argument_deduction)
+
+cpp17加入了**类模板实参推导(CTAD)**([类模板实参推导（CTAD）(C++17 起) - cppreference.com](https://zh.cppreference.com/w/cpp/language/class_template_argument_deduction)), 使其通常可以像函数模板一样推导. 但是<u>类成员变量不提供自动推导</u>, 即使模板形参全都有默认实参了, 也必须加上空的`<>`.
+
+
 
 推导本身不带隐式类型转换, 因此在许多地方得手动写明模板参数类型, 或者在传参的时候使用显式类型转换.
 ```cpp
@@ -2154,7 +2185,7 @@ f(std::move(i)); // 实例化`f(int &&)`
 for(auto &&elem: vec) {...}
 ```
 
-### 类型参数间推导及简化
+### 例: 类型参数间推导及简化
 
 使用三目表达式的话, 由于它要求第二项和第三项之间能进行隐式类型转换, 因此能给出两个类型之间的"公共类型".
 
@@ -2189,6 +2220,48 @@ decltype(auto) max(const auto& a, const auto& b)  {
 }
 ```
 
+### 类模板: 用户定义的推导指引
+
+使用`Type(T1) -> Type<T2>`, 即可定义: 如果`Type`的<u>构造函数</u>的参数被推导出`T1`类型, 则设定最终得到的Type实例的类型参数为`T2`类型.
+
+`int`变成`size_t`:
+```cpp
+template<typename T>
+struct Test{
+    Test(T v) :t{ v } {}
+private:
+    T t;
+};
+
+Test(int) -> Test<std::size_t>;
+
+Test t(1);      // t 是 Test<size_t>
+```
+
+指针变数组:
+```cpp
+template<typename T>
+Test(T*) -> Test<T[]>;
+
+char* p = nullptr;
+
+Test t(p);      // t 是 Test<char[]>
+```
+
+想要推导数组类型及其长度:
+```cpp
+template<class Ty, std::size_t size>
+struct array {
+    Ty arr[size];
+};
+
+::array arr{1, 2, 3, 4, 5};     // Error!
+```
+则需要结合使用形参包, 把构造时的第一个参数(上例的数字`1`)拿出来推导出数组元素类型`T`, 剩余的所有参数可以计算出`size - 1`, 从而使用`sizeof...(Args) + 1`得到真正的`size`([std::array 的推导指引 - cppreference.com](https://zh.cppreference.com/w/cpp/container/array/deduction_guides)):
+```cpp
+template<typename T, typename ...Args>
+array(T t,Args...) -> array<T, sizeof...(Args) + 1>;
+```
 
 ## auto
 
