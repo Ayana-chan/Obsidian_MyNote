@@ -1014,6 +1014,14 @@ struct c {
 **nullptr是有类型的，且仅可以被隐式转化为指针类型。**
 
 NULL可能会被定义为0，若有两个同名不同参的函数（重载），一个的参数类型为指针、另一个的参数类型为int，则传入NULL时可能执行参数类型为int的那一个函数。
+
+## 数组类型
+
+- `T[]`: 未知长度的数组, 往往退化为指针, 也可看做指针类型的语法糖. 模板中常见.
+- `T[N]`: 已知长度的数组, 不同的长度是不同的类型.
+
+
+
 ## 命名空间
 
 `using namespace xxx`表示使用xxx整个命名空间；而`using xxx::fx`表示使用xxx命名空间下的fx。
@@ -2103,9 +2111,9 @@ class X {
 
 # 模板
 
-模板代码本身什么都不能做，它需要被使用后知道要生成哪些实例。并且所有实例都自带inline，不会重复定义。
+模板代码本身什么都不能做，它需要被使用后(隐式实例化)才知道要生成哪些实例。并且所有实例都自带inline，不会重复定义。
 
-（在预编译之后）**声明和实现必须在同一个文件里面**。如果把声明放在头文件、把实现放在cpp文件，则另一个cpp文件只会include头文件而会忽视cpp文件，于是只能通过模板函数声明推导出函数声明语句，而不会推导实现语句，使得实例（如`f<int>()`)会找不到实现。一般把模板写在**头文件**`.h`里面, 也可以按约定写在`.hpp`文件里.
+(隐式实例化语境下)（在预编译之后）**声明和实现必须在同一个文件里面**。如果把声明放在头文件、把实现放在cpp文件，则另一个cpp文件只会include头文件而会忽视cpp文件，于是只能通过模板函数声明推导出函数声明语句，而不会推导实现语句，使得实例（如`f<int>()`)会找不到实现。一般把模板写在**头文件**`.h`里面, 也可以按约定写在`.hpp`文件里.
 
 ## 各种模板基础
 
@@ -2654,31 +2662,312 @@ Test<X>arr;
 
 有时候对模板类型的操作不能通用，需要单独特殊处理，则可以用特化。
 
+### 全特化
+
+确定了<u>所有模板参数</u>后即为**全特化**。全特化已经是个实例，因此要当成普通函数/类来对待。如果要和模板函数/类一起写在头文件的话，要提防重复定义，如手动加上inline。
+
 ```cpp
-#include <cstring>
-
-template <typename T>
-void add(T &t1, const T &t2) {
-  t1 += t2;
+template<typename T,typename T2>
+auto f(const T& a, const T2& b)  {
+    return a + b;
 }
 
-template <> // 模板特化也要用模板前缀，但由于已经全部特化了，所以参数为空
-void add<char *>(char *&t1, char *const &t2) { // 特化要指定模板参数，模板体中也要使用具体的类型
-  std::strcat(t1, t2);
+// 全特化
+template<>
+auto f(const double& a, const int& b){
+    return a - b;
 }
 
-void Demo() {
-  int a = 1, b = 3;
-  add(a, b); // add<int>是通过通用模板生成的，因此本质是a += b，符合预期
-
-  char c1[16] = "abc";
-  char c2[] = "123";
-
-  add(c1, c2); // add<char *>有定义特化，所以直接调用特化函数，因此本质是strcat(c1, c2)，符合预期
+// 写明类型(更推荐)
+template<>
+auto f<double, int>(const double& a, const int& b) {
+    return a - b;
 }
 ```
 
-确定了<u>所有模板参数</u>后即为**全特化**。全特化已经是个实例，因此要当成普通函数/类来对待。如果要和模板函数/类一起写在头文件的话，要提防重复定义，如手动加上inline。
+`is_xxx`和`is_xxx_v`通过特化进行实现:
+```cpp
+#include <iostream>
+
+template<typename T> // 主模板
+struct is_void{
+    static constexpr bool value = false;
+};
+template<>           // 对 T = void 的显式特化
+struct is_void<void>{
+    static constexpr bool value = true;
+};
+
+template<typename T>
+constexpr bool is_void_v = is_void<T>::value;
+
+int main(){
+    std::cout <<std::boolalpha<< is_void_v<char> << '\n';    // false
+    std::cout << std::boolalpha << is_void_v<void> << '\n';  // true
+}
+```
+
+或者直接使用变量模板:
+```cpp
+template<typename T>
+constexpr bool is_void_v = false;
+
+template<>
+constexpr bool is_void_v<void> = true;
+
+int main(){
+    std::cout << std::boolalpha << is_void_v<char> << '\n';   // false
+    std::cout << std::boolalpha << is_void_v<void> << '\n';   // true
+}
+```
+
+类模板的特化, 可以是完全新的类定义:
+```cpp
+template<typename T>
+struct X{
+    void f()const{
+        puts("f");
+    }
+};
+
+template<>
+struct X<int>{
+    void f()const{
+        puts("X<int>");
+    }
+    void f2()const{}
+
+    int n;
+};
+
+int main(){
+    X<void> x;
+    X<int> x_i;
+    x.f();         // 打印 f
+    //x.f2();      // Error!
+    x_i.f();       // 打印 X<int>
+    x_i.f2();
+}
+```
+
+声明和定义分离的类模板特化(**不建议类外特化**):
+```cpp
+template<>
+struct A<void>{
+    void f();       // 类内声明
+};
+
+void A<void>::f(){  // 类外定义
+    // todo..
+}
+```
+
+类内的模板的定义和特化也同理, 写明一路的特化参数即可, 且注意有几层模板就要写对应个数的`template`:
+```cpp
+template<>
+// 设类型A里面定义了类型C<U>
+template<class U>
+struct A<int>::C{
+    void f();               // 类内声明
+};
+// template<> 会用于定义被特化为类模板的显式特化的成员类模板的成员
+template<>
+template<class U>
+void A<int>::C<U>::f(){     // 类外定义
+    // todo..
+}
+```
+
+```cpp
+template<typename T>
+struct X {
+    template<typename T2>
+    void f(T2) {}
+
+    template<>
+    void f<int>(int) {            // 类内特化，对于 函数模板 f<int> 的情况
+        std::puts("f<int>(int)"); 
+    }
+};
+
+template<>
+template<>
+void X<void>::f<double>(double) { // 类外特化，对于 X<void>::f<double> 的情况
+    std::puts("X<void>::f<double>");
+}
+
+X<void> x;
+x.f(1);    // f<int>(int)
+x.f(1.2);  // X<void>::f<double>
+x.f("");
+```
+
+**特化必须在导致隐式实例化的首次使用之前**. 因此特化基本上不写在程序的中间(指单纯的源码位置, 与执行顺序无关).
+
+<u>只有声明没有定义</u>的模板特化可以像其他<u>不完整类型</u>一样使用:
+```cpp
+template<class T> // 主模板
+class X;
+template<>        // 特化（声明，不定义）
+class X<int>;
+ 
+X<int>* p;       // OK：指向不完整类型的指针
+X<int> x;        // 错误：不完整类型的对象
+```
+
+各种修饰和属性都以特化为准, 特化没写那么该特化就没有.
+```cpp
+template<typename T>
+int f(T) { return 6; }
+template<>
+constexpr int f<int>(int) { return 6; }   // OK，f<int> 是以 constexpr 修饰的
+
+template<class T>
+constexpr T g(T) { return 6; }            // 这里声明的 constexpr 修饰函数模板是无效的
+template<>
+int g<int>(int) { return 6; }             //OK，g<int> 不是以 constexpr 修饰的
+
+int main(){
+    constexpr auto n = f<int>(0);         // OK，f<int> 是以 constexpr 修饰的，可以编译期求值
+    //constexpr auto n2 = f<double>(0);   // Error! f<double> 不可编译期求值
+
+    //constexpr auto n3 = g<int>(0);      // Error! 函数模板 g<int> 不可编译期求值
+
+    constexpr auto n4 = g<double>(0);     // OK! 函数模板 g<double> 可编译期求值
+}
+```
+
+### 偏特化
+
+对模板参数特化不彻底就是**偏特化**. **函数模板没有偏特化**!
+
+比如, 只特化参数的部分情况:
+```cpp
+template<typename T>
+const char* s = "?";            // 主模板
+
+template<typename T>
+const char* s<T*> = "pointer";  // 偏特化，对指针这一类类型
+
+template<typename T>
+const char* s<T[]> = "array";   // 偏特化，对 T[] 这一类类型
+
+std::cout << s<int> << '\n';            // ?
+std::cout << s<int*> << '\n';           // pointer
+std::cout << s<std::string*> << '\n';   // pointer
+std::cout << s<int[]> << '\n';          // array
+std::cout << s<double[]> << '\n';       // array
+std::cout << s<int[1]> << '\n';         // ?
+```
+
+或者, 只把部分参数特化了:
+```cpp
+template<typename T,typename T2>
+const char* s = "?";
+
+template<typename T2>
+const char* s<int, T2> = "T == int";
+
+std::cout << s<char, double> << '\n';       // ?
+std::cout << s<int, double> << '\n';        // T == int
+std::cout << s<int, std::string> << '\n';   // T == int
+```
+
+
+## 显式实例化
+
+直接使用一个模板, 会进行**隐式实例化**. 这会导致无法对模板的声明和定义进行分文件. 而**显式实例化**只需要其上下文中有原模板即可, 而其他地方只需要能链接到这个实例就能进行使用, 因此这些显式实例化是可以与声明分文件的.
+
+加上`extern`(显式实例化声明)则会阻止隐式实例化, 使得当一个代码想要使用<u>该实例</u>时, 必须从<u>其他地方</u>寻找明确的显式实例化.
+
+函数模板显示实例化通过在`()`中传递类型来对模板进行**显式实例化**.
+
+```
+template 返回类型 名字 < 实参列表 > ( 形参列表 ) ;          (1)
+template 返回类型 名字 ( 形参列表 ) ;                      (2)
+extern template 返回类型 名字 < 实参列表 > ( 形参列表 ) ;   (3) (C++11 起)
+extern template 返回类型 名字 ( 形参列表 ) ;               (4) (C++11 起)
+```
+
+```cpp
+// test_function_template.h
+#pragma once
+
+#include <iostream>
+#include <typeinfo>
+
+template<typename T>
+void f_t(T);
+
+// test_function_template.cpp
+#include"test_function_template.h"
+
+template<typename T>
+void f_t(T) { std::cout << typeid(T).name() << '\n'; }
+
+template void f_t<int>(int); // 显式实例化定义 实例化 f_t<int>(int)
+template void f_t<>(char);   // 显式实例化定义 实例化 f_t<char>(char)，推导出模板实参
+template void f_t(double);   // 显式实例化定义 实例化 f_t<double>(double)，推导出模板实参
+```
+
+类模板通过指定`<>`内实参进行实例化.
+
+```
+template 类关键词 模板名 < 实参列表 > ;	        (1)	
+extern template 类关键词 模板名 < 实参列表 > ;	(2)	(C++11 起)
+```
+
+```cpp
+// test_class_template.h
+#pragma once
+
+#include <iostream>
+#include <typeinfo>
+
+namespace N {
+
+    template<typename T>
+    struct X {
+        int a{};
+        void f();
+        void f2();
+    };
+
+    template<typename T>
+    struct X2 {
+        int a{};
+        void f();
+        void f2();
+    };
+};
+
+// test_class_template.cpp
+#include "test_class_template.h"
+
+template<typename T>
+void N::X<T>::f(){
+    std::cout << "f: " << typeid(T).name() << "a: " << this->a << '\n';
+}
+
+template<typename T>
+void N::X<T>::f2() {
+    std::cout << "f2: " << typeid(T).name() << "a: " << this->a << '\n';
+}
+
+template void N::X<int>::f();    // 显式实例化定义 成员函数，这不是显式实例化类模板
+
+template<typename T>
+void N::X2<T>::f() {
+    std::cout << "X2 f: " << typeid(T).name() << "a: " << this->a << '\n';
+}
+
+template<typename T>
+void N::X2<T>::f2() {
+    std::cout << "X2 f2: " << typeid(T).name() << "a: " << this->a << '\n';
+}
+
+template struct N::X2<int>;      // 类模板显式实例化定义
+```
 
 ## concept
 
