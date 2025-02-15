@@ -28,6 +28,16 @@
 
 STL默认以vector为容器、以`operator<`为比较方式。
 
+## 头文件
+
+在第一行添加`#pragma once`(或者使用下面的`#ifndef`)可以防止头文件被重复包含. 这是为了解决在单个编译单元中重复展开出现的错误(类似重复声明), 但不能解决重复定义问题.
+```cpp
+#ifndef EXAMPLE_H
+#define EXAMPLE_H
+// 头文件内容...
+#endif
+```
+
 # 面向对象
 
 [第13章-cpp类继承\_cpp 继承\_itzyjr的博客-CSDN博客](https://blog.csdn.net/itzyjr/article/details/103424450)
@@ -2607,7 +2617,28 @@ int main() {
 }
 ```
 
-利用**折叠表达式**:
+
+### 折叠表达式
+
+```
+( 形参包 运算符 ... )              (1) 一元右折叠
+( ... 运算符 形参包 )              (2) 一元左折叠
+( 形参包 运算符 ... 运算符 初值 )   (3) 二元右折叠
+( 初值 运算符 ... 运算符 形参包 )   (4) 二元左折叠
+```
+
+1. 一元右折叠 `(E 运算符 ...)` 成为 `(E1 运算符 (... 运算符 (EN-1 运算符 EN)))`
+2. 一元左折叠 `(... 运算符 E)` 成为 `(((E1 运算符 E2) 运算符 ...) 运算符 EN)`
+3. 二元右折叠 `(E 运算符 ... 运算符 I)` 成为 `(E1 运算符 (... 运算符 (EN−1 运算符 (EN 运算符 I))))`
+4. 二元左折叠 `(I 运算符 ... 运算符 E)` 成为 `((((I 运算符 E1) 运算符 E2) 运算符 ...) 运算符 EN)` （其中 N 是包展开中的元素数量）
+
+> [!notice]
+> 注意要加括号.
+
+> [!note]
+> 二元折叠可看做: 将一个初值和形参包的第一个值进行自定义的计算, 然后再按照一元折叠继续计算.
+
+利用折叠表达式实现sum:
 ```cpp
 template<class...Args>
 auto sum(Args ...args) {
@@ -2619,7 +2650,72 @@ int main() {
 }
 ```
 
-`(args + ...)`是向右折叠, 先计算最靠右的参数. `(... + args)`就是向左折叠.
+利用折叠表达式优化打印所有参数的print:
+```cpp
+template<typename...Args>
+void print1(const Args&...args) {
+	// 把所有参数按此模式, 以逗号运算符为间隔进行展开
+	// 逗号没有副作用, 因此左右结合没区别
+    ((std::cout << args << ' '), ...);
+}
+print1("luse", 1, 1.2); // luse 1 1.2
+
+// 展开后的函数
+void print1_etd(const char(&args0)[5], const int& args1, const double& args2) {
+    (std::cout << args0 << ' '), ((std::cout << args1 << ' '), (std::cout << args2 << ' '));
+}
+
+// 二元左折叠
+template<typename... Args>
+void print2(Args&&... args){
+	// 初值是 std::cout, 两个运算符都是`<<`
+    (std::cout << ... << args) << '\n';
+}
+print2("luse", 1, 1.2); // luse11.2
+```
+
+```cpp
+template<int...I>
+constexpr int v_right = (I - ...);  // 一元右折叠
+
+template<int...I>
+constexpr int v_left = (... - I);   // 一元左折叠
+
+int main(){
+    std::cout << v_right<4, 5, 6> << '\n';  //(4-(5-6)) 5
+    std::cout << v_left<4, 5, 6> << '\n';   //((4-5)-6) -7
+}
+```
+
+```cpp
+// 二元右折叠
+template<int...I>
+constexpr int v = (I + ... + 10);    // 1 + (2 + (3 + (4 + 10)))
+// 二元左折叠
+template<int...I>
+constexpr int v2 = (10 + ... + I);   // (((10 + 1) + 2) + 3) + 4
+
+std::cout << v<1, 2, 3, 4> << '\n';  // 20
+std::cout << v2<1, 2, 3, 4> << '\n'; // 20
+```
+
+逗号可以实现**从左往右**执行命令, 而赋值符号`=`可以实现**从右往左**, 不过一般需要一个变量帮助其符合赋值语法; 由于需要提供左值初值变量, 因此只能使用左折叠:
+```cpp
+// 把参数逆序存入数组
+template<class ...Args>
+auto Reverse(Args&&... args) {
+    std::vector<std::common_type_t<Args...>> res{};
+    bool tmp{ false };
+    (tmp = ... = (res.push_back(args), false));
+    return res;
+}
+
+// 两个参数时此折叠表达式的展开:
+(tmp = (res.push_back(args1) , false)) = (res.push_back(args2) , false);
+// 执行方式:
+tmp = (res.push_back(arg2), false);
+tmp = (res.push_back(arg1), false);
+```
 
 
 ## 类模板: 模板模板形参
@@ -2876,7 +2972,8 @@ std::cout << s<int, std::string> << '\n';   // T == int
 
 ## 显式实例化
 
-直接使用一个模板, 会进行**隐式实例化**. 这会导致无法对模板的声明和定义进行分文件. 而**显式实例化**只需要其上下文中有原模板即可, 而其他地方只需要能链接到这个实例就能进行使用, 因此这些显式实例化是可以与声明分文件的.
+
+直接使用一个模板, 会进行**隐式实例化**. 这会导致无法对模板的声明和定义进行分文件. 而**显式实例化**只需要其上下文中有原模板即可, 而其他地方只需要能链接到这个实例就能进行使用, 因此这些显式实例化是可以与声明分文件的. 显式实例化定义不能放在头文件中, 防止重复定义.
 
 加上`extern`(显式实例化声明)则会阻止隐式实例化, 使得当一个代码想要使用<u>该实例</u>时, 必须从<u>其他地方</u>寻找明确的显式实例化.
 
@@ -2968,6 +3065,171 @@ void N::X2<T>::f2() {
 
 template struct N::X2<int>;      // 类模板显式实例化定义
 ```
+
+## 待决名 Dependent Name
+
+[待决名 - cppreference.com](https://zh.cppreference.com/w/cpp/language/dependent_name)
+
+待决名指在模板中**依赖于模板参数**的**名称**. 这些名称的具体含义需要等到模板实例化时才能确定, 编译器在解析模板时无法直接推断其类型或作用, 需要使用关键字辅助编译器解析.
+
+> [!info]
+> 即使通过穷举发现一个模板只能以满足要求的形式实例化, 但是依然要假设它不定.
+
+
+### typename消除歧义
+
+> 在模板（包括别名模版）的声明或定义中，不是当前实例化的成员且取决于某个模板形参的名字**不会被认为是类型**，除非**使用关键词 typename** 或它**已经被设立为类型名**（例如用 typedef 声明或通过用作基类名）.
+
+下面的代码中, 编译器不将`f`的`type`视为类型, 于是产生编译错误. 因为`type`是否是个类型取决于`T`.
+```cpp
+template<typename T>
+const T::type& f(const T&) {
+    return 0;
+}
+
+struct X{
+    using type = int;
+};
+
+int main(){
+    X x;
+    f(x);
+}
+```
+
+解决方案是在模板中添加`typename`, 以指示`type`是个类型:
+```cpp
+template<typename T>
+const typename T::type& f(const T&) {
+    return 0;
+}
+```
+
+```cpp
+int p = 1;
+
+template<typename T>
+void foo(const std::vector<T>& v){
+    // std::vector<T>::const_iterator 是待决名，
+    typename std::vector<T>::const_iterator it = v.begin();
+
+    // 下列内容因为没有 'typename' 而会被解析成
+    // 类型待决的成员变量 'const_iterator' 和某变量 'p' 的乘法。
+    // 因为在此处有一个可见的全局 'p'，所以此模板定义能编译。
+    std::vector<T>::const_iterator* p;
+
+    typedef typename std::vector<T>::const_iterator iter_t;
+    iter_t* p2; // iter_t 是待决名，但已知它是类型名, 通过编译
+}
+
+int main(){
+    std::vector<int>v;
+    foo(v); // 实例化失败
+}
+```
+
+### template消除歧义
+
+> 模板定义中不是当前实例化的成员的待决名同样**不被认为是模板名**，除非**使用消歧义关键词 template**，或它**已被设立为模板名**.
+
+下面的代码中, 编译器不认为`foo`有模板参数, 因此不把`<T>`解析为模板参数操作. 因为s的类型`S<T>`是依赖于`T`的, 这使得`foo`是否有模板参数也是依赖`T`的.
+```cpp
+template<typename T>
+struct S{
+    template<typename U>
+    void foo() {}
+};
+ 
+template<typename T>
+void bar(){
+    S<T> s;
+    s.foo<T>();          // 错误：< 被解析为小于运算符
+    s.template foo<T>(); // OK
+}
+```
+
+解决方案是在`foo`前标上`template`, 以指示这是在操作模板参数:
+```cpp
+s.template foo<T>()
+```
+
+关键词 `template` 只能以这种方式用于运算符 `::`（作用域解析）、`->`（通过指针的成员访问）和 `.`（成员访问）之后，下列表达式都是合法示例：
+- `T::template foo<X>();`
+- `s.template foo<X>();`
+- `this->template foo<X>();`
+- `typename T::template iterator<int>::value_type v;`
+
+> [!info]
+> `typename`和`template`都可以标注在不必要标的地方, 没有作用但合法.
+
+### 绑定与查找规则
+
+[名字查找 - cppreference.com](https://zh.cppreference.com/w/cpp/language/lookup)
+
+> 对待决名和非待决名的名字查找和绑定有所不同. 非待决名在**模板定义点**查找并绑定。即使在模板实例化点有更好的匹配，也保持此绑定.
+
+- 非待决名：检查该模板的定义时将进行无限定的名字查找
+- 待决名：它的查找会推迟到得知它的模板实参之时
+
+下面的代码中, `g`作为非待决名, 直接从模板定义点开始找`g`, 因此绑定了上面的`void g(double)`, 而非下面的`g(int)`.
+```cpp
+#include <iostream>
+
+void g(double) { std::cout << "g(double)\n"; }
+
+template<class T>
+struct S{
+    void f() const{
+        g(1); // "g" 是非待决名，现在绑定
+    }
+};
+
+void g(int) { std::cout << "g(int)\n"; }
+
+int main(){
+    g(1);  // 调用 g(int)
+
+    S<int> s;
+    s.f(); // 调用 g(double)
+}
+```
+
+下面的代码中, 由于`this->f()`是待决名, 因此推迟到`y.t()`处才会查找, 此时已经知道父类`X<T>`了, 因此可以找到成员函数; 而`f()`非待决, 因此直接找全局函数.
+```cpp
+#include<iostream>
+
+template<class T>
+struct X {
+    void f()const { std::cout << "成员\n"; }
+};
+
+void f() { std::cout << "全局\n"; }
+
+template<class T>
+struct Y : X<T> {
+    void t()const {
+        this->f(); // 待决
+    }
+    void t2()const {
+        f(); // 非待决
+    }
+};
+
+int main() {
+    Y<void>y;
+    y.t();
+    y.t2();
+}
+
+// Output:
+// 成员
+// 全局
+```
+
+
+## SFINAE
+
+
 
 ## concept
 
@@ -3256,6 +3518,8 @@ gcc -E test.c -o test.i
 ```
 
 处理`#define`（字符串替换）、`#include`（复制粘贴）、条件编译等，并把注释给去掉。
+
+头文件展开后, 一个cpp文件就是最小的一个**编译单元**.
 ## 2、编译（Compilation）
 
 `.s`: Assembly file
