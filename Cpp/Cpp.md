@@ -2125,6 +2125,8 @@ class X {
 
 (隐式实例化语境下)（在预编译之后）**声明和实现必须在同一个文件里面**。如果把声明放在头文件、把实现放在cpp文件，则另一个cpp文件只会include头文件而会忽视cpp文件，于是只能通过模板函数声明推导出函数声明语句，而不会推导实现语句，使得实例（如`f<int>()`)会找不到实现。一般把模板写在**头文件**`.h`里面, 也可以按约定写在`.hpp`文件里.
 
+模板里的typename都允许写成class.
+
 ## 各种模板基础
 
 ### 函数模板
@@ -3229,7 +3231,198 @@ int main() {
 
 ## SFINAE
 
+代换失败不是错误(Substitution Failure Is Not An Error, SFINAE). 在函数模板的[重载决议](https://zh.cppreference.com/w/cpp/language/overload_resolution)中会使用: 当模板形参在替换成显式指定的类型或推导出的类型失败时，从重载集中丢弃这个特化，而非导致编译失败.
 
+对函数模板形参进行两次代换（由模板实参所替代）：
+- 在模板实参推导前，对显式指定的模板实参进行代换
+- 在模板实参推导后，对推导出的实参和从默认项获得的实参进行替换
+
+> 只有在函数类型或其模板形参类型或其 explicit 说明符 (C++20 起)的<u>立即语境</u>中的类型与表达式中的失败，才是 **SFINAE错误(即代换错误)**。如果对代换后的类型/表达式的<u>求值导致副作用</u>，例如实例化某模板特化、生成某隐式定义的成员函数等，那么这些副作用中的错误都被当做**硬错误**。
+
+> [!note]
+> SFINAE只考虑在把实参代换进去的时候会不会代不进去; 而代进去之后接着出现的错误就是硬错误, 无法通过编译.
+
+> [!notice]
+> 只有在函数签名中才有SFINAE机制!
+
+下面的代码是可编译的:
+```cpp
+#include <iostream>
+
+template<typename A>
+struct B { using type = typename A::type; }; // 待决名，C++20 之前必须使用 typename 消除歧义
+
+template<
+    class T,
+    class U = typename T::type,              // 如果 T 没有成员 type 那么就是 SFINAE 失败（代换失败）
+    class V = typename B<T>::type>           // 如果 T 没有成员 type 那么就是硬错误 不过标准保证这里不会发生硬错误，因为到 U 的默认模板实参中的代换会首先失败
+void foo(int) { std::puts("SFINAE T::type B<T>::type"); }
+
+template<typename T>
+void foo(double) { std::puts("SFINAE T"); }
+
+int main(){
+    struct C { using type = int; };
+
+    foo<B<C>>(1);       // void foo(int)    输出: SFINAE T::type B<T>::type
+    foo<void>(1);       // void foo(double) 输出: SFINAE T
+}
+```
+
+在实现`add`函数的时候, 把对`operator+`的要求体现在签名上, 以通过SFINAE来在传入非法参数的时候报 "**未找到匹配的重载函数**"错误 而非 "实例化模板错误", 后者报错内容可能极其难读.
+```cpp
+template<typename T>
+auto add(const T& t1, const T& t2) -> decltype(t1 + t2){   // C++11 后置返回类型，在返回类型中运用 SFINAE
+    std::puts("SFINAE +");
+    return t1 + t2;
+}
+```
+
+### 设施
+
+SFINAE的标准库设施使用: [SFINAE 标准库支持 | 现代 C++ 模板教程](https://mq-b.github.io/Modern-Cpp-templates-tutorial/md/%E7%AC%AC%E4%B8%80%E9%83%A8%E5%88%86-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/10%E4%BA%86%E8%A7%A3%E4%B8%8E%E5%88%A9%E7%94%A8SFINAE#%E6%A0%87%E5%87%86%E5%BA%93%E6%94%AF%E6%8C%81)
+
+#### enable_if
+
+`enable_if`在第一个参数`B`为`true`的时候, 其内部才拥有`type`(等于第二个参数`T`); `enable_if_t`表现为: 要么为真 则 返回第二个参数, 要么为假 则 代换失败. 
+```cpp
+template<bool B, class T = void>
+struct enable_if {};
+ 
+template<class T> // 类模板偏特化
+struct enable_if<true, T> { typedef T type; };     // 只有 B 为 true，才有 type，即 ::type 才合法
+
+template< bool B, class T = void >
+using enable_if_t = typename enable_if<B,T>::type; // C++14 引入
+```
+
+如果仅仅用来**限制形参特性**而不关心`enable_if_t`的返回, 那么可以不写第二个参数`T`, 让其默认为`void`:
+```cpp
+// 不关心形参SFINAE到底是什么
+template<typename T,typename SFINAE = 
+    std::enable_if_t<std::is_same_v<T,int>>>
+void f(T){}
+```
+
+或者把`enable_if_t`的范围作为一个非类型形参的类型, 不过此时要为它赋予一个值才能通过编译, 于是可以让其为`int`(不允许`void`类型的非类型形参), 然后为其默认赋值`0`:
+```cpp
+template<typename T,
+    std::enable_if_t<std::is_same_v<T,int>,int> =0>
+void f(T){}
+```
+
+用户定义的推导指引, 以推导数组类型及其长度, 还能检查类型是否一致:
+```cpp
+template <class Type, class... Args>
+array(Type, Args...) -> array<std::enable_if_t<(std::is_same_v<Type, Args> && ...), Type>, sizeof...(Args) + 1>;
+```
+
+#### void_t
+
+`void_t`可以把任意多的任意参数转变为`void`, 因此可以在其参数中做出很多SFINAE限制(每个都可以用decltype套一下).
+```cpp
+template< class... >
+using void_t = void;
+```
+
+(下面的例子还有待使用`declval`优化)
+- 有`operator+`: `decltype(T{} + T{})`.
+- 含有`type`别名: `typename T::type`.
+- 有成员变量`value`和成员函数`f`: `decltype(&T::value)`和`decltype(&T::f)`. 其中`&T::xxx`是[成员指针](https://zh.cppreference.com/w/cpp/language/pointer#.E6.88.90.E5.91.98.E6.8C.87.E9.92.88), 若它合法则说明`T`有`xxx`成员.
+```cpp
+#include <iostream>
+#include <type_traits>
+
+template<typename T,
+    typename SFINAE = std::void_t<
+    decltype(T{} + T{}), typename T::type, decltype(&T::value), decltype(&T::f) >>
+auto add(const T& t1, const T& t2) {
+    std::puts("SFINAE + | typename T::type | T::value");
+    return t1 + t2;
+}
+
+struct Test {
+    int operator+(const Test& t)const {
+        return this->value + t.value;
+    }
+    void f()const{}
+    using type = void;
+    int value;
+};
+
+int main() {
+    Test t{ 1 }, t2{ 2 };
+    add(t, t2);  // OK
+    //add(1, 2); // 未找到匹配的重载函数
+}
+```
+
+#### declval
+
+`declval<T>()`的返回类型为`T&&`. 这是它唯一的功能, 因此它只能用于不求值语境, 即可用于SFINAE.
+```cpp
+template<class T>
+typename std::add_rvalue_reference<T>::type declval() noexcept;
+```
+
+> [!note]
+> 它返回`T&&`是因为这样更通用, 可以兼容各种类型, 且不会出现直接的`T`带来的拷贝或移动问题. 此外, 它依然兼容`void`使其返回`void`而不是非法的`void&&`(通过`::type`).
+
+在`void_t`的例子中, 使用`decltype(T{} + T{})`来要求`T`可以进行`operator+`; 但是, 这同时也要求了`T`有默认构造函数. 若要去掉此限制, 就要使用`declval`:
+```cpp
+template<typename T, typename SFINAE = std::void_t<decltype(std::declval<T>() + std::declval<T>())> >
+auto add(const T& t1, const T& t2) {
+    std::puts("SFINAE +");
+    return t1 + t2;
+}
+```
+
+这也使得成员可以直接通过`declval`给出的`T&&`来获取, 而不需要使用成员指针; 此外, 成员指针无法约束成员函数的参数情况, 在此也得到弥补:
+```cpp
+template<typename T,typename SFINAE = decltype(std::declval<T>().f(1))>
+void f(int) { std::puts("f int"); }
+
+template<typename T, typename SFINAE = decltype(std::declval<T>().f())>
+void f(double) { std::puts("f"); }
+
+struct X{
+    void f()const{}
+};
+struct Y{
+    void f(int)const{}
+};
+
+int main(){
+    f<X>(1); // f 
+    f<Y>(1.1); // f int
+}
+```
+
+
+### 偏特化中的SFINAE
+
+```cpp
+#include <iostream>
+
+template<typename T,typename T2 = void>
+struct X{
+    static void f() { std::puts("主模板"); }
+};
+
+template<typename T>
+struct X<T, std::void_t<typename T::type>>{
+    using type = typename T::type;
+    static void f() { std::puts("偏特化 T::type"); }
+};
+
+struct Test { using type = int; };
+struct Test2 { };
+
+int main(){
+    X<Test>::f();       // 偏特化 T::type
+    X<Test2>::f();      // 主模板
+}
+```
 
 ## concept
 
