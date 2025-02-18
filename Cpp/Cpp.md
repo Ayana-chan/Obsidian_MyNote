@@ -1,6 +1,10 @@
 
 # 链接
 
+[cppreference.com](https://en.cppreference.com/w/)
+
+[cppreference.com 中文](https://zh.cppreference.com/w/%E9%A6%96%E9%A1%B5)
+
 [C++11中关键字 - 知乎](https://zhuanlan.zhihu.com/p/157523014)
 
 [C++STL中的常用容器总结\_stl容器总结\_SeeDoubleU的博客-CSDN博客](https://blog.csdn.net/SeeDoubleU/article/details/124507029)
@@ -1042,11 +1046,15 @@ NULL可能会被定义为0，若有两个同名不同参的函数（重载），
 
 `::f`表示使用全局作用域下的`f`(而不是当前局部内的). 这即使不在命名空间的情况下也生效(例如区分局部和全局变量).
 
-## 字面量
+## 输入输出操作器
 
-有两个**输入输出操作器**可以传递给`cout`:
-- 传递`std::hexfloat`可以使浮点数以十六进制格式输出
-- 传递`std::hexfloat`可以使浮点数用默认十进制输出
+把输出操作器使用`<<`传递给`cout`, 即可获得一个定制的输出器.
+- `std::hexfloat`: 使浮点数以十六进制格式输出
+- `std::hexfloat`: 使浮点数用默认十进制输出
+- `std::boolalpha`: 把bool变量以`true`和`false`文本形式输出.
+
+
+## 字面量
 
 ```cpp
 #include <iostream>
@@ -1358,6 +1366,10 @@ NRVO无法优化的情况：
 - 函数有多处return，且返回的变量不同。
 
 编译时添加选项`-fno-elide-constructors`可以关闭NRVO。
+
+## ADL TODO
+
+[实参依赖查找 - cppreference.com](https://zh.cppreference.com/w/cpp/language/adl)
 
 ## 基于范围的for循环
 
@@ -2141,6 +2153,76 @@ template <typename T>
 void f(const T &t) {...} 
 // 文件内部没有声明依赖关系的时候，声明和实现可以合并
 ```
+
+#### 简写函数模板
+
+cpp20的特性, 当参数为auto的时候, 自动为其生成一个(虚构的)模板参数; 在auto前面可以使用concept对类型进行约束.
+
+> [!info]
+> 类似于rust的impl Trait, 不过cpp可以完全不进行约束. 想要同时进行多个约束的话, 可以提前对concept进行`||`组合.
+
+```cpp
+void f1(auto); // same as template<class T> void f1(T)
+void f2(C1 auto); // same as template<C1 T> void f2(T), if C1 is a concept
+void f3(C2 auto...); // same as template<C2... Ts> void f3(Ts...), if C2 is a concept
+void f4(const C3 auto*, C4 auto&); // same as template<C3 T, C4 U> void f4(const T*, U&);
+ 
+template<class T, C U>
+void g(T x, U y, C auto z); // same as template<class T, C U, C W> void g(T x, U y, W z);
+ 
+template<>
+void f4<int>(const int*, const double&); // specialization of f4<int, const double>
+```
+
+```cpp
+namespace {
+ 
+//template<typename T>
+//T get_sum(T a, T b)
+auto get_sum(auto a, auto b) // 不受约束的auto
+{
+    return (a + b);
+}
+ 
+template <typename T>
+concept C = std::is_integral_v<T> || std::is_floating_point_v<T>;
+ 
+auto get_sum2(C auto a, C auto b) // 受约束的auto
+{
+    return (a + b);
+}
+ 
+} // namespace
+ 
+int test_abbreviated_function_template()
+{
+    std::cout << "sum: " << get_sum(6, 8) << std::endl;
+    std::cout << "sum: " << get_sum(6, 8.8) << std::endl;
+    std::cout << "sum: " << get_sum(std::string("hello"), std::string(", world")) << std::endl;
+ 
+    std::cout << "sum2: " << get_sum2(6, 8) << std::endl;
+    std::cout << "sum2: " << get_sum2(6, 8.8) << std::endl;
+    //std::cout << "sum2: " << get_sum2(std::string("hello"), std::string(", world")) << std::endl; // // error C2672: "get_sum2":未找到匹配的重载函数
+ 
+    return 0;
+}
+```
+
+更复杂的类型推导:
+```cpp
+#include <concepts>
+
+decltype(auto) max(const std::integral auto& a, const std::integral auto& b) {
+    return a > b ? a : b;
+}
+
+max(1, 2);     // OK
+max('1', '2'); // OK
+max(1u, 2u);   // OK
+max(1l, 2l);   // OK
+max(1.0, 2);   // Error! 未满足关联约束
+```
+
 
 ### 类模板
 
@@ -3430,16 +3512,66 @@ int main(){
 
 [Requires expression (since C++20) - cppreference.com](https://en.cppreference.com/w/cpp/language/requires)
 
-以前的SNIFAE机制, 让编译器只会选择编译正确的那个特化实例; 但有了concept机制之后, 可以把约束全都写到一起并进行组合, 使得在模板特化之前就检查模板类型参数是否满足要求.
+> [!info]
+> concept名称一般写成`snake_case`.
 
-一个模板定义可以`require`一些requirements.
+类模板，函数模板，以及非模板函数（通常是类模板的成员），可以与一项约束（constraint）相关联，它指定了对模板实参的一些要求(requirements)，这些要求可以被用于选择最恰当的函数重载和模板特化。
 
-concept是被命名的requirements的集合; `require` concept等价于`require`其对应的requirements.
+这种requirements的<u>具名集合</u>被称为概念（concept）。每个concept都是一个谓词，它在编译时求值，并在将之用作约束时成为模板接口的一部分。
+
+> [!note]
+> "满足"requirement指的是代入后合法.
+
+定义一个concept:
+```cpp
+template < 模板形参列表 >
+concept 概念名 属性 (可选) = 约束表达式;
+```
 
 ```cpp
-// 定义一个concept
 template<class T, class U>
 concept Derived = std::is_base_of<U, T>::value;
+```
+
+定义要求`operator+`的concept, 然后使用它:
+```cpp
+// Add最好首字母小写, 这里仅为区分
+template<typename T>
+// 使用requires表达式作为约束表达式
+concept Add = requires(T a) {
+    a + a; // "需要表达式 a+a 是可以通过编译的有效表达式"
+};
+
+// 使用`Add T`要求T满足Add指定的约束
+template<Add T>
+auto add(const T& t1, const T& t2){
+    std::puts("concept +");
+    return t1 + t2;
+}
+
+// 测试其求值
+std::cout << std::boolalpha << Add<int> << '\n';        // true
+std::cout << std::boolalpha << Add<char[10]> << '\n';   // false
+constexpr bool r = Add<int>;                            // true
+```
+
+简写函数模板, 使用`std::integral`约束参数必须是整数类型:
+```cpp
+#include <concepts>
+
+decltype(auto) max(const std::integral auto& a, const std::integral auto& b) {
+    return a > b ? a : b;
+}
+
+max(1, 2);     // OK
+max('1', '2'); // OK
+max(1u, 2u);   // OK
+max(1l, 2l);   // OK
+max(1.0, 2);   // Error! 未满足关联约束
+
+// integral的定义
+template< class T >
+concept integral = std::is_integral_v<T>;
 ```
 
 ```cpp
@@ -3487,8 +3619,205 @@ int main()
 }
 ```
 
+### requires子句
+
+`requires` 子句期待一个能够<u>编译期</u>产生 `bool` 值的<u>表达式</u>. requires 子句中，**关键词 requires 必须后随某个常量表达式**.
+
+```cpp
+// 这里的requires是约束表达式
+template<typename T>
+concept add = requires(T t) {
+    t + t;
+};
+
+// requires子句, 要求后面的编译期可计算的值为真
+template<typename T>
+    requires std::is_same_v<T, int>
+void f(T){}
+
+// requires子句, 要求后面的concept计算得到的值为真
+template<typename T> requires add<T>
+void f2(T) {}
+
+// 两个requires: 第一个是requires子句, 第二个是约束表达式
+template<typename T>
+void f3(T)requires requires(T t) { t + t; }
+{}
+```
+
+### 约束
+
+约束是逻辑操作和操作数的序列，它指定了对模板实参的要求。它们可以在 requires 表达式中出现，也可以直接作为concept的主体。
+
+可以使用合取`&&`和析取`||`来结合约束, 使用`!`反转. 有和bool判断一样的短路机制.
+```cpp
+template<class T>
+concept Integral = std::is_integral_v<T>;
+template<class T>
+concept SignedIntegral = Integral<T> && std::is_signed_v<T>;
+template<class T>
+concept UnsignedIntegral = Integral<T> && !SignedIntegral<T>;
+
+template<typename T>
+concept number = std::integral<T> || std::floating_point<T>;
+```
+
+### requires表达式
+
+```
+requires { 要求序列 }
+requires ( 形参列表 (可选) ) { 要求序列 }
+```
+
+把模板参数带入到 requires 表达式中，是否符合语法，符合就返回 `true`，不符合就返回 `false`。
+
+```cpp
+#include <iostream>
+
+template<typename T>
+void f(T) {
+    constexpr bool v = requires{ T::type; }; // 此处可不使用 typename
+    std::cout << std::boolalpha << v << '\n';
+}
+
+struct X { using type = void; };
+struct Y { static constexpr int type = 0; };
+
+int main() {
+    f(1);   // false 因为 int::type 不是合法表达式
+    f(X{}); // false 因为 X::type   在待决名中不被认为是类型，需要添加 typename
+    f(Y{}); // true  因为 Y::type   是合法表达式
+}
+```
+
+requires表达式里面写的是**要求序列**, 分为:
+- 简单要求
+- 类型要求
+- 复合要求
+- 嵌套要求
+
+**简单要求**是任何不以关键词 requires 开始的表达式语句. 不求值, 仅检查其是否可编译. 如`a + b`.
+
+**类型要求**是关键词 **`typename`** 后面接一个可以被限定的<u>类型名称</u>. 要求所指名的类型是有效的. 用来验证:
+1. 某个指名的嵌套类型是否存在;
+2. 某个类模板特化是否指名了某个类型;
+3. 某个别名模板特化是否指名了某个类型.
+```cpp
+struct Test{
+    struct X{};
+    using type = int;
+};
+
+template<typename T>
+struct S{};
+
+template<typename T>
+using Ref = T&;
+
+template<typename T>
+concept C = requires{
+    typename T::X;      // 需要嵌套类型
+    typename T::type;   // 需要嵌套类型
+    typename S<T>;      // 需要类模板特化. 如果`S`只要非类型模板参数或不要参数, 则失败
+    typename Ref<T>;    // 需要别名模板代换
+};
+
+std::cout << std::boolalpha << C<Test> << '\n'; // true
+```
+
+**复合要求**还会对返回值类型进行进一步的约束检查:
+```
+{ 表达式 } noexcept(可选) 返回类型要求 (可选) ;
+
+# 返回类型要求:
+-> 类型约束（concept）
+```
+
+- 如果有`noexcept`, 则表达式不能抛出异常.
+- `decltype((表达式))`要满足返回值类型要求的约束.
+
+```cpp
+template<typename T>
+concept C2 = requires(T x){
+    // 表达式 *x 必须合法
+    // 并且 类型 T::inner 必须存在
+    // 并且 *x 的结果必须可以转换为 T::inner
+    {*x} -> std::convertible_to<typename T::inner>;
+
+    // 表达式 x + 1 必须合法
+    // 并且 std::same_as<decltype((x + 1)), int> 必须满足
+    // 即, (x + 1) 必须为 int 类型的纯右值
+    {x + 1} -> std::same_as<int>;
+
+    // 表达式 x * 1 必须合法
+    // 并且 它的结果必须可以转换为 T
+    {x * 1} -> std::convertible_to<T>;
+
+    // 复合："x.~T()" 是不会抛出异常的合法表达式
+    { x.~T() } noexcept;
+};
+
+// 符合要求的一个类型
+struct X{
+    int operator*()const { return 0; }
+    int operator+(int)const { return 0; }
+    X operator*(int)const { return *this; }
+    using inner = int;
+};
+
+std::cout << std::boolalpha << C2<X> << '\n'; // true
+```
+
+> [!note]
+> 析构函数只有在其显式标明`noexcept(false)`的时候才是非`noexcept`的.
+
+**嵌套要求**是在 requires表达式 里面使用 requires子句, 来引入其他约束:
+```
+requires 约束表达式 ;
+```
+
+```cpp
+template<typename T>
+concept C3 = requires(T a, std::size_t n) {
+    requires std::is_same_v<T*, decltype(&a)>;
+    requires std::same_as<T*, decltype(new T[n])>; // 和is_same_v等价
+    requires requires{ a + a; }; // 直接写成 a + a 就行了
+    requires sizeof(a) > 4;
+};
+std::cout << std::boolalpha << C3<int> << '\n';    // false
+std::cout << std::boolalpha << C3<double> << '\n'; // true
+```
 
 
+### 偏特化中的concept
+
+```cpp
+#include <iostream>
+
+template<typename T>
+concept have_type = requires{
+    typename T::type;
+};
+
+template<typename T>
+struct X {
+    static void f() { std::puts("主模板"); }
+};
+
+template<have_type T>
+struct X<T> {
+    using type = typename T::type;
+    static void f() { std::puts("偏特化 T::type"); }
+};
+
+struct Test { using type = int; };
+struct Test2 { };
+
+int main() {
+    X<Test>::f();       // 偏特化 T::type
+    X<Test2>::f();      // 主模板
+}
+```
 
 # 并发编程
 
