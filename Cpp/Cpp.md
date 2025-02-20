@@ -2078,6 +2078,54 @@ auto index = std::ranges::distance(vec.begin(), aim_it);
 assert(index == 4);
 ```
 
+#### 使用transform
+
+[1170. 比较字符串最小字母出现频次 - 力扣（LeetCode）](https://leetcode.cn/problems/compare-strings-by-frequency-of-the-smallest-character)
+
+```cpp
+vector<int> numSmallerByFrequency(vector<string>& queries, vector<string>& words) {
+	// f
+	auto count = [](const string &s) {
+		char aim_ch = s[0];
+		int cnt = 0;
+		for(auto&& ch: s) {
+			if(ch < aim_ch) {
+				aim_ch = ch;
+				cnt = 0;
+			}
+			if(ch == aim_ch) {
+				cnt++;
+			}
+		}
+		return cnt;
+	};
+
+	auto fw = words | views::transform(count) | ranges::to<vector<int>>();
+	ranges::sort(fw);
+	
+	auto fq = queries | views::transform(count) | ranges::to<vector<int>>();
+
+	// 满足的word的个数
+	auto search = [&fw](const int &q){
+		auto it = ranges::upper_bound(fw, q);
+		return distance(it, fw.end());
+	};
+
+	auto ans = fq | views::transform(search) | ranges::to<vector<int>>();
+	return ans;
+}
+```
+
+#### 使用fold_left(即reduce)
+
+```cpp
+int sum = ranges::fold_left(nums, 0, 
+			[&](int acc, const int &v){
+				return acc + (v-1)/mid + 1;
+			});
+```
+
+`fold_left_first`把第一个元素作为初值; 其返回值为`optional<T>`而非`T`, 因为有可能参数容器为空.
 
 ## piecewise_construct
 
