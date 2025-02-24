@@ -1510,7 +1510,37 @@ int main() {
 
 ## std::string_view
 
-对string的一个引用，不发生拷贝。
+[std::basic\_string\_view - cppreference.com](https://zh.cppreference.com/w/cpp/string/basic_string_view)
+
+对string的一个引用，不发生拷贝。TODO
+
+```cpp
+#include <iostream>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+
+int main() {
+    // 原始字符串
+    std::string original = "hello world, welcome to C++ programming";
+
+    // 创建一个哈希表，键为 std::string_view，值为 int
+    std::unordered_map<std::string_view, int> hashTable;
+
+    // 存储若干子串到哈希表中
+    hashTable[std::string_view(original.c_str(), 5)] = 1; // "hello"
+    hashTable[std::string_view(original.c_str() + 6, 5)] = 2; // "world"
+    hashTable[std::string_view(original.c_str() + 18, 7)] = 3; // "welcome"
+    hashTable[std::string_view(original.c_str() + 26, 2)] = 4; // "to"
+
+    // 打印哈希表的内容
+    for (const auto& [key, value] : hashTable) {
+        std::cout << "Key: " << key << ", Value: " << value << std::endl;
+    }
+
+    return 0;
+}
+```
 
 ## 函数（谓词）
 ### 仿函数（闭包）
@@ -2117,6 +2147,14 @@ vector<int> numSmallerByFrequency(vector<string>& queries, vector<string>& words
 ```
 
 #### 使用fold_left(即reduce)
+
+[std::ranges::fold\_left - cppreference.com](https://zh.cppreference.com/w/cpp/algorithm/ranges/fold_left)
+
+```cpp
+int sum = ranges::fold_left(v.begin(), v.end(), 0, std::plus<int>());
+
+int sum = ranges::fold_left_first(nums, plus<int>()).value(); 2
+```
 
 ```cpp
 int sum = ranges::fold_left(nums, 0, 
