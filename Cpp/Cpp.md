@@ -136,7 +136,7 @@ virtual T func(args) = 0;
 
 ### 重写注意点
 
-虚函数被重写时，会把所有名字一样的都给覆盖，即使参数列表和返回值不一样。若不一样，编译器可能发出警告，但不会编译失败。因此，如果基类有三个同名虚函数，则派生类最好要么都不重写，要么都重写。如下所示：
+虚函数被重写时，会把**所有名字一样的**都给覆盖，即使参数列表和返回值不一样。若不一样，编译器可能发出警告，但不会编译失败。因此，如果基类有三个同名虚函数，则派生类最好要么都不重写，要么都重写。如下所示：
 
 ```cpp
 class Dwelling {
@@ -157,8 +157,7 @@ public:
 };
 ```
 
-另外，在设计上，允许在重写时仅对返回值进行修改：如果返回类型是基类引用或指针，则可以修改为指向派生类的引用或指针。这种特性被称为**返回类型协变（covariance of return type）**，因为允许返回类型随类类型的变化而变化。如下所示：
-
+允许在重写时仅对返回值进行修改：如果返回类型是基类引用或指针，则可以修改为指向派生类的引用或指针。这种特性被称为**返回类型协变（covariance of return type）**，因为允许返回类型随类类型的变化而变化。如下所示：
 ```cpp
 class Dwelling {
 public:
@@ -174,13 +173,17 @@ public:
 };
 ```
 
+于是, 重写的时候, 两个函数仅可以有两点不同:
+1. 返回值类型. 但新类型必须是子类型.
+2. 参数名称.
+
 ### 具体函数
 
 **析构函数**一般要设为虚函数，因为若类被继承，则新的成员变量很可能需要特殊的析构函数去管理；有虚析构函数后，任意派生类都会先执行最子类的析构函数，然后自动执行父类的析构函数。只有析构函数有全自动的调用基类的机制。
 
-构造函数不设为虚函数，因为派生类不继承基类的构造函数，而是隐式调用默认构造函数或显式调用某个构造函数。
+**构造函数**不设为虚函数，因为派生类不继承基类的构造函数，而是隐式调用默认构造函数或显式调用某个构造函数。
 
-友元不能是虚函数，因为友元不是类成员，而**只有成员才能是虚函数**。
+**友元**<u>不能</u>是虚函数，因为友元不是类成员，而**只有成员才能是虚函数**。
 
 ### 虚函数处理原理
 
@@ -223,9 +226,9 @@ void display(char const *str) {
 }
 
 int main() {
-    display(5); // Calls function overload #1
-    display(5.5); // Calls function overload #2
-    display("Hello"); // Calls function overload #3
+    display(5); // #1
+    display(5.5); // #2
+    display("Hello"); // #3
 
     return 0;
 }
@@ -611,6 +614,33 @@ rvalue overload, n=3
 [std::forward\_as\_tuple - cppreference.com](https://en.cppreference.com/w/cpp/utility/tuple/forward_as_tuple)
 
 将参数组成tuple的形式，并且每个参数都被forward了。可以用于全部完美转发地传参数列表。而且如果参数是临时变量的话，不会将其存储（即不会延长生命周期）；如果不在表达式结束前使用完毕，则会造成悬垂引用。
+
+## 各种cast
+
+`reinterpret_cast`把一个数据对象直接重新按指定数据类型解释. 纯编译期. 允许任意转换.
+
+`static_cast`进行运行期类型转换, 并且在编译期进行类型转换的可行性检查.
+
+`dynamic_cast`可以把父指针转变为子指针(向下转换), 并且在转换失败时返回`nullptr`. 纯运行期.
+
+`const_cast`是对cv限定符进行增删:
+```cpp
+void legacyFunction(int* ptr) {
+    // 一个不接受 const 的旧函数
+}
+
+int main() {
+    const int x = 10;
+    // legacyFunction(&x); // 错误：无法将 const int* 转为 int*
+    
+    int y = 20;
+    const int* p = &y;
+    legacyFunction(const_cast<int*>(p)); // 合法：y 本身不是 const
+    // legacyFunction(const_cast<int*>(&x)); // UB：x 是真正的 const
+}
+```
+
+
 
 # 类与对象
 

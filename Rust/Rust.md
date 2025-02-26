@@ -1108,7 +1108,17 @@ Rust中，泛型T实际上是正经类型+生命周期的组合。因此泛型�
 
 可见只有函数参数是逆变的；涉及可变的类型（而非生命周期）基本都是不变；剩下都是协变。
 
-`&mut T`对T不变的原因非常复杂。一个对T的可变引用相当于元素类型为T、长度为1、可读可写的数组。因此该问题等价于：[一道 Java 面试题](https://www.yinwang.org/blog-cn/2020/02/13/java-type-system)。
+`&mut T`对T不变的原因非常复杂。一个对T的可变引用相当于元素类型为T、长度为1、可读可写的数组。因此该问题等价于[这个Java问题](https://www.yinwang.org/blog-cn/2020/02/13/java-type-system):
+```java
+// Java的语言设计错误, 让数组T[]随T协变, 
+// 导致一个数组可以被塞入一个父类的任意子类, 也即可以塞入任意类型
+public static void f() {
+    String[] a = new String[2];
+    Object[] b = a;
+    a[0] = "hi";
+    b[1] = Integer.valueOf(42);
+}
+```
 
 > 在简单的情况下，一般只写是协变，只读是逆变，可读可写就是不变。
 
