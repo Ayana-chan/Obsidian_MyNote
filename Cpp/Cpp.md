@@ -1689,6 +1689,14 @@ int cmp(const int &a, const int &b) {
 sort(arr, arr+len, cmp);
 ```
 
+> [!info]
+> 可以使用`ranges::sort`.
+
+## max min 函数
+
+[std::max - cppreference.com](https://zh.cppreference.com/w/cpp/algorithm/max)
+
+可以使用初始化列表来比较多个值, 如`max({1, 2, 3})`.
 
 ## stable_sort函数（稳定排序）
 
