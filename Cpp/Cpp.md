@@ -375,8 +375,6 @@ hasDMA & hasDMA::operator=(const hasDMA & hs) {
 
 ## 类间互相依赖问题
 
-首先明确，两个文件是不能互相include的，编译也是有执行顺序的（只有类内部才有类似拉链回填的机制）。
-
 #### 成员变量类型相互依赖
 
 两个类的其中一个成员变量的类型为对方。编译时只能先编译其中一个类，此时它就不知道另一个类，导致编译失败。
@@ -384,7 +382,6 @@ hasDMA & hasDMA::operator=(const hasDMA & hs) {
 使用前向声明可以解决一部分问题，因为声明是廉价的，声明之后就可以得知存在另一个类，即使不知道它有什么内容。
 
 但是，一个类编译完成时，其大小是确定的。但是此时不知道另一个类的内容，也就不知道另一个类的大小，使得总大小不确定。将类型换成指针即可，因为指针虽然可以指向各种不同类型，但其本身的大小是固定的（如64bit）。
-
 
 ```cpp
 class ClassB; // Forward declaration
@@ -454,7 +451,7 @@ ClassA* ClassB::getClassAInstance() {
 
 Each C++ [expression](https://en.cppreference.com/w/cpp/language/expressions "cpp/language/expressions") (an operator with its <u>operands</u>, a <u>literal</u>, a <u>variable name</u>, etc.) is characterized by two independent properties: a **type** and a **value category**. Each expression has some non-reference type, and each expression belongs to exactly one of the three <u>primary value categories</u>: **prvalue**, **xvalue**, and **lvalue**.
 
-- **glvalue** (“generalized” lvalue) (**范左值**): 是一个表达式，其求值可以确定一个对象或函数的 identity。要么是 lvalue 要么是 xvalue。
+- **glvalue** (“generalized” lvalue) (**泛左值**): 是一个表达式，其求值可以确定一个对象或函数的 identity。要么是 lvalue 要么是 xvalue。
 - **prvalue** (“pure” rvalue) (**纯右值**): 是一个表达式，其求值可以计算运算符的一个操作数（没有result object），或初始化一个对象（有result object）。
 - **xvalue** (“eXpiring” value) (**将亡值**): 是一个 <u>glvalue</u>，可以提供出一个对象，该对象的资源可重复使用（通常是因为它接近其生存期的末尾）。
 - **lvalue** (**左值**): 是*非 xvalue* 的 <u>glvalue</u>。
@@ -465,6 +462,11 @@ Each C++ [expression](https://en.cppreference.com/w/cpp/language/expressions "c
 > [!tip]
 > glvalue是有名字的东西，prvalue是没名字的东西，xvalue是有名字但其名字即将消失的东西。
 
+xvalue的情况:
+- 把一个变量(lvalue)套move, 或者说`static_cast<T&&>`; 或函数返回的右值引用. 即未具名的右值引用.
+- 访问临时对象(prvalue)的成员.
+- 范围for循环中的临时容器.
+
 ## 引用
 
 [Reference declaration - cppreference.com](https://en.cppreference.com/w/cpp/language/reference)
@@ -472,9 +474,6 @@ Each C++ [expression](https://en.cppreference.com/w/cpp/language/expressions "c
 - 左值引用 (lvalue reference)，`T&`，只能绑定左值
 - 右值引用 (rvalue reference)，`T&&`，只能绑定右值
 - 常量左值引用，`const T&`,既可以绑定左值，又可以绑定右值，但是不能对其进行修改
-
-> [!notice]
-> 不管什么引用, 都是lvalue.
 
 在`int a = std::move(b)`中, `std::move(b)`这个函数调用语句是一个**xvalue**, 但左边的`a`(**具名右值引用**)是个**lvalue**.
 
@@ -747,7 +746,7 @@ public:
 	X(double b) : X(0,b) {}
 	X(int a,double b): a_(a), b_(b) { CommonInit(); }
 private:
-	void CommonInit()}
+	void CommonInit();
 	int a_;
 	double b_;
 };
@@ -1204,7 +1203,7 @@ st.b=22;//允许
 
 ### constexpr
 
-表示一个东西**可以**在编译期完成求值. 不强制要求编译器完成.
+表示一个东西**可以**在编译期完成求值. 不强制完成.
 
 编译期就能完成计算的表达式可以使用constexpr, 使其在编译期被处理完.
 
@@ -1305,7 +1304,7 @@ struct X3 {
 ```
 
 
-## ROV & NROV
+## RVO & NRVO
 
 两个优化都自动将返回的目标左值作为隐式参数以引用的形式传入到函数中，以减少多余的构造、析构和拷贝。
 
@@ -1385,7 +1384,7 @@ int main() {
 优化后，process函数等价于：
 
 ```cpp
-void process(Data& data,int i) {
+void process(Data& data, int i) {
     data.mem_var = i;
     return;
 }
@@ -1439,9 +1438,6 @@ if (std::lock_guard<std::mutex> lock(mx); shared_flag)
 
 switch的相关语法和if完全一样.
 
-## std::static_cast
-
-用于类型转换（替代了C风格的`(Type)var`）。
 ## std::copy
 
 ```cpp
@@ -1479,7 +1475,7 @@ auto Get(std::string_view key) const -> const T *;
 
 若要使用decltype推导返回值类型, 则需要使用函数参数，于是使用返回值后置使得函数参数先被声明然后才被使用。
 
-## 省略返回值类型
+### 省略返回值类型
 
 可以不指定返回值, 只写个auto, 编译器会自动根据函数体推导.
 
@@ -1637,7 +1633,7 @@ auto foo = []<typename T>(std::vector<T> vec) {...}
 
 #### 捕获this
 
-如果定义的上下文是在对象里面, 那么**当前对象的this指针**可以捕获进lambda表达式(`[this]`). 显然, this指针只能进行**值捕获**.
+如果定义的上下文是在对象里面, 那么**当前对象的this指针**可以捕获进lambda表达式(`[this]`). 显然, <u>this指针</u>只能进行**值捕获**.
 
 但是, 也可以直接拷贝当前对象进去, 即`[*this]`.
 
@@ -1646,7 +1642,7 @@ auto foo = []<typename T>(std::vector<T> vec) {...}
 #### 可构造和可赋值的无状态lambda表达式
 
 > [!warning]
-> GCC 14.2.0 都尚不支持此特性.
+> GCC 14.2.0 都尚不支持此特性. (待核验)
 
 cpp20中, 允许无状态(无捕获)的lambda表达式可以被构造和赋值(拷贝), 即为其保留默认构造函数和拷贝构造函数. cpp20前, 闭包类型不是默认可构造的.
 
@@ -1665,7 +1661,7 @@ mymap1 = mymap2;
 
 ### std::function （包装器）
 
-`function<int(int, int) >`可以统一所有的函数类型，它可以是函数指针、仿函数和Lambda表达式。
+`function<int(int, int)>`可以统一所有的函数类型，它可以是函数指针、仿函数和Lambda表达式。
 
 使用样例：作为map的键的类型，这样就可以用Lambda表达式来传值。
 
@@ -1981,6 +1977,9 @@ distance() = 10
 
 假设有一个有序容器，给出它的两个迭代器，就能使用这两个函数来通过**二分查找**找到想要的值的迭代器。
 
+- `upper_bound`: `>`
+- `lower_bound`: `>=`
+
 如果有一个**从小到大**排序好的数组`nums`，则：
 
 ```cpp
@@ -1996,7 +1995,7 @@ auto it1 = upper_bound(nums.begin(), nums.end() , 10);
 
 要在从大到小的数组里面查找的话，要使用`greater<int>()`：
 ```cpp
-auto it = upper_bound(nums.begin(), nums.end() , 10 ,greater<int>());
+auto it = upper_bound(nums.begin(), nums.end(), 10, greater<int>());
 ```
 
 ## 随机数
@@ -2191,7 +2190,7 @@ vector<int> numSmallerByFrequency(vector<string>& queries, vector<string>& words
 ```cpp
 int sum = ranges::fold_left(v.begin(), v.end(), 0, std::plus<int>());
 
-int sum = ranges::fold_left_first(nums, plus<int>()).value(); 2
+int sum = ranges::fold_left_first(nums, plus<int>()).value();
 ```
 
 ```cpp
@@ -2216,7 +2215,7 @@ int sum = ranges::fold_left(nums, 0,
 
 TODO
 
-### 将static类成员变量是声明和定义放一起
+### 将static类成员变量的声明和定义放一起
 
 类中的static变量需要在class的定义中声明, 而class的定义一般写在头文件, 而头文件里面不应当对变量初始化, 于是不得不将其声明与定义分离. 现在使用inline即可在一处直接声明并初始化.
 
@@ -3062,7 +3061,7 @@ struct A<void>{
 };
 
 void A<void>::f(){  // 类外定义
-    // todo..
+    // ...
 }
 ```
 
@@ -3945,9 +3944,23 @@ int main() {
 
 # 并发编程
 
-conditional variable的第一个参数是lock，第二个参数是返回bool的函数。被notify时，会自动上锁，然后检查函数返回值是否为true，是的话继续执行，不是的话释放锁继续等待。最开始进入wait之前也会检查一次函数返回值。 这是为了让锁来保护函数的参数（条件），避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify可以写在锁unlock之后）。
-
 unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结束后自动释放锁。千万不要对它们使用unlock，否则会很难debug，特别是在不小心unlock了它们包裹的mutex而不是它们本身的时候。
+
+## 条件变量
+
+conditional variable的wait函数第一个参数是lock，第二个(可选)参数是返回bool的函数; 这个lock会保护函数的检查目标。被notify时，会自动上锁，然后检查函数返回值是否为true，是的话继续执行，不是的话释放锁继续等待。最开始进入wait之前也会检查一次函数返回值。 
+
+这是为了让锁来保护函数的参数（条件），来避免**虚假唤醒**, 包括`notify_all`后却无法得到目标数据, 又或者是条件变量的实现导致的凭空唤醒; 还可以避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify写在锁unlock之后, 从而加速）。
+
+```cpp
+// 基本等待：释放锁并阻塞，直到被唤醒
+void wait(std::unique_lock<std::mutex>& lock);
+
+// 带谓词的等待：自动检查条件，避免虚假唤醒
+template <typename Predicate>
+void wait(std::unique_lock<std::mutex>& lock, Predicate pred);
+```
+
 
 ## Memory Order TODO
 
@@ -3994,7 +4007,7 @@ std::cout << typeid(i).name() << std::endl;
 
 ## vector越界检查
 
-使用at访问数据而非`[]`，可以在越界时抛出异常。
+使用`at`访问数据而非`[]`，可以在越界时抛出异常。
 
 ## 生成随机数
 
@@ -4210,7 +4223,6 @@ gcc test.o -o test.exe
 
 static可以理解成“只能自己用的全局变量”。因此多文件开发时尽量避免全局变量，尽量加上static。
 
-
 # 编译相关
 
 `#pragma optimize("", off)`可以关闭所有编译优化。把off改成on则恢复默认优化。
@@ -4219,18 +4231,9 @@ static可以理解成“只能自己用的全局变量”。因此多文件开�
 - `-std=c++11` 切换为cpp11标准
 - `-Og` 将编译器的优化等级调整为符合C语言原程序的结构，方便学习
 
-
-
-
 # 杂记
 
 INT_MAX即为int类型的最大值的宏。
-
-
-
-
-
-
 
 
 
