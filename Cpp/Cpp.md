@@ -10,6 +10,8 @@
 [C++STL中的常用容器总结\_stl容器总结\_SeeDoubleU的博客-CSDN博客](https://blog.csdn.net/SeeDoubleU/article/details/124507029)
 
 [C++模板元编程详细教程（之三）\_c++模板元编程实战\_borehole打洞哥的博客-CSDN博客](https://blog.csdn.net/fl2011sx/article/details/128314495)
+
+[现代 C++ 模板教程](https://mq-b.github.io/Modern-Cpp-templates-tutorial/)
 # 规范与注意事项
 ## 类
 
@@ -3941,6 +3943,72 @@ int main() {
     X<Test2>::f();      // 主模板
 }
 ```
+
+## 例子
+
+### 生成指定长度的斐波那契数列
+
+
+```cpp
+#include <array>
+#include <iostream>
+#include <utility> // for std::index_sequence
+
+using namespace std;
+
+// 计算单个斐波那契数
+template <size_t N> struct Fib {
+    static const int value = Fib<N - 1>::value + Fib<N - 2>::value;
+};
+
+template <> struct Fib<0> {
+    static const int value = 0;
+};
+
+template <> struct Fib<1> {
+    static const int value = 1;
+};
+
+// 辅助模板展开索引序列生成数组
+template <typename> struct FibonacciArrayHelper; // 定义没用但必需的主模板
+
+template <size_t... Is>
+struct FibonacciArrayHelper<std::index_sequence<Is...>> {
+    static const std::array<int, sizeof...(Is)> value;
+};
+
+// 使用`std::index_sequence<Is...>`的`Is...`展开数组
+template <size_t... Is>
+const std::array<int, sizeof...(Is)>
+    FibonacciArrayHelper<std::index_sequence<Is...>>::value = {
+        Fib<Is>::value...};
+
+template <size_t N>
+const std::array<int, N> FibonacciArray =
+    FibonacciArrayHelper<std::make_index_sequence<N>>::value;
+
+// 使用示例
+int main() {
+    const auto &fib5 = FibonacciArray<6>;
+    for (auto &&v : fib5) {
+        cout << v << " ";
+    }
+    cout << endl;
+    return 0;
+}
+
+// Output:
+// std::array<int,5>{0, 1, 1, 2, 3, 5}
+```
+
+`std::make_index_sequence<N>::value`会生成`std::index_sequence<Is...>`, 其中`Is...`为`1, 2, ..., N`; 然后, 对`Is...`使用折叠表达式, 在解包的同时直接生成各个`Fib<I>`.
+
+> [!note]
+> `index_sequence`是空类型, 其唯一作用就是存储参数包, 使得当`index_sequence<Is...>`被使用的时候, 模板参数会推导出参数包`Is...`, 以供他者使用.
+
+
+
+
 
 # 并发编程
 
