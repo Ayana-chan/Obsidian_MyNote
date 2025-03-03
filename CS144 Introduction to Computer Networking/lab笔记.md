@@ -154,10 +154,15 @@ void read( Reader& reader, uint64_t len, std::string& out )
 
 ![](assets/uTools_1697714853329.png)
 
-阅读[CS144 2023 完全指南 - 知乎](https://zhuanlan.zhihu.com/p/630739394/)后，发现可能对API理解有误，peek可以返回包含多个字节的string_view，只要前缀正确即可，因此不需要一个一个char存储。当然，这个博客写的代码也不是我认为的高效的，我只用了一个stream view。
+突然发现对API理解有误，peek可以返回包含多个字节的string_view，只要前缀正确即可，因此不需要一个一个char存储。改写后, 如果一个string特别长, 而且最后剩下一个字符没被pop出去, 那么这段string就不会被删除, 因此此时内存存储字节量达到的上界应该是2\*capacity.
 
 重写后的结果：
 ![](assets/uTools_1697946945126.png)
+
+> [!note]
+> 后来又优化了一下, 代码更快了一点点, 但是莫名其妙不能输出速度信息了.
+
+
 # checkpoint 1
 
 The TCP sender is dividing its byte stream up into short segments (substrings no more than about 1,460 bytes apiece) so that they each fit inside a datagram.
@@ -199,6 +204,8 @@ Together, the ackno and window size describe describes the receiver’s **window
 
 receiver收到消息后，还要负责构建之后回复的信息内容，包括确认信息和流量控制信息。
 
+这里输入输出应该都是被从报文里面提取拆分出来了, 也因此Sender和Receiver解耦.
+
 The first sequence number in the stream is a random 32-bit number called the Initial Sequence Number (ISN). This is the sequence number that represents the “zero point” or the SYN (beginning of stream).
 
 In addition to ensuring the receipt of all bytes of data, TCP makes sure that the **beginning and ending of the stream are received reliably**. Thus, in TCP the SYN (beginning-of stream) and FIN (end-of-stream) control flags are assigned sequence numbers. **Each of these occupies one sequence number.** (The sequence number occupied by the SYN flag is the ISN.) Keep in mind that SYN and FIN aren’t part of the stream itself and aren’t “bytes”—they represent the beginning and ending of the byte stream itself.
@@ -220,10 +227,11 @@ sequence_length表示占用的序列号大小，已经考虑的SYN和FIN。
 size_t sequence_length() const { return SYN + payload.size() + FIN; }
 ```
 
+由于<u>累计确认</u>会在`Reassambler`完成, 并且`Reassambler`会同步地提交所有确认了的东西, 因此需要使用`inbound_stream.bytes_pushed()`(已提交的合法数据量)来进行ACK下标的更新.
+
 window size超过65535时，视为65535。
 
-![](assets/uTools_1697714749898.png)
-
+![](assets/1740900900810.png)
 
 # checkpoint 3
 
@@ -255,9 +263,16 @@ a segment which occupies no sequence numbers doesn’t need to be kept track of 
 
 FIN的话看reader关没关就行，就像Receiver看writer关没关一样。
 
-先塞SYN，剩下还有空间就塞数据，然后再剩下空间就塞FIN。 没空间塞数据很容易搞，但没空间塞FIN的时候就需要留下标记，保证能进入push的下一个循环。
+后来的数据排在后面, 重传的数据要插队, 因此待发送数据结构使用deque
 
-`Impossible ackno (beyond next seqno) is ignored`说明receive到过大的非法ack时要丢弃。即使没有ack或ack非法，也要记录window size。
+先塞SYN，剩下还有空间就塞数据，然后再剩下空间就塞FIN。 没空间塞数据很容易搞，但没空间塞FIN的时候就需要留下标记，保证能触发下一轮push, 以构造纯FIN报文。
+
+`Impossible ackno (beyond next seqno) is ignored`说明receive到非法(比当前seq还大)的ack时要丢弃。这种ack可以认为是以前的数据包的遗留.
+
+即使没有ack，也要记录window size。
+
+> [!note]
+> 代码结构是, 上层主动使用`push`把数据从流里面输出到Sender对象内, 然后再使用`maybe_send`把保存的数据给发出去. push的时候就把包构造好了.
 
 ![](assets/uTools_1697714665648.png)
 
