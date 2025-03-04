@@ -271,6 +271,8 @@ FIN的话看reader关没关就行，就像Receiver看writer关没关一样。
 
 即使没有ack，也要记录window size。
 
+初始windows size为1, 是为了在SYN丢包的时候触发RTO.
+
 > [!note]
 > 代码结构是, 上层主动使用`push`把数据从流里面输出到Sender对象内, 然后再使用`maybe_send`把保存的数据给发出去. push的时候就把包构造好了.
 
@@ -280,7 +282,7 @@ FIN的话看reader关没关就行，就像Receiver看writer关没关一样。
 
 这是最底层的接口，输出数据链路层包。
 
-If the network interface already sent an ARP request about the same IP address in the last five seconds, don’t send a second request
+If the network interface already sent an ARP request about the same IP address in the last five seconds, don’t send a second request. ARP的单飞.
 
 ```c
 // 对象转字符串
@@ -307,6 +309,13 @@ bool parse( T& obj, const std::vector<Buffer>& buffers )
 ![](assets/uTools_1697775226346.png)
 
 ARP的supported好像是给parser用的。
+
+知道目标就把包放入send队列; 不知道目标则把ARP放入send队列, 把包放入等待队列; ARP接收成功则把相应的所有包放入发送队列. 上层会调用`maybe_send`以发送所有能发生的包.
+
+> [!info]
+> 25年版本有transmit, 会更加直接; 23年只能这样依赖`maybe_send`.
+
+等待队列设计: `std::unordered_map<uint32_t, std::vector<std::shared_ptr<EthernetFrame>>>`.
 
 ![](assets/uTools_1697795826469.png)
 
