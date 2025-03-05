@@ -328,7 +328,7 @@ prefix：网络码，prefix匹配上了就是网络匹配上了。
 
 The interface num gives the index of the router’s NetworkInterface that should use to send the datagram to the next hop. You can access this interface with the interface(interface num) method.
 
-**longest-prefix-match**：• Among the matching routes, the router chooses the route with the **biggest** value of **prefix length**.
+匹配方式: **longest-prefix-match**：• Among the matching routes, the router chooses the route with the **biggest** value of **prefix length**. 实现: Trie.
 
 the router sends the modified datagram on the appropriate interface ( interface(interface num).send datagram() ) to the appropriate next hop
 
