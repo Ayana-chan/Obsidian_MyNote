@@ -4296,7 +4296,7 @@ gcc -S test.i -o test.s
 
 ## 3、汇编（Assembly）
 
-`.o`: object file
+`.o`: **目标文件(object file)**
 
 ```bash
 gcc -c test.s -o test.o
@@ -4305,6 +4305,11 @@ gcc -c test.s -o test.o
 把汇编文件汇编为二进制机器码。以机器码的形式包含了编译单元里所有的函数和数据、导出符号表、未解决符号表、地址重定向表等。
 
 每个cpp文件都是个编译单元（Translation Unit），生成一个`.o`目标文件。
+
+**目标文件内容**：
+- **代码段（`.text`）**：二进制指令。
+- **数据段（`.data`/`.bss`）**：初始化/未初始化全局变量。
+- **符号表**：函数/变量名及其地址（未最终确定）。
 
 ## 4、链接（Linking）
 
