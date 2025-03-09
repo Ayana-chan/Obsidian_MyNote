@@ -1709,23 +1709,24 @@ mymap1 = mymap2;
 将函数包装器与参数进行绑定（也可使用`std::placeholders`进行缺省），返回类型也是包装器，可以直接调用。
 
 ```cpp
-#include <iostream>
 #include <functional>
-​
-void func(int i)
-{
-    std::cout << "i = " << i << std::endl;
+#include <iostream>
+
+void func(int i, int j) {
+    std::cout << i << " " << j << std::endl;
 }
-​
-int main()
-{
-    auto f1 = std::bind(func, 222);
+
+int main() {
+    auto f1 = std::bind(func, 1, 2);
     f1();
-    auto f2 = std::bind(func, std::placeholders::_1);
-    f2(333);
+    auto f2 = std::bind(func, std::placeholders::_1, 4);
+    f2(3);
     return 0;
 }
 
+// Output:
+// 1 2
+// 3 4
 ```
 
 只能绑定值类型, 可以使用[std::ref](Cpp/Cpp.md#std%20ref)实现绑定引用.
@@ -1909,6 +1910,8 @@ strcpy(c,s.c_str());
 s=c;
 ```
 
+使用`std::to_string`函数可以将数字转变为字符串(替代`itoa`).
+
 #### find()
 
 ```cpp
@@ -2051,6 +2054,9 @@ for (int i=0; i<10; ++i) {
 }
 ```
 
+## tuple
+
+[std::tuple - cppreference.com](https://zh.cppreference.com/w/cpp/utility/tuple)
 
 ## ranges
 
@@ -2153,6 +2159,37 @@ std::vector<T>& operator|(std::vector<T>& v, std::invocable<T&> auto const &func
 
 `std::ranges`下的有些函数需要导入`#include <algorithm>`才有.
 
+#### 适配的旧函数
+
+旧函数一般需要传入`v.begin(), v.end()`两个参数, 新的ranges内的对应函数则只需要传入`v`就行了.
+
+`sort`, `for_each`, `lower_bound`等.
+
+#### 使用to, 在views操作后依然输出容器
+
+[std::ranges::to - cppreference.com](https://en.cppreference.com/w/cpp/ranges/to)
+
+一般用于不同类型的容器之间的转换.
+
+`std::ranges::to<std::unordered_map>()`会生成一个 可以让某视图转变成`unordered_map` 的适配器, 该适配器可以被管道运算符调用.
+
+```cpp
+std::vector<int> nums = {10, 20, 30, 20, 40};
+
+auto m = nums | std::views::enumerate // 生成 (index, value) 对
+		 | std::views::transform([](auto &&t) {
+			   auto &&[idx, v] = t;
+			   return std::make_pair(v, idx);
+		   }) |
+		 std::ranges::to<std::unordered_map>(); // 转换为 unordered_map
+
+// 结果：{10→0, 20→3, 30→2, 40→4}（重复的20被覆盖）
+```
+
+> [!notice]
+> 一定要写括号`()`!
+
+
 #### 查找容器最后一个目标值的位置
 
 [std::ranges::find\_last, std::ranges::find\_last\_if, std::ranges::find\_last\_if\_not - cppreference.com](https://en.cppreference.com/w/cpp/algorithm/ranges/find_last)
@@ -2184,7 +2221,7 @@ auto index = std::ranges::distance(vec.begin(), aim_it);
 assert(index == 4);
 ```
 
-#### 使用transform
+#### 使用transform (即map)
 
 [1170. 比较字符串最小字母出现频次 - 力扣（LeetCode）](https://leetcode.cn/problems/compare-strings-by-frequency-of-the-smallest-character)
 
@@ -2222,7 +2259,7 @@ vector<int> numSmallerByFrequency(vector<string>& queries, vector<string>& words
 }
 ```
 
-#### 使用fold_left(即reduce)
+#### 使用fold_left (即reduce)
 
 [std::ranges::fold\_left - cppreference.com](https://zh.cppreference.com/w/cpp/algorithm/ranges/fold_left)
 
@@ -2240,6 +2277,24 @@ int sum = ranges::fold_left(nums, 0,
 ```
 
 `fold_left_first`把第一个元素作为初值; 其返回值为`optional<T>`而非`T`, 因为有可能参数容器为空.
+
+#### 使用join
+
+join可以把多个view串在一起.
+
+结合transform一起可以形成`flat_map`(monad bind)逻辑.
+
+```cpp
+std::vector<int> nums = {10, 20, 30, 20, 40};
+auto out =
+	nums |
+	std::views::transform([](auto &&v) { return std::to_string(v); }) |
+	std::views::join | std::ranges::to<std::string>();
+
+// Output:
+// 1020302040
+```
+
 
 ## piecewise_construct
 
