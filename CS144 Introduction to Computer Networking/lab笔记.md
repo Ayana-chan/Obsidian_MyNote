@@ -1,11 +1,5 @@
 
-check0: 实现内存中的数据管道 Byte Stream. 保证内存占用不超过2\*capacity. 速度达15.5Gbit/s (0.1Gbit/s为及格, 10Gbit/s为优秀).
-check1: 实现乱序数据段重组器 Reassembler, 从而为byte stream提供有序数据. 速度达8.8Gbit/s.
-check2: 实现TCP Receiver, 需恰当进行ACK和流量控制等.
-check3: 实现TCP Sender, 需恰当进行包尺寸控制和重传等.
-check4: 实现数据链路层的Network Interface, 负责收发数据链路帧, 包括ARP.
-check5: 实现IP路由.
-
+2023 minnow
 # checkpoint 0
 ## 环境
 
