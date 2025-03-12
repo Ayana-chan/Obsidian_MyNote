@@ -2062,6 +2062,9 @@ for (int i=0; i<10; ++i) {
 
 [Ranges library (C++20) - cppreference.com](https://en.cppreference.com/w/cpp/ranges)
 
+> [!info]
+> `std::ranges::views`被起了别名: `std::views`.
+
 ### range concept
 
 库中定义了`range` concept: [std::ranges::range - cppreference.com](https://en.cppreference.com/w/cpp/ranges/range)
@@ -2082,44 +2085,14 @@ std::ranges::sort(vec);
 std::ranges::sort(vec, std::greater());
 ```
 
-### Range Adaptors & 管道运算符 `|`
 
-> [!info]
-> `std::ranges::views`被起了别名: `std::views`.
+### 管道运算符 `|` & Range Adaptors
 
-range adaptors可以加工满足要求的东西, 如`std::views::take`, `std::views::transform` 和 `std::views::filter`. 下面的代码是通过嵌套调用来完成的: 
-```cpp
-std::vector<int> vec{20, 1, 12, 4, 20, 3, 10, 1};
+[范围适配器闭包对象 (Range Adaptor Closure Object) ](https://zh.cppreference.com/w/cpp/named_req/RangeAdaptorClosureObject)才能被用于管道运算符右侧用于接收参数, 例如, 若`C`是范围适配器闭包对象, 且`R`是`ranges`的话, 则`C(R)`等价于`R | C`.
 
-auto even = [](const int &a) { return a % 2 == 0; };
-auto square = [](const int &a) { return a * a; };
+而**范围适配器闭包对象**的来源, 要么是一元的[范围适配器对象 (Range Adaptor Object) ](https://zh.cppreference.com/w/cpp/named_req/RangeAdaptorObject), 要么直接继承[std::ranges::range\_adaptor\_closure](https://zh.cppreference.com/w/cpp/ranges/range_adaptor_closure).
 
-for (int i : 
-	 std::views::take(
-		 std::views::transform(
-			 std::views::filter(vec, even), 
-		 square), 
-	 2)
-	 ) {
-	std::cout << i << " ";
-}
-
-// Output:
-// 400 144
-```
-
-显然, 这种嵌套类似于链式调用. cpp提供了管道运算符让前一个函数的输出变成下一个函数的参数, 从而增强可读性:
-```cpp
-for (int i : 
-	 vec | std::views::filter(even) |
-	 std::views::transform([](const int &a) {return a * a;}) |
-	 std::views::take(2)
-	) {
-	std::cout << i << " ";
-}
-```
-
-range adaptors 是**懒求值**的, 或者说取的都是引用(`xxx_view`).
+**范围适配器对象**被定义为: 第一个参数为[std::ranges::viewable_range](https://zh.cppreference.com/w/cpp/ranges/viewable_range), 返回值为[std::ranges::view](https://zh.cppreference.com/w/cpp/ranges/view). 因此范围适配器闭包对象就是`f(viewable_range) -> view`的形式.
 
 自己实现管道运算符:
 ```cpp
@@ -2155,6 +2128,43 @@ std::vector<T>& operator|(std::vector<T>& v, std::invocable<T&> auto const &func
 }
 ```
 
+range adaptors可以加工满足要求的东西, 如`std::views::take`, `std::views::transform` 和 `std::views::filter`. 下面的代码是通过嵌套调用来完成的: 
+```cpp
+std::vector<int> vec{20, 1, 12, 4, 20, 3, 10, 1};
+
+auto even = [](const int &a) { return a % 2 == 0; };
+auto square = [](const int &a) { return a * a; };
+
+for (int i : 
+	 std::views::take(
+		 std::views::transform(
+			 std::views::filter(vec, even), 
+		 square), 
+	 2)
+	 ) {
+	std::cout << i << " ";
+}
+
+// Output:
+// 400 144
+```
+
+显然, 这种嵌套类似于链式调用. cpp提供了管道运算符让前一个函数的输出变成下一个函数的参数, 从而增强可读性:
+```cpp
+for (int i : 
+	 vec | std::views::filter(even) |
+	 std::views::transform([](const int &a) {return a * a;}) |
+	 std::views::take(2)
+	) {
+	std::cout << i << " ";
+}
+```
+
+range adaptors 是**懒求值**的, 或者说取的都是引用(`xxx_view`).
+
+一般来说, 要么对view直接进行迭代, 要么使用`to`来把view变回容器.
+
+
 ### ranges 库函数使用
 
 `std::ranges`下的有些函数需要导入`#include <algorithm>`才有.
@@ -2169,7 +2179,7 @@ std::vector<T>& operator|(std::vector<T>& v, std::invocable<T&> auto const &func
 
 [std::ranges::to - cppreference.com](https://en.cppreference.com/w/cpp/ranges/to)
 
-一般用于不同类型的容器之间的转换.
+一般用于不同类型的容器之间的转换. 注意一般情况下会发生复制. 使用`views::as_rvalue`可以把所有权传入`to`的目标容器, 从而<u>去除不必要的拷贝</u>.
 
 `std::ranges::to<std::unordered_map>()`会生成一个 可以让某视图转变成`unordered_map` 的适配器, 该适配器可以被管道运算符调用.
 
