@@ -73,7 +73,7 @@ python -m pip install --upgrade --force-reinstall pip
 
 
 
-# 库安装记录
+# 库
 
 ## pymc
 
@@ -93,3 +93,44 @@ pip install setuptools==58.0.0 wheel==0.36.2
 ```bash
 pip install pymc3
 ```
+
+
+# uv
+
+[Site Unreachable](https://blog.yasking.org/a/python-project-manager-uv.html)
+
+uv是 cargo for python, 基于虚拟环境 + toml依赖管理.
+
+为项目生成并激活虚拟环境:
+```shell
+uv venv myenv
+source myenv/bin/activate
+```
+
+可以在生成环境的时候使用`--python`指定python版本.
+
+使用`uv pip`即可使用pip的命令(虽然没有完全支持所有命令).
+
+从toml生成`requirements.txt`:
+```shell
+uv pip compile pyproject.toml -o requirements.txt
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
