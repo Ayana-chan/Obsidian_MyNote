@@ -1835,6 +1835,52 @@ priority_queue<node>q;
 |   swap()        | 交换两个优先级队列的内容                                 |
 
 
+## 数学函数
+
+- `std::gcd`: 最大公约数
+- `std::lcm`: 最小公倍数
+- `std::floor`: 不比参数大的最近(最大)整数
+- `std::ceil`: 不比参数小的最近(最小)整数
+- `std::trunc`: 比参数更接近0的最近整数
+- `std::round`: 四舍五入(绝对值意义上)
+
+
+
+## upper_bound & lower_bound
+
+
+假设有一个有序容器，给出它的两个迭代器，就能使用这两个函数来通过**二分查找**找到想要的值的迭代器。
+
+- `upper_bound`: `>`
+- `lower_bound`: `>=`
+
+如果有一个**从小到大**排序好的数组`nums`，则：
+
+```cpp
+// 得到第一个大于等于10的元素的迭代器
+auto it1 = lower_bound(nums.begin(), nums.end() , 10);
+// 得到第一个大于10的元素的迭代器
+auto it1 = upper_bound(nums.begin(), nums.end() , 10);
+```
+
+可以理解为，这两个函数都找到一个从小到大的有序容器中**等于**目标值的元素的范围`[lower, upper)`，然后`lower_bound`返回`lower`，`upper_bound`返回`upper`。
+- 若**没有等于**的, 则`lower = upper`, 表示大于目标的第一个下标. 
+- 若**找不到**, 则返回`end`.
+
+要在**从大到小**的数组里面查找的话，要使用`greater<int>()`：
+```cpp
+auto it = upper_bound(nums.begin(), nums.end(), 10, greater<int>());
+```
+
+还有一个参数是`proj`, 语义为投影. 例如, 在`vector<vector<int>> matrix`(按下标0元素大小升序排列)中, 寻找下标0处的元素大于`target`的第一个元素:
+```cpp
+auto col_it = ranges::upper_bound(matrix, target,
+		ranges::less(), [](auto&& v){return v[0];});
+```
+
+此外:
+- `equel_range`寻找等于目标的范围.
+- `binary_search`仅返回是否存在目标(`bool`).
 
 ## 字符串
 
@@ -2014,32 +2060,6 @@ int main() {
 distance() = 10
 ```
 
-## upper_bound & lower_bound
-
-
-假设有一个有序容器，给出它的两个迭代器，就能使用这两个函数来通过**二分查找**找到想要的值的迭代器。
-
-- `upper_bound`: `>`
-- `lower_bound`: `>=`
-
-如果有一个**从小到大**排序好的数组`nums`，则：
-
-```cpp
-// 得到第一个大于等于10的元素的迭代器
-auto it1 = lower_bound(nums.begin(), nums.end() , 10);
-// 得到第一个大于10的元素的迭代器
-auto it1 = upper_bound(nums.begin(), nums.end() , 10);
-```
-
-可以理解为，这两个函数都找到一个从小到大的有序容器中**等于**目标值的元素的范围`[lower, upper)`，然后`lower_bound`返回`lower`，`upper_bound`返回`upper`。
-- 若**没有等于**的, 则`lower = upper`, 表示大于目标的第一个下标. 
-- 若**找不到**, 则返回`end`.
-
-要在从大到小的数组里面查找的话，要使用`greater<int>()`：
-```cpp
-auto it = upper_bound(nums.begin(), nums.end(), 10, greater<int>());
-```
-
 ## 随机数
 
 ```cpp
@@ -2169,6 +2189,9 @@ range adaptors 是**懒求值**的, 或者说取的都是引用(`xxx_view`).
 
 `std::ranges`下的有些函数需要导入`#include <algorithm>`才有.
 
+`view`可以看做引用, 交给`std::ranges`的函数来对容器进行原地操作; 而`std::views`的函数仅仅是把`view`再变换为新的`view`(例如`ranges::reverse`和`views::reverse`).
+
+
 #### 适配的旧函数
 
 旧函数一般需要传入`v.begin(), v.end()`两个参数, 新的ranges内的对应函数则只需要传入`v`就行了.
@@ -2220,9 +2243,9 @@ int aim_idx = std::ranges::distance(vec.begin(), aim_rit.base()) - 1;
 assert(aim_idx == 4);
 ```
 
-#### 截取容器进行二分查找
+#### 截取容器进行操作
 
-如果一个容器只有一部分有序, 只需要在这一部分里面查找, 那么:
+部分二分查找: 如果一个容器只有一部分有序, 只需要在这一部分里面查找, 那么:
 ```cpp
 std::vector<int> vec = {9, 8, 1, 2, 3, 4, 5, 3, 2, 1};
 auto part_vec = vec | std::views::drop(2) | std::views::take(5);
@@ -2230,6 +2253,18 @@ auto aim_it = std::ranges::lower_bound(vec, 3);
 auto index = std::ranges::distance(vec.begin(), aim_it);
 assert(index == 4);
 ```
+
+部分翻转: [189. 轮转数组 - 力扣（LeetCode）](https://leetcode.cn/problems/rotate-array)
+```cpp
+void rotate(vector<int>& nums, int k) {
+	int len = nums.size();
+	k %= len;
+	ranges::reverse(nums);
+	ranges::reverse(nums | views::take(k));
+	ranges::reverse(nums | views::drop(k));
+}
+```
+
 
 #### 使用transform (即map)
 

@@ -313,6 +313,7 @@ ARP的supported好像是给parser用的。
 
 ![](assets/uTools_1697795826469.png)
 
+TODO: 使用红黑树轮询定时器, 每次删除最早的.
 
 # checkpoint 5
 
