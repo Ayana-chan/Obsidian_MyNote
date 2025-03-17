@@ -4183,6 +4183,14 @@ TODO: 更新笔记的Release Consistency部分, release和acquire对应了内存
 
 行为有点像`static`, 只会被初始化一次, 通常在线程结束时销毁. 其地址在运行时决定. 可以但不建议将其指针传递给其他线程.
 
+每个线程都有一个TLS表, 表内存储`thread_local`变量. 因此读取`thread_local`变量需要一次解引用和一次偏移, 所以访问性能较差.
+```asm
+; x86-64 示例（GCC）
+mov %fs:0x0, %rax    ; 获取 TLS 基地址
+add $offset_x, %rax  ; 加上变量偏移量
+mov (%rax), %eax     ; 读取变量值
+```
+
 
 
 # 问题、技巧、解决方案
