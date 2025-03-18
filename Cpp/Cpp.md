@@ -1875,7 +1875,7 @@ auto it = upper_bound(nums.begin(), nums.end(), 10, greater<int>());
 还有一个参数是`proj`, 语义为投影. 例如, 在`vector<vector<int>> matrix`(按下标0元素大小升序排列)中, 寻找下标0处的元素大于`target`的第一个元素:
 ```cpp
 auto col_it = ranges::upper_bound(matrix, target,
-		ranges::less(), [](auto&& v){return v[0];});
+		ranges::less{}, [](auto&& v){return v[0];});
 ```
 
 此外:
@@ -2197,6 +2197,15 @@ range adaptors 是**懒求值**的, 或者说取的都是引用(`xxx_view`).
 旧函数一般需要传入`v.begin(), v.end()`两个参数, 新的ranges内的对应函数则只需要传入`v`就行了.
 
 `sort`, `for_each`, `lower_bound`等.
+
+对`vector<vector<int>>`按照数组首元素大小进行升序排列:
+- `ranges::less`要求六个比较都成立才可以使用.
+- `[](auto&& v){return v[0];}`定义了投影.
+```cpp
+ranges::sort(intervals, ranges::less{}, 
+	[](auto&& v){return v[0];});
+```
+
 
 #### 使用to, 在views操作后依然输出容器
 
