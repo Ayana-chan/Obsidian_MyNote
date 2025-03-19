@@ -1846,11 +1846,13 @@ priority_queue<node>q;
 
 
 
-## upper_bound & lower_bound
+## 二分查找
 
+都必须应用于有序容器. 有`std::xxx`版本和`ranges::xxx`版本.
 
-假设有一个有序容器，给出它的两个迭代器，就能使用这两个函数来通过**二分查找**找到想要的值的迭代器。
+### upper_bound & lower_bound
 
+假设有一个有序容器，给出它的两个迭代器，就能使用这两个函数来通过**二分查找**找到满足要求的一个元素的迭代器:
 - `upper_bound`: `>`
 - `lower_bound`: `>=`
 
@@ -1878,9 +1880,16 @@ auto col_it = ranges::upper_bound(matrix, target,
 		ranges::less{}, [](auto&& v){return v[0];});
 ```
 
-此外:
-- `equel_range`寻找等于目标的范围.
-- `binary_search`仅返回是否存在目标(`bool`).
+### equel_range
+
+`equel_range`寻找等于目标的范围. 具体来说返回的是:
+- 左边是第一个不小于目标值的元素.
+- 右边是第一个大于目标值的元素.
+因此, 如果<u>不存在目标值</u>, 则**左右相等**, 都是第一个大于目标值的元素.
+
+### binary_search
+
+`binary_search`仅返回是否存在目标(`bool`).
 
 ## 字符串
 
