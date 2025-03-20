@@ -1855,19 +1855,13 @@ priority_queue<node>q;
 假设有一个有序容器，给出它的两个迭代器，就能使用这两个函数来通过**二分查找**找到满足要求的一个元素的迭代器:
 - `upper_bound`: `>`
 - `lower_bound`: `>=`
-
 如果有一个**从小到大**排序好的数组`nums`，则：
-
 ```cpp
 // 得到第一个大于等于10的元素的迭代器
 auto it1 = lower_bound(nums.begin(), nums.end() , 10);
 // 得到第一个大于10的元素的迭代器
 auto it1 = upper_bound(nums.begin(), nums.end() , 10);
 ```
-
-可以理解为，这两个函数都找到一个从小到大的有序容器中**等于**目标值的元素的范围`[lower, upper)`，然后`lower_bound`返回`lower`，`upper_bound`返回`upper`。
-- 若**没有等于**的, 则`lower = upper`, 表示大于目标的第一个下标. 
-- 若**找不到**, 则返回`end`.
 
 要在**从大到小**的数组里面查找的话，要使用`greater<int>()`：
 ```cpp
@@ -1946,6 +1940,8 @@ auto col_it = ranges::upper_bound(matrix, target,
 | swap()    | 交换两个字符串的内容                                                                                                 |
 |  c_str()         |      返回字符数组（const char\*）                                                                                                                |
 
+使用`string s = {'a', 'b'};`来将单个或多个char转为字符串.
+
 ```cpp
 //erase
 string s("1234567890123456789012345");//总共25个字符
@@ -1970,34 +1966,36 @@ s=c;
 #### find()
 
 ```cpp
-string s="this is buaa";
-	
-int sfy=s.find("is");
-cout<< sfy <<" ";
-cout<< s.find("is")<<" ";
-cout<<"\n";
+string s = "this is buaa";
 
-int sfn=s.find("isj");
-cout<< sfn <<" ";
-cout<< s.find("isj")<<" ";
-cout<<s.npos<<" "<<std::string::npos<<" ";
-cout<<(s.find("isj")==s.npos)<<" ";
-cout<<(s.find("isj")==-1)<<" ";
-cout<<"\n";
+int sfy = s.find("is");
+cout << sfy << " ";
+cout << s.find("is") << " ";
+cout << "\n";
+
+int sfn = s.find("isj");
+cout << sfn << " ";
+cout << s.find("isj") << endl;
+
+cout << s.npos << " " << std::string::npos << endl;
+cout << boolalpha << (s.find("isj") == s.npos) << " ";
+cout << boolalpha << (s.find("isj") == -1) << " ";
+cout << "\n";
 ```
 
 输出：
 ```cpp
-1
-2 2
--1 4294967295 4294967295 4294967295 1 1
+2 2 
+-1 18446744073709551615
+18446744073709551615 18446744073709551615
+true true 
 ```
 
-找到了就返回起始下标值，找不到就返回`std::string::npos`，等于-1。
+找到了就返回起始下标值，找不到就返回`std::string::npos`，等于`-1`。
 
 ### string_view
 
-对string的引用，不进行拷贝。
+对`string`的引用，不进行拷贝。直接使用`string_view(s)`即可创建字符串`s`的引用.
 
 ```cpp
 #include <iostream>
@@ -2021,7 +2019,8 @@ int main()
 
 ### substr
 
-string的substr是$O(n)$的，会直接拷贝出子串；但string_view的substr是$O(1)$的，不会发生拷贝。
+`string`的`substr`是$O(n)$的，会直接拷贝出子串；但`string_view`的`substr`是$O(1)$的，不会发生拷贝。因此, 如果只是拿一个字符串的一部分出来做临时比较的话, 应该使用`string_view(s).substr(2, 5)`这样的形式来取引用值.
+
 
 ## iterator 迭代器
 
@@ -2086,6 +2085,12 @@ for (int i=0; i<10; ++i) {
 ## tuple
 
 [std::tuple - cppreference.com](https://zh.cppreference.com/w/cpp/utility/tuple)
+
+## span
+
+[std::span - cppreference.com](https://zh.cppreference.com/w/cpp/container/span)
+
+`span<T, Extent>`是一段**连续**内存的**引用**, 内存的单位类型为`T`, 长度为`Extent`(也可以是动态长度).
 
 ## ranges
 
@@ -2358,6 +2363,21 @@ auto out =
 // 1020302040
 ```
 
+#### 使用串算法
+
+[std::ranges::search - cppreference.com](https://zh.cppreference.com/w/cpp/algorithm/ranges/search)
+
+使用`ranges::search`实现kmp, 在`haystack`中匹配`needle`(`search`文档里面也是这么称呼的):
+```cpp
+int strStr(string haystack, string needle) {
+	auto res = ranges::search(haystack, needle);
+	auto ans = res.begin();
+	if(ans == haystack.end()) {
+		return -1;
+	}
+	return distance(haystack.begin(), ans);
+}
+```
 
 ## piecewise_construct
 
@@ -4228,7 +4248,7 @@ int i = 1;
 std::cout << typeid(i).name() << std::endl;
 ```
 
-## 查看算数类型的性质
+## 获取算数类型的信息
 
 [std::numeric\_limits - cppreference.com](https://en.cppreference.com/w/cpp/types/numeric_limits)
 
