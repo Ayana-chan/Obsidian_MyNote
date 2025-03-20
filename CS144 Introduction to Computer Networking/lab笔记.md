@@ -267,6 +267,8 @@ FIN的话看reader关没关就行，就像Receiver看writer关没关一样。
 
 初始windows size为1, 是为了在SYN丢包的时候触发RTO.
 
+RTO到时间后, 把outstanding的最早的包(使用红黑树map来保证"最早"总是合法的)再度放入到发送队列的最前面(使用deque来保证其可以通过插入前面来插队).
+
 > [!note]
 > 代码结构是, 上层主动使用`push`把数据从流里面输出到Sender对象内, 然后再使用`maybe_send`把保存的数据给发出去. push的时候就把包构造好了.
 
@@ -313,7 +315,6 @@ ARP的supported好像是给parser用的。
 
 ![](assets/uTools_1697795826469.png)
 
-TODO: 使用红黑树轮询定时器, 每次删除最早的.
 
 # checkpoint 5
 
