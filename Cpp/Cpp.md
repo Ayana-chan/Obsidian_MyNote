@@ -1676,7 +1676,7 @@ auto foo = []<typename T>(std::vector<T> vec) {...}
 
 但是, 也可以直接拷贝当前对象进去, 即`[*this]`.
 
-虽然<u>目前</u>`[=]`也能直接捕获到`this`, 但是可以写成`[=, this]`来让语义更显式. 这也是为了与`[=, *this]`(捕获所有变量并且复制当前对象)相区分.
+虽然<u>目前</u>`[=]`也包含了对`this`的捕获, 但是可以写成`[=, this]`来让语义更显式. 这也是为了与`[=, *this]`(捕获所有变量并且复制当前对象)相区分.
 
 #### 可构造和可赋值的无状态lambda表达式
 
@@ -2601,6 +2601,17 @@ cpp17加入了**类模板实参推导(CTAD)**([类模板实参推导（CTAD）(C
 
 > [!info]
 > 虽然有的编译器可能允许在类成员变量里面不写`<>`, 但还是别这么写.
+
+例如, 下面代码可以编译通过:
+```cpp
+#include<vector>
+
+using namespace std;
+
+int main() {
+  vector v(3, vector<int>(5));
+}
+```
 
 推导本身不带隐式类型转换, 因此在许多地方得手动写明模板参数类型, 或者在传参的时候使用显式类型转换.
 ```cpp
@@ -4187,13 +4198,26 @@ int main() {
 
 # 并发编程
 
-unique_lock和lock_guard都在定义时给对应mutex上锁，在生命周期结束后自动释放锁。千万不要对它们使用unlock，否则会很难debug，特别是在不小心unlock了它们包裹的mutex而不是它们本身的时候。
+`lock_guard`在定义时给传入的`mutex`上锁，在生命周期结束后自动释放锁(**RAII锁**). [std::lock\_guard - cppreference.com](https://zh.cppreference.com/w/cpp/thread/lock_guard)
+
+```cpp
+void safe_increment(int iterations) {
+    const std::lock_guard<[std::mutex](http://zh.cppreference.com/w/cpp/thread/mutex)> lock(g_i_mutex);
+    while (iterations-- > 0)
+        g_i = g_i + 1;
+    std::cout << "线程 #" << std::this_thread::get_id() << ", g_i: " << g_i << '\n';
+
+    // g_i_mutex 在锁离开作用域时自动释放
+}
+```
+
+`unique_lock`相对于`lock_guard`提供了关于锁的更多的功能, 而且还能主动`unlock`. 条件变量也必须使用`unique_lock`. [std::unique\_lock - cppreference.com](https://zh.cppreference.com/w/cpp/thread/unique_lock)
+
+`std::scoped_lock`允许传入多个mutex一起上锁, 且自动帮忙解决上锁顺序导致的死锁问题. [std::scoped\_lock - cppreference.com](https://zh.cppreference.com/w/cpp/thread/scoped_lock)
 
 ## 条件变量
 
-conditional variable的wait函数第一个参数是lock，第二个(可选)参数是返回bool的函数; 这个lock会保护函数的检查目标。被notify时，会自动上锁，然后检查函数返回值是否为true，是的话继续执行，不是的话释放锁继续等待。最开始进入wait之前也会检查一次函数返回值。 
-
-这是为了让锁来保护函数的参数（条件），来避免**虚假唤醒**, 包括`notify_all`后却无法得到目标数据, 又或者是条件变量的实现导致的凭空唤醒; 还可以避免在wait的前一瞬间另一个线程修改了函数参数并完成调用notify，导致wait开始后一直收不到。在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify（notify写在锁unlock之后, 从而加速）。
+[std::condition\_variable - cppreference.com](https://zh.cppreference.com/w/cpp/thread/condition_variable)
 
 ```cpp
 // 基本等待：释放锁并阻塞，直到被唤醒
@@ -4204,6 +4228,35 @@ template <typename Predicate>
 void wait(std::unique_lock<std::mutex>& lock, Predicate pred);
 ```
 
+conditional variable的wait函数第一个参数是`unique_lock`，第二个(可选)参数是返回`bool`的谓词; 这个锁会保护谓词的检查目标。
+
+被notify时，会自动上锁，然后检查谓词返回值是否为true，是的话继续执行，不是的话释放锁继续等待。最开始进入wait之前也会检查一次谓词返回值(因此不会必然进入等待, 也因此不想要提前额外检查谓词目标)。 
+
+- 锁机制和谓词可以避免(广义的)**虚假唤醒**, 包括`notify_all`后却无法得到目标数据, 又或者是条件变量的实现导致的凭空唤醒. 
+- 在根据一个变量来判断是否应当wait时，上锁也能保证notify方在正确的时机修改变量并进行notify(减少不需要的notify, 即通过变量可能就可以得知是否有线程在等待). 
+- notify最好写在锁unlock之后, 从而加速.
+
+> [!note] 为什么要锁
+> 等待+检查 需要**锁**, 是为了<u>让条件检查和进入等待成为原子操作</u>, 以避免通知丢失:
+> 1. A: 检查条件发现需要等待.
+> 2. B: 修改条件.
+> 3. B: 发出通知.
+> 4. A: 进入等待.
+> 
+> 加锁后, 1和4必然在一起, 所以要么是A直接进入等待, 然后收到B的通知而被唤醒; 要么就是B先修改了条件, 然后A就不会再进入等待了.
+> 
+> 这也是为什么即使条件检查的目标变量是原子变量, 也需要在锁内操作.
+
+各种通知, 以及等待的各种原子操作, 总是会在该条件变量上呈现线性顺序(**单独的全序关系**(total order)). 这保证了单线程内执行 唤醒+等待 的时候, 不会自己被自己唤醒.
+
+
+## atomic
+
+[std::atomic - cppreference.com](https://zh.cppreference.com/w/cpp/atomic/atomic)
+
+`std::atomic<T>`将`T`声明为原子操作. 对于基础类型, `atomic`是**无锁**的(可以使用`is_lock_free`或`is_always_lock_free`来检查); 对于普通类型(依然要求可平凡复制), 它就像是Rust的`Mutex<T>`.
+
+单个运算符(包括赋值和复合运算符, 如`a++`和`a += 1`)是原子的, 但分开写的多个运算符(如`a = a + 1`)就不是原子的.
 
 ## Memory Order TODO
 
@@ -4229,6 +4282,9 @@ add $offset_x, %rax  ; 加上变量偏移量
 mov (%rax), %eax     ; 读取变量值
 ```
 
+## 其他
+
+`std::this_thread::get_id()`可以获取当前线程的id.
 
 
 # 问题、技巧、解决方案

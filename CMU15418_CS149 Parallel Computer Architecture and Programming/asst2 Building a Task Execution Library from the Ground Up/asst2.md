@@ -341,7 +341,7 @@ launch的task被领取完毕就可以踢出调度队伍。也因此，完成情�
 
 有任务时都开始，没任务时都停止，这也要求start相关逻辑要和找任务的逻辑绑定在同一个锁内。
 
-测试发现，每个任务都较轻量级时，都出现了超时情况：
+测试发现，在每个任务都较轻量级时，都出现了超时情况：
 ```
 ===================================================================================
 Test name: super_super_light
@@ -541,3 +541,17 @@ int main() {
 
 震惊：似乎换一台电脑就可以做到mutex公平。TODO：换个公平mutex的环境测试。
 
+TODO: 优化起始判断逻辑流程. 这里start表示的是是否还有剩余任务.
+```cpp
+std::unique_lock<std::mutex> lk(start_mu);
+start_cv.wait(lk, [this] {
+    return start || destoried;  // 退出条件：start 为 true 或线程池已销毁
+});
+
+if (destoried) {
+    break;  // 退出循环
+}
+
+// 继续执行任务逻辑
+launch_id = fetch_task(task_func);
+```
