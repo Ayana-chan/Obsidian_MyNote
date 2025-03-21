@@ -4263,15 +4263,72 @@ conditional variable的wait函数第一个参数是`unique_lock`，第二个(可
 
 单个运算符(包括赋值和复合运算符, 如`a++`和`a += 1`)是原子的, 但分开写的多个运算符(如`a = a + 1`)就不是原子的.
 
-## Memory Order TODO
+## Memory Order
 
 [std::memory\_order - cppreference.com](https://en.cppreference.com/w/cpp/atomic/memory_order)
 
 [CMU-15418 Memory Consistency 笔记](../CMU15418_CS149%20Parallel%20Computer%20Architecture%20and%20Programming/课堂笔记.md#Lec%2013%20-%20Memory%20Consistency)
 
-TODO: IRIW没有reorder
+acq-rel内存序保证了因果一致性, 即: 当rel的写被acq读到时, rel之前的所有写也必然能被acq后读到.
+![](assets/Pasted%20image%2020250322004248.png)
 
-TODO: 更新笔记的Release Consistency部分, release和acquire对应了内存架构的什么? 可能是: 线程1的acquire获得锁了, 必然能观测到刚进行release的线程0在release之前的操作.
+如果acq读到的不是rel的写, 那即使读到的是更加新的值, 也不会触发因果同步:
+![](assets/Pasted%20image%2020250322010450.png)
+
+**IRIW (Independent Reads of Independent Writes, 独立写入的独立读取)问题**: 两个线程进行独立的写操作后, 其他两个线程所探知的写操作顺序可能是不一致的. 发生于弱内存序.
+```cpp
+// 共享变量，初始值为0
+int x = 0, y = 0;
+
+// 线程A：写入x=1
+void threadA() { x = 1; }
+
+// 线程B：写入y=1
+void threadB() { y = 1; }
+
+// 线程C：读取x，然后读取y
+void threadC() {
+    int r1 = x;
+    int r2 = y;
+}
+
+// 线程D：读取y，然后读取x
+void threadD() {
+    int r3 = y;
+    int r4 = x;
+}
+```
+
+**Out-of-Thin-Air (凭空值问题)** 是超级放松的内存序的"bug", 即在relax下, 理论上x和y都可能会被赋予凭空出现的任何值, 是反直觉的, 也无法在现实机器跑出来, 却无法推出矛盾.
+```cpp
+#include <atomic>
+#include <thread>
+
+std::atomic<int> x(0), y(0);
+int r1 = 0, r2 = 0;
+
+void thread_a() {
+    r1 = y.load(std::memory_order_relaxed); // 读取 y
+    x.store(r1, std::memory_order_relaxed); // 写入 x
+}
+
+void thread_b() {
+    r2 = x.load(std::memory_order_relaxed); // 读取 x
+    y.store(r2, std::memory_order_relaxed); // 写入 y
+}
+
+int main() {
+    std::thread t1(thread_a);
+    std::thread t2(thread_b);
+    t1.join();
+    t2.join();
+
+    // 理论上可能输出 x=42, y=42，即使从未显式赋值 42
+    std::cout << "x=" << x << ", y=" << y << std::endl;
+    return 0;
+}
+```
+
 
 ## 线程局部存储 thread_local
 
