@@ -4198,6 +4198,8 @@ int main() {
 
 # 并发编程
 
+## 锁包装
+
 `lock_guard`在定义时给传入的`mutex`上锁，在生命周期结束后自动释放锁(**RAII锁**). [std::lock\_guard - cppreference.com](https://zh.cppreference.com/w/cpp/thread/lock_guard)
 
 ```cpp
@@ -4249,6 +4251,9 @@ conditional variable的wait函数第一个参数是`unique_lock`，第二个(可
 
 各种通知, 以及等待的各种原子操作, 总是会在该条件变量上呈现线性顺序(**单独的全序关系**(total order)). 这保证了单线程内执行 唤醒+等待 的时候, 不会自己被自己唤醒.
 
+> [!note]
+> 多个条件变量可以使用同一个mutex, 从而使它们保护的变量是一样的, 但是通知的范围不同.
+
 
 ## atomic
 
@@ -4285,6 +4290,99 @@ mov (%rax), %eax     ; 读取变量值
 ## 其他
 
 `std::this_thread::get_id()`可以获取当前线程的id.
+
+
+## 实践例子
+
+### 实现读写锁
+
+写优先的读写锁:
+- 一旦有写请求就不再分发读锁.
+- 等到读锁全部释放后才开始分发写锁.
+- 等到写锁全部释放后才重新分发读锁.
+```cpp
+#include <mutex>
+#include <condition_variable>
+
+class ReadWriteLock {
+public:
+    ReadWriteLock() : readers(0), writers_waiting(0), writer_active(false) {}
+
+    void lock_read() {
+        std::unique_lock<std::mutex> lock(mtx);
+        read_cv.wait(lock, [this]() {
+            return !writer_active && writers_waiting == 0;
+        });
+        ++readers;
+    }
+
+    void unlock_read() {
+        std::unique_lock<std::mutex> lock(mtx);
+        --readers;
+        if (readers == 0) {
+            write_cv.notify_one();
+        }
+    }
+
+    void lock_write() {
+        std::unique_lock<std::mutex> lock(mtx);
+        ++writers_waiting;
+        write_cv.wait(lock, [this]() {
+            return readers == 0 && !writer_active;
+        });
+        --writers_waiting;
+        writer_active = true;
+    }
+
+    void unlock_write() {
+        std::unique_lock<std::mutex> lock(mtx);
+        writer_active = false;
+        if (writers_waiting > 0) {
+            write_cv.notify_one();
+        } else {
+            read_cv.notify_all();
+        }
+    }
+
+    // RAII辅助类，用于自动管理读锁
+    class ReadLock {
+    public:
+        explicit ReadLock(ReadWriteLock &lock) : rw_lock(lock) {
+            rw_lock.lock_read();
+        }
+        ~ReadLock() {
+            rw_lock.unlock_read();
+        }
+        ReadLock(const ReadLock&) = delete;
+        ReadLock& operator=(const ReadLock&) = delete;
+    private:
+        ReadWriteLock &rw_lock;
+    };
+
+    // RAII辅助类，用于自动管理写锁
+    class WriteLock {
+    public:
+        explicit WriteLock(ReadWriteLock &lock) : rw_lock(lock) {
+            rw_lock.lock_write();
+        }
+        ~WriteLock() {
+            rw_lock.unlock_write();
+        }
+        WriteLock(const WriteLock&) = delete;
+        WriteLock& operator=(const WriteLock&) = delete;
+    private:
+        ReadWriteLock &rw_lock;
+    };
+
+private:
+    std::mutex mtx;
+    std::condition_variable read_cv;
+    std::condition_variable write_cv;
+    int readers;            // 当前活跃的读者数量
+    int writers_waiting;    // 等待中的写者数量
+    bool writer_active;     // 是否有写者活跃
+};
+```
 
 
 # 问题、技巧、解决方案
