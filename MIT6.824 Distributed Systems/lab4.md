@@ -160,7 +160,7 @@ TestChallenge2Partial也自然得到满足, 因为状态机使得每个shard解�
 实际操作database时要极为谨慎，如果config和state中途变换，可能让正在操作中的database开始接收服务，导致race。
 
 ==理论上推翻了但是尚未测试==
-- 如果一个group宕机很久，其启动的时候收到很卡的Client请求，发现自己的config允许接收，则顺利操作成功；然后收到了新的（对其他group来说很老的）config，并试图把这块shard push给别人，别人说你太老了，于是直接判定成功(==错误推理==, 因为自己本地没有新config的log, 意味着这个shard没有递交出去, 那么递交目标必然无法逃出Pulling)，那个请求也就丢失了。可以在client请求中添加configNum判定，**当服务器发现自己的config比client新时再继续受理**。这也不会影响效率或者不相关性，因为本来就要起码等对应的config跟上后才算合法的请求处理。
+- 如果一个group宕机很久，其启动的时候收到很卡的Client请求，发现自己的config允许接收，则顺利操作成功；然后收到了新的（对其他group来说很老的）config，并试图把这块shard push给别人，别人说你太老了，于是直接判定成功，那个请求也就丢失了。可以在client请求中添加configNum判定，**当服务器发现自己的config比client新时再继续受理**。这也不会影响效率或者不相关性，因为本来就要起码等对应的config跟上后才算合法的请求处理。(==错误推理==, 因为自己本地没有新config的log, 意味着这个shard没有递交出去, 那么递交目标必然无法逃出Pulling)
 - **即使服务器的configNum偏大也不能受理**，无法保证不被删。
 - 综上：只有configNum<u>严格等同</u>时，client请求才会被受理。这样拥有完全合理的一致性，如同term。
 重新思考了一下, 在client请求时检查configNum在逻辑上不是必要的(只会优化性能), 因为一次请求被提交时，必须要求提交的瞬间处于online状态, 而一个分片在一个瞬间只有0或1个group为真正的online状态. 虚假的online状态永远不会成功完成请求, 因为历史日志会先于新请求日志完成, 从而退出online, 导致client重试.
