@@ -4296,6 +4296,65 @@ conditional variable的wait函数第一个参数是`unique_lock`，第二个(可
 
 单个运算符(包括赋值和复合运算符, 如`a++`和`a += 1`)是原子的, 但分开写的多个运算符(如`a = a + 1`)就不是原子的.
 
+
+## CAS
+
+compare and swap
+
+[std::atomic\<T\>::compare\_exchange\_weak, std::atomic\<T\>::compare\_exchange\_strong - cppreference.com](https://zh.cppreference.com/w/cpp/atomic/atomic/compare_exchange)
+
+`compare_exchange_weak`是原子变量的一个成员函数:
+- `expected`表示原子变量的期望值. 
+- `desired`表示希望原子变量更新后的值. 
+- 只有当`expected`等于实际的原子变量值的时候, 才会把`desired`写给原子变量, 并返回`true`; 否则, 把`expected`更新为原子变量的新值, 从而方便再次调用.
+- 每次失败后, 一般都要重新计算`desired`(`expected`变量已自动更新).
+```cpp
+bool compare_exchange_weak( T& expected, T desired,
+                            std::memory_order success,
+                            std::memory_order failure );
+```
+
+CAS原子计数器:
+```cpp
+#include <atomic>
+#include <iostream>
+
+std::atomic<int> counter(0);  // 原子计数器
+
+void increment_counter() {
+    int old_val = counter.load(std::memory_order_relaxed);
+    int new_val;
+    do {
+        new_val = old_val + 1;
+        // 尝试CAS：若counter == old_val，则更新为new_val
+    } while (!counter.compare_exchange_weak(
+        old_val, new_val,
+        std::memory_order_release,  // 成功时的内存序
+        std::memory_order_relaxed   // 失败时的内存序
+    ));
+}
+
+int main() {
+    // 多线程调用increment_counter
+    increment_counter();
+    std::cout << "Counter: " << counter << std::endl;  // 输出1
+    return 0;
+}
+```
+
+`weak`会出现假性失败(Spurious Failure), 即使相等也可能认为不相等; 但是性能好, 而且使用循环就不会出bug. `strong`会在相等时严格执行. 当在使用`strong`后就不再需要循环的情况下, 推荐用`strong`.
+- 单次CAS, 且CAS返回值直接导致程序分歧时, 很可能最好`strong`.
+
+### ABA问题
+
+CAS有ABA问题. 因为它是通过判断原值是否未改变来判断是否原子化的. 那么, 如果一个值A被其他线程改成B后马上又被其他线程改成A, 那么本线程可能误以为它没变, 于是误以为可以操作.
+
+例如无锁栈, 一个线程想pop掉栈顶A, 但是可能在其他线程瞬间发生了pop A + push C + push A, 然后当前线程觉得栈顶还是A没变, 于是进行pop, 但设置的新栈顶却是旧的, 导致本该有的C也被pop掉了.
+
+因此需要让CAS的目标值是单调的, 例如给值加上版本号 (可以使用doubleword CAS同时CAS两个值, 其中一个是版本号).
+
+
+
 ## Memory Order
 
 [std::memory\_order - cppreference.com](https://en.cppreference.com/w/cpp/atomic/memory_order)
