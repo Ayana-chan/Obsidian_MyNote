@@ -4292,7 +4292,10 @@ conditional variable的wait函数第一个参数是`unique_lock`，第二个(可
 
 [std::atomic - cppreference.com](https://zh.cppreference.com/w/cpp/atomic/atomic)
 
-`std::atomic<T>`将`T`声明为原子操作. 对于基础类型, `atomic`是**无锁**的(可以使用`is_lock_free`或`is_always_lock_free`来检查); 对于普通类型(依然要求可平凡复制), 它就像是Rust的`Mutex<T>`.
+`std::atomic<T>`将`T`声明为原子操作. 对于基础类型, `atomic`是**无锁**的(可以使用`is_lock_free`或`is_always_lock_free`来检查); 对于普通类型, 它就像是Rust的`Mutex<T>`.
+- 主模板要求`T`满足可平凡复制, 允许移动或拷贝的构造或赋值, 并且无cv限定符.
+- `atomic<bool>`也使用主模板.
+- 整数类型的特化额外给予了`fetch_xxx`等操作.
 
 单个运算符(包括赋值和复合运算符, 如`a++`和`a += 1`)是原子的, 但分开写的多个运算符(如`a = a + 1`)就不是原子的.
 

@@ -185,7 +185,7 @@ args.Entries = append(args.Entries, rf.log[rf.nextIndex[s]:]...)
 持久化理由：
 - votedFor： 防止投票两次出现脑裂。
 - term：防止leader在网络隔离后，其他服务器由于宕机重启忘掉了term以至于投票出了小term的leader，致使原leader回归后起日志与其他服务器的冲突。
-- log： 把commit的都存储了，以确保其绝对存储了多数。
+- log： 防止出现 响应了已保存却丢失 的情况(会导致误commit)。
 
 
 
