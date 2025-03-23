@@ -1284,12 +1284,13 @@ cpp20对常量表达式要求的放松:
 
 ## volatile
 
-用于修饰成员变量, 使得每次访问此变量的时候都从内存读取, 而不能进行寄存器寄存的优化. 
+用于修饰成员变量, 使得每次访问此变量的时候都**从内存读取**, 而不能进行<u>寄存器</u>寄存的优化. 
 
 - 当变量可能在编译器未知的情况下发生改变的时候使用, 如中断或多线程; 
 - 对此内存的读写不能跳过的时候使用, 如 Memory Mapped IO.
 
-使用`volatile`修饰成员函数的话, 表示其对本对象的volatile情况的兼容. 就像const一样, 用于对volatile对象的操作(volatile对象无法使用普通成员函数), 也只能访问到volatile的成员函数.
+使用`volatile`修饰成员函数的话, 表示其对本对象的volatile情况的兼容. 就像const一样, 用于对volatile对象的操作, 也只能访问到volatile的成员函数.
+
 
 ## 函数修饰总结
 
@@ -2086,6 +2087,18 @@ for (int i=0; i<10; ++i) {
 
 [std::tuple - cppreference.com](https://zh.cppreference.com/w/cpp/utility/tuple)
 
+## 元组式 tuple-like
+
+[tuple-like, pair-like - cppreference.com](https://zh.cppreference.com/w/cpp/utility/tuple/tuple-like)
+
+pair-like就是恰好有两个项的tuple-like.
+
+规定了array, pair, tuple, subrange等的统一特性, 包括:
+- 实现了元组协议, 能使用`std::get<1>`等.
+- 可以结构化绑定.
+- 实现三向比较运算符.
+- 使用`apply(func, tuple)`函数可以把元组式值的每一项作为参数传给`func`函数.
+
 ## span
 
 [std::span - cppreference.com](https://zh.cppreference.com/w/cpp/container/span)
@@ -2232,7 +2245,7 @@ ranges::sort(intervals, ranges::less{},
 ```cpp
 std::vector<int> nums = {10, 20, 30, 20, 40};
 
-auto m = nums | std::views::enumerate // 生成 (index, value) 对
+auto m = nums | std::views::enumerate // 生成 [index, value]
 		 | std::views::transform([](auto &&t) {
 			   auto &&[idx, v] = t;
 			   return std::make_pair(v, idx);
@@ -2363,6 +2376,24 @@ auto out =
 // 1020302040
 ```
 
+#### 元组式值操作
+
+`enumerate`把`value`变成`[index, value]`.
+
+[std::views::elements](https://zh.cppreference.com/w/cpp/ranges/elements_view)可以取出元组式值的某一项, 例如`std::views::elements<2>`可以取出`[6, 7, 8, 9]`的`8`.
+
+[std::views::values](https://zh.cppreference.com/w/cpp/ranges/values_view)是`ranges::elements_­view<R, 1>`的别名, 取元组式值的第二项. [std::views::keys](https://zh.cppreference.com/w/cpp/ranges/keys_view)同理取第一项.
+```cpp
+std::map<int, std::string> map{{1, "alpha"}, {2, "beta"}};
+for (auto const& value : std::views::values(map))
+    std::cout << value << ' ';
+// 打印: alpha beta
+```
+
+
+
+
+
 #### 使用串算法
 
 [std::ranges::search - cppreference.com](https://zh.cppreference.com/w/cpp/algorithm/ranges/search)
@@ -2378,6 +2409,8 @@ int strStr(string haystack, string needle) {
 	return distance(haystack.begin(), ans);
 }
 ```
+
+
 
 ## piecewise_construct
 
