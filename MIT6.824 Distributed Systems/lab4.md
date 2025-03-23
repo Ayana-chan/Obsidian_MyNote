@@ -37,7 +37,7 @@ The new configuration should divide the shards as evenly as possible among the g
 
 The shardctrler should create a new configuration in which the shard is assigned to the group.
 
-不知道啥意思的一段话： The purpose of Move is to allow us to test your software. A Join or Leave following a Move will likely un-do the Move, since Join and Leave re-balance.
+The purpose of Move is to allow us to test your software. A Join or Leave following a Move will likely un-do the Move, since Join and Leave re-balance.
 
 move会破坏平衡，但会被join或leave给平衡回来。
 ## query
@@ -68,11 +68,11 @@ shard数量**一般**比服务器数量大，但也有小的时候！！！此�
 
 一种保证确定性的方法是，如果一个map是gid->shards，则我们可以把这个map的所有gid放进数组然后排序，之后对数组进行遍历，然后用遍历到的gid去访问map。（似乎最后没用到）
 
-如果同时join多个group的话它们被分配到的shard不一定一样，如3,3,4加了仨服务器后是2,2,2,**2,1,1**
+如果同时join多个group的话它们被分配到的shard不一定一样，如3,3,4加了仨group后是2,2,2,**2,1,1**
 
 能直接算出平衡后的group的shard数量。
 
-最后的解决方法是，把所有gid按<u>主shard量</u>、<u>次gid号大小</u>来排序，这样就能保证确定性的同时，让其按shard数从大到小排序，大的把多余的shard拿出来放到池子的，小的从池子里面拿。
+最后的解决方法是，把所有gid按<u>主shard量</u>、<u>次gid号大小</u>来排序，这样就能保证确定性的同时，让其按shard数从大到小排序，大的把多余的shard拿出来放到池子里，小的从池子里面拿。
 
 # B
 
@@ -86,9 +86,9 @@ start之间理论上是可以互相插队的，因此config在日志中可能是
 
 ---
 
-为什么要一个一个config做完而不能一步到位：主要是无法知道谁还保留了shard，因为所以服务器间可能保留了任意的config num；而如果各config num对不上就不进行操作的话，那就和一个一个config做完全一样了。
+为什么要一个一个config做完, 而不能一步到位：主要是无法知道谁还保留了shard，因为所以服务器间可能保留了任意的config num；而如果各config num对不上就不进行操作的话，那就和一个一个config做完全一样了。
 
-似乎可以保证一个分片只能归属于一个group，且不会有log丢失问题。不会出现online变成pulling或者offline变成pushing。--但是，如果一个服务器重启，其Snapshot中可能又把shard读了回来！因此，config的num也要像raft的term一样管理。
+似乎可以保证一个分片只能归属于一个group，且不会有log丢失问题。不会出现online变成pulling或者offline变成pushing。--但是，如果一个服务器重启，其Snapshot中可能又把shard读了回来(重启时apply历史log的过程中可能会发生这种事)！因此，config的num也要像raft的term一样管理。
 
 - 一个shard在一个config num中只会且必然会属于一个group。
 - 如果一个group在一个config里面丢弃或需要某个数据的话，直到数据操作完成前都不会进一步更新config num。
@@ -99,11 +99,16 @@ start之间理论上是可以互相插队的，因此config在日志中可能是
 
 如果把shard的内容都放进*添加shard*的log里面，则重启也没事了！
 
-如果有另一个group要给我发shard，我宕机了，那么那个group就会一直等待；正常工作后，则会接收shard然后将其放入raft日志保证其不会丢失，之后将回复“pull完成”。因此，若一个group宕机，所有与之相关的group都会暂停更新config。一次迁移必然是在同一个config下的，如果发现pushing的目标的config.Num偏大，则说明自己重启过，已经给对面成功推送过了（日志里面遇到gc的时候似乎也能直接取消pushing）；pulling虽然无法主动查询目标的config.Num，但pulling成功后本地会有日志，apply时识别到即可认为pulling成功。
+如果有另一个group要给我发shard，我宕机了，那么那个group就会一直等待；正常工作后，则会接收shard然后将其放入raft日志保证其不会丢失，之后将回复“pull完成”。因此，若一个group宕机，所有与之相关的group都会暂停更新config。**一次迁移必然是在同一个config下的**，
+- 如果发现pushing的目标的config.Num偏大，则说明自己重启过，已经给对面成功推送过了, 认为push成功（日志里面遇到gc的时候似乎也能直接取消pushing）；
+- pulling虽然是惰性的, 但只要它以前成功过, 本地就会有日志，在apply时识别到即可认为pulling成功。
+
+> [!note]
+> 发送shard的过程相当于是一次访问Raft服务的过程, 那么自然就需要在发送方写client, 接收方进行kv server一样的操作.
 
 ==已完成：==重启的时候，可能会迅速的到来多个config！！！此过程中还会不断获取config，放在很靠后的日志末尾。可能要在读到新config但没完成之前的config的时候阻塞applyCh？不！由于config配置过程中会加log来标志进度，因此读到下一个config之前必然依靠log完成了当前config。
 
-这样又会引出一个问题：由于对config是否完成的检测独立于日志的apply，因此在上一个config被标记为完成前，下一个config可能就从日志中到来了。此时直接认为上一个config完成了，标记为offline或者online。**此时要做的唯一一件实事，就是进行gc**！！！
+这样又会引出一个问题：由于对config是否完成的检测独立于日志的apply，因此在上一个config被标记为完成前，下一个config可能就从日志中到来了。此时直接认为上一个config完成了(不然哪里来的后来的config)，标记为offline或者online。此时要做的唯一一件实事，就是进行gc！！！但是, 只有gc完成后, 才可能索取下一个config, 而gc会出现在log里面, 所以这里的主动gc是没有必要的(==尚未删除此gc==).
 
 ==已完成：==每次都去要下一个config，要不到的话再开始每100ms查一次。**一个接着一个按序处理reconfig** ，处理完一个后再查新config。
 
@@ -117,7 +122,7 @@ start之间理论上是可以互相插队的，因此config在日志中可能是
 
 ==已完成：==config被apply的时候，当前config被更新了，但是不能立马接收新shard的服务，中间有一个pull状态。此时也回复ErrWrongGroup似乎没有副作用。
 
-Think about how the shardkv client and server should deal with ErrWrongGroup. Should the client change the sequence number if it receives ErrWrongGroup? Should the server update the client state if it returns ErrWrongGroup when executing a Get/Put request? 如果config的log之后有大量需要被转移的shard，则这些shard也要被ErrWrongGroup。因此，如果客户端发现ErrWrongGroup的话，就需要更新一下序列号，否则server可能以为重试的请求是重复的请求。或者client不用加序列号，只需要让server在apply时发现ErrWrongGroup的话就不更新已完成序列号，这样似乎更加简洁明了。<u>上述思路是满足TestChallenge2Unaffected的。</u>
+Think about how the shardkv client and server should deal with ErrWrongGroup. Should the client change the sequence number if it receives ErrWrongGroup? Should the server update the client state if it returns ErrWrongGroup when executing a Get/Put request? 如果apply了config的log之后有大量需要被转移的shard，则这些shard也要被ErrWrongGroup。如果客户端发现ErrWrongGroup的话，也需要更新一下序列号，否则server可能以为重试的请求是重复的请求。或者client不用加序列号，只需要让server在apply时发现ErrWrongGroup的话就不更新已完成序列号，这样似乎更加简洁明了。<u>上述思路是满足TestChallenge2Unaffected的。</u>
 
 After a server has moved to a new configuration, it is acceptable for it to continue to store shards that it no longer owns (though this would be regrettable in a real system). This may help simplify your server implementation. 一个shard接收迁移的时候就把原shard都给delete了再重新给上。
 
@@ -125,20 +130,20 @@ You can send an entire map in an RPC request or reply, which may help keep the c
 
 >During a configuration change, a pair of groups may need to move shards in both directions between them. If you see deadlock, this is a possible source.
 
-对于发送方，迁移过程中如果config日志被Snapshot了，那么服务器宕机重启后，就不会再触发迁移。因此发送方的迁移任务要有持久化的东西保存（state）。
+对于发送方，迁移过程中如果config日志被Snapshot了，那么服务器宕机重启后，就不会再触发迁移。因此发送方的迁移任务要有持久化的东西保存。解决: state的push状态下, 就必须触发push.
 
-Challenge1：成功迁移后，将对应的shard设为gcing状态，再对其进行删除，删完后状态设为offline。并且不断检测处于gcing的shard，对其进行删除。这样，重启之后也能及时删除不属于自己的shard，并且不会在迁移完成之前删掉shard。
+Challenge1：成功迁移后，将对应的shard设为gcing状态，再对其进行删除，删完后状态设为offline。并且不断检测处于gcing的shard，对其进行删除。这样，重启之后, 在宕机前的config的范围中, 也能稳定删除不属于自己的shard，并且不会在迁移完成之前删掉shard。
 
 综上，或许不能直接用config里面的有无来判断是否接收一个请求，应当给每个shard赋予一个状态机：
-- 被删除的shard，从Online变成Pushing（会不断触发迁移函数，发起迁移的RPC），迁移完成后变成GCing（会触发GC函数，让整个集群进行删除操作），删除完成后变成Offline。
-- 被添加的shard，从Offline变成Pulling（无实际意义），接收并安装完成后变成Online。
-所有的shard都变成online或者offline后，config才算完成。
+- 被删除的shard，从Online变成Pushing（会不断触发迁移函数，发起迁移的RPC），迁移完成后变成GCing(仅Leader)(会触发GC函数，让整个集群进行删除操作)，删除完成后变成Offline。
+- 被添加的shard，从Offline变成Pulling，接收并安装完成后变成Online。Pulling还能用于保证此shard上的applyShard仅被调用一次.
+**所有的shard都变成online或者offline后，config才算完成。**
 
-对于Follower来说，会直接从push变成offline，因为它的gc是被leader直接指示的。为了保证没GC完就更换了leader也能正常进行gc，因此push成功后再次调用迁移函数时要能够返回success。
+对于Follower来说，会直接从push变成offline，因为它的gc是被leader直接指示的。若是没GC完就更换了leader的话, 由于push已经完成了, 而push成功后再次调用迁移函数时返回success, 那么就又进入GC。
 
-TestChallenge2Partial也因此自然得到满足。
+由于只有leader可以进行迁移，因此状态机的变化可能只有leader可以发现，因此状态转移需要用raft来同步。由于leader是可换的，因此状态的同步非常重要。GC状态确实是个很特殊的例外.
 
-由于只有leader可以进行迁移，因此状态机的变化可能只有leader可以发现，因此状态转移需要用raft来同步。由于leader是可换的，因此状态的同步非常重要。
+TestChallenge2Partial也自然得到满足, 因为状态机使得每个shard解耦了.
 
 ---
 
@@ -154,13 +159,13 @@ TestChallenge2Partial也因此自然得到满足。
 
 实际操作database时要极为谨慎，如果config和state中途变换，可能让正在操作中的database开始接收服务，导致race。
 
-- 如果一个group宕机很久，其启动的时候收到很卡的Client请求，发现自己的config允许接收，则顺利操作成功；然后收到了新的（对其他group来说很老的）config，并试图把这块shard push给别人，别人说你太老了，于是直接判定成功，那个请求也就丢失了。可以在client请求中添加configNum判定，**当服务器发现自己的config比client新时再继续受理**。这也不会影响效率或者不相关性，因为本来就要起码等对应的config跟上后才算合法的请求处理。
+==理论上推翻了但是尚未测试==
+- 如果一个group宕机很久，其启动的时候收到很卡的Client请求，发现自己的config允许接收，则顺利操作成功；然后收到了新的（对其他group来说很老的）config，并试图把这块shard push给别人，别人说你太老了，于是直接判定成功(==错误推理==, 因为自己本地没有新config的log, 意味着这个shard没有递交出去, 那么递交目标必然无法逃出Pulling)，那个请求也就丢失了。可以在client请求中添加configNum判定，**当服务器发现自己的config比client新时再继续受理**。这也不会影响效率或者不相关性，因为本来就要起码等对应的config跟上后才算合法的请求处理。
 - **即使服务器的configNum偏大也不能受理**，无法保证不被删。
-- 综上：只有configNum严格等同时，client请求才会被受理。这样拥有完全合理的一致性，如同term。
+- 综上：只有configNum<u>严格等同</u>时，client请求才会被受理。这样拥有完全合理的一致性，如同term。
+重新思考了一下, 在client请求时检查configNum在逻辑上不是必要的(只会优化性能), 因为一次请求被提交时，必须要求提交的瞬间处于online状态, 而一个分片在一个瞬间只有0或1个group为真正的online状态. 虚假的online状态永远不会成功完成请求, 因为历史日志会先于新请求日志完成, 从而退出online, 导致client重试.
 
 请求时对config相关的检查也要在apply时重做一遍，因为谁也不知道start之前发生了什么事。
-
-应该不需要在client请求时检查config num！！！因为一个分片在一个瞬间只有0或1个group为真正的online状态。而一次请求被提交时，必须要求提交的瞬间处于online状态，此时对此请求来说就是“真正的online”，因为没有剩余的待恢复config。
 
 由于client会不断更新configNum，因此如果client在上个config进行了一次操作，在下一个config还能再进行操作。而由于对所有group来说，requestId都是单调递增的，因此迁移的时候直接发送requestId、取大覆盖是没有任何问题的。
 

@@ -2423,7 +2423,8 @@ int strStr(string haystack, string needle) {
 
 [inline specifier - cppreference.com](https://en.cppreference.com/w/cpp/language/inline)
 
-TODO
+- 内联函数或变量的定义必须在访问它的翻译单元可达.
+- 带外部链接的内联函数或变量允许在多个翻译单元中有相同的定义, 最后都会使用同一个地址.
 
 ### 将static类成员变量的声明和定义放一起
 
