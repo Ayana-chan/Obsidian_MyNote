@@ -4313,6 +4313,7 @@ compare and swap
 - 只有当`expected`等于实际的原子变量值的时候, 才会把`desired`写给原子变量, 并返回`true`; 否则, 把`expected`更新为原子变量的新值, 从而方便再次调用.
 - 每次失败后, 一般都要重新计算`desired`(`expected`变量已自动更新).
 ```cpp
+// 默认情况下是三个参数, 第三个参数order默认是seq
 bool compare_exchange_weak( T& expected, T desired,
                             std::memory_order success,
                             std::memory_order failure );
@@ -4346,6 +4347,9 @@ int main() {
 }
 ```
 
+- `std::memory_order success`: 读-修改-写 操作的内存序. 一般设为release, 就能保证一旦获取锁成功, 那么之前进行的相关操作必然可见 (当然需要其他线程使用acquire来读取结果).
+- `std::memory_order failure`: 加载 操作的内存序. 单纯读原子变量, relax就行.
+
 `weak`会出现假性失败(Spurious Failure), 即使相等也可能认为不相等; 但是性能好, 而且使用循环就不会出bug. `strong`会在相等时严格执行. 当在使用`strong`后就不再需要循环的情况下, 推荐用`strong`.
 - 单次CAS, 且CAS返回值直接导致程序分歧时, 很可能最好`strong`.
 
@@ -4365,8 +4369,11 @@ CAS有ABA问题. 因为它是通过判断原值是否未改变来判断是否原
 
 [CMU-15418 Memory Consistency 笔记](../CMU15418_CS149%20Parallel%20Computer%20Architecture%20and%20Programming/课堂笔记.md#Lec%2013%20-%20Memory%20Consistency)
 
-acq-rel内存序保证了因果一致性, 即: 当rel的写被acq读到时, rel之前的所有写也必然能被acq后读到.
+acq-rel内存序保证了因果一致性, 即: 当**rel的写**被acq读到时, <u>rel之前</u>的所有写也必然能被<u>acq之后</u>读到.
 ![](assets/Pasted%20image%2020250322004248.png)
+
+> [!note]
+> 与LFENCE和SFENCE不同, cpp的acq-rel并不是在指令的某个地方插了个memory barrier, 而是在逻辑上要求在两边读写发生连通时保证同步.
 
 如果acq读到的不是rel的写, 那即使读到的是更加新的值, 也不会触发因果同步:
 ![](assets/Pasted%20image%2020250322010450.png)
