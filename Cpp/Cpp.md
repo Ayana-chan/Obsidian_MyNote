@@ -98,6 +98,11 @@ void f(Base * p, Base & r)
 同一个类的两个不同对象是可以互相访问private成员的。因为访问级别是编译时概念而非运行时。对象a和b都为Class Cls，它们都能知道Cls下有私有成员x，则a里面就可以访问b.x。
 
 对于外部来说，protected的行为与private相似；但对于派生类来说，protected的行为与public相似。
+
+> [!info]
+> private表示"如果外部对其进行访问, 则要报错", 而不是单纯的"找不到". 因此, 声明中private的东西也要和类的其他成员一起写, 在类被使用时出现在对应的上下文中.
+
+
 ## 向上兼容
 
 可以用基类指针或引用指向派生类对象，如`Base *b = new Derived;`或`Derived d; Base &b = d;`。
