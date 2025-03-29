@@ -1328,9 +1328,6 @@ cpp20对常量表达式要求的放松:
 
 ## static
 
-
-在函数或闭包内定义**静态局部变量**, 就可以让这些变量(被放在全局存储)仅仅在此上下文被使用, 每次调用函数都能访问此变量, 且永远不会被释放或重置.
-
 定义类静态成员的时候, 需要声明和定义分离, 但是在cpp17后, 可以加上inline或constexpr(后者自动蕴含了inline), 就无需分离.
 
 ```cpp
@@ -1345,6 +1342,25 @@ struct X2 {
 
 struct X3 {
     constexpr static int n = 1; // constexpr 必须初始化，并且它还有 const 属性
+};
+```
+
+在函数或闭包内定义**静态局部变量**, 就可以让这些变量(被放在全局存储)仅仅在此上下文被使用, 每次调用函数都能访问此变量, 且永远不会被释放或重置. 它只会在第一次执行该函数时被初始化，而且这种初始化在 C++11 标准之后是线程安全的。因此, 使用magic static即可实现单例模式:
+```cpp
+class Singleton {
+public:
+    static Singleton& getInstance() {
+        static Singleton instance;  // Magic Static
+        return instance;
+    }
+
+private:
+    Singleton() = default;
+    ~Singleton() = default;
+
+    // 禁止拷贝和赋值
+    Singleton(const Singleton&) = delete;
+    Singleton& operator=(const Singleton&) = delete;
 };
 ```
 
