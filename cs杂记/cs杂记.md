@@ -78,9 +78,11 @@ taskkill /pid 31601 /f
 
 
 
+# 安装wsl
 
+[安装 WSL | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/wsl/install)
 
-
+[旧版 WSL 的手动安装步骤 | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/wsl/install-manual)
 
 
 
