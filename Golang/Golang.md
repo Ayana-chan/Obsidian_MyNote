@@ -33,18 +33,8 @@ export GOPROXY=https://goproxy.cn,direct
 
 import的时候传入的是目录名；导入的对象的名字是它的package名。起别名相当于是给package起别名。
 
-# 基本概念
-
-
-
 # 基础
 
-## 将fmt输出到文本文件
-
-执行的shell命令后面加上`> output.log`即可将打印都输出到output.log里面。
-
-## 运行时添加环境变量
-如`VERBOSE=1 sh test-mr.sh` 就会在执行命令时让环境变量VERBOSE为1.
 ## var
 
 声明变量而不赋值的时候可以用。
@@ -162,6 +152,34 @@ func MakeSlice2(len1, len2 int) [][]int{
 切片本质是一个指针，指向目标“数组”的一块内存空间，因此作为形参传入也能修改对应内存的值。
 
 使用`[:]`切片是浅拷贝，即切片指向了一定区域的内存而不是截取复制。若想构造一个深拷贝出来的切片的话，需要使用append。超出append的cap值就会把一切东西深拷贝另起炉灶，而cap默认和长度一样。
+
+## 跨级break和continue
+
+使用`Loop:`标记最外层的for, 然后里面`break Loop`就能直接break掉最外层的for.
+```go
+Loop:
+    for n := 0; n < len(src); n += size {
+        switch {
+        case src[n] < sizeOne:
+            if validateOnly {
+                break
+            }
+            size = 1
+            update(src[n])
+
+        case src[n] < sizeTwo:
+            if n+1 >= len(src) {
+                err = errShortInput
+                break Loop
+            }
+            if validateOnly {
+                break
+            }
+            size = 2
+            update(src[n] + src[n+1]<<shift)
+        }
+    }
+```
 
 ## 临时文件
 
