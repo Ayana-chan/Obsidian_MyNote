@@ -78,6 +78,22 @@ person.valueShowName("abc")
 
 `for`循环中，使用`range`遍历数组，会返回两个变量，分别是下标和值。可以使用`_`来缺省一个变量。
 
+## 数据机制
+
+**指针**，指向值，且可以直接使用`a.member`访问成员，不需要解引用。可以是nil
+
+**不透明引用**，对其的拷贝不会发生深拷贝。除字符串外，都可以是nil。
+- 字符串 `string`：底层的数据结构为 `stringStruct` ，里面有一个指针指向实际存放数据的字节数组，另外还记录着字符串的长度。不过由于 `string` 是只读类型（所有看起来对 `string` 变量的修改，实际上都是生成了新的实例），在使用上常常把它当做值类型看待。由于做了特殊处理，它甚至可以作为常量。`string` 也是唯一零值不为 `nil` 的引用类型。
+- 切片（slice）：底层数据结构为 `slice` 结构体 ，整体结构跟 `stringStruct` 接近，只是多了一个容量（capacity）字段。数据存放在指针指向的底层数组里。
+- 映射（map）：底层数据结构为 `hmap` ，数据存放在数据桶（buckets）中，桶对应的数据结构为 `bmap` 。
+- 函数（func）：底层数据结构为 `funcval` ，有一个指向真正函数的指针，指向另外的 `_func` 或者 `funcinl` 结构体（`funcinl` 代表被行内优化之后的函数）。
+- 接口（interface）：底层数据结构为 `iface` 或 `eface` （专门为空接口优化的结构体），里面持有动态值和值对应的真实类型。
+- 通道（chan）：底层数据结构为 `hchan`，分别持有一个数据缓冲区，一个发送者队列和一个接收者队列。
+
+**值类型**不能是nil。自定义的结构体也不能是nil。
+
+
+
 ## 匿名函数/闭包
 可以在代码块内直接用`func`定义一个匿名函数（内部函数inner function）（闭包closure）：
 
@@ -144,7 +160,16 @@ func MakeSlice2(len1, len2 int) [][]int{
 
 ## 任意类型
 
-`interface{}`表示可以接受任意类型，可以用在函数参数上。
+`interface{}`（empty interface）表示可以接受任意类型，可以用在函数参数上。
+
+## 空类型
+
+`struct{}`表示空类型，而`struct{}{}`是对空类型的实例化。它不占用如何空间。
+
+可以定义set为：
+```go
+type Set[T comparable] map[T]struct{}
+```
 
 ## 切片
 没定义长度的“数组”其实都叫切片，可以使用append和copy。
@@ -180,6 +205,40 @@ Loop:
         }
     }
 ```
+
+## interface
+
+`interface`用于定义一系列函数签名。是**鸭子类型**机制，即只要有类型吻合了一个接口的所有签名要求，则这个类型可以被看做该接口。
+
+直接把接口名字写在一个类型里面，就表示把接口的签名**组合**到该类型里面，于是这个类型就必然会符合接口的要求。
+
+```go
+type AaaSalr interface {
+	Funca()
+}
+
+type aaaSal struct {
+	AaaSalr
+}
+```
+
+使用`i.(*S)`来把作为interface的i变量转变为类型`S`：
+```go
+if t, ok := i.(*S); ok {  
+    fmt.Println("s implements I", t)  
+}
+```
+
+获取与检测类型：
+```go
+switch t := i.(type) {  
+case *S:  
+    fmt.Println("i store *S", t)  
+case *R:  
+    fmt.Println("i store *R", t)  
+}
+```
+
 
 ## 临时文件
 
@@ -344,6 +403,32 @@ func call(rpcname string, args interface{}, reply interface{}) bool {
 }
 ```
 
+# Web 开发
+
+由于没有依赖注入，因此需要在一层里面的一个主文件里面，定义该层所有组件（作为当前模块的全局变量）和初始化调用。例如，下面这样的定义可以使用`sals.AaaSal`访问：
+```go
+// sals/sals.go
+var(
+	AaaSal AaaSalr
+	BbbSal BbbSalr
+)
+
+func Setup(){
+	AaaSal = NewAaaSal()
+	BbbSal = NewBbbSal()
+}
+```
+
+在同一个文件里面同时定义接口类型和实现，其中实现是私有的：
+```go
+type AaaSalr interface {
+	Funca()
+}
+
+type aaaSal struct {
+	AaaSalr
+}
+```
 
 # Arena
 
