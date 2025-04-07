@@ -33,14 +33,48 @@ export GOPROXY=https://goproxy.cn,direct
 
 import的时候传入的是目录名；导入的对象的名字是它的package名。起别名相当于是给package起别名。
 
+
+# 规范
+## 命名规范
+
+| 类型              | 风格                                                    | 样例                             |
+| --------------- | ----------------------------------------------------- | ------------------------------ |
+| Files           | lower_snake_case                                      | h2_bundle.go                   |
+| Packages        | single noun (lower-case, compressed, prefer singular) | base64, arena, strconv         |
+| Types           | camel case (prefer noun)                              | Cookie, uint64                 |
+| Functions       | camel case (prefer verb)                              | SetCookie                      |
+| Variables       | camel case                                            | Path                           |
+| Constants       | camel case                                            | maxPad                         |
+| Receivers       | single word, usually single lowercase letter          | `func (c *Cookie) String()`    |
+| Type parameters | single word, usually single uppercase letter          | `func New[T any](a *Arena) *T` |
+
+## 代码规范
+
+map， func， chan 类型的receiver不要使用指针， 因为它们本身就是指针。
+
+错误内容：除驼峰和缩写以外，禁止出现大写字母；禁止标点符号结尾。
+
 # 基础
 
-## var
-
-声明变量而不赋值的时候可以用。
+## 定义变量
 
 ```go
-var v int
+a := 1
+var b int
+var c = 1
+const d = 1
+```
+
+对于结构体，`new(T)`和`&T{}`是等价的，都会给对象赋零值（一般人很少用new）。
+
+```go
+var a []int                      // nil
+
+a := []int{}                     // not nil
+
+a := *new([]int)                 // nil
+
+a := make([]int,0)               // not nil
 ```
 
 ## 访问权限
@@ -71,12 +105,11 @@ person := Person{"Bill"}
 person.valueShowName("abc")
 ```
 
-## 对象与对象指针
-
-两者都用`.`来获取属性。但对象指针作为函数参数时，表示对原对象内存进行操作，否则只是在对拷贝进行操作。
 ## range
 
 `for`循环中，使用`range`遍历数组，会返回两个变量，分别是下标和值。可以使用`_`来缺省一个变量。
+
+for range出来的值都是拷贝，因此对数组进行遍历拿到的都是副本。想要节约拷贝成本，并且能够达到可变性的话，就只需要遍历index就行了，然后用index访问容器。
 
 ## 数据机制
 
@@ -239,6 +272,152 @@ case *R:
 }
 ```
 
+### 判等
+
+一个interfce相当于有一个`type T`和一个`value V`，只有这两个元素都相等的时候，两个interface才能相等。此外，只有当这两个都为空时，才能等于nil。
+
+```go
+var pi *int = nil
+var pb *bool = nil
+
+var x interface{} = pi
+var y interface{} = pb
+var z interface{} = nil
+
+fmt.Println(x == y)   // false
+fmt.Println(x == nil) // false
+fmt.Println(x == z)   // false
+```
+
+## 枚举类型
+
+没有独立的枚举类型，而是通过常量来定义。使用`itoa`来自动给类型按顺序连续赋值。规范上，给每个不同的枚举以不同的类型（单纯是`int`的别名）以做区分。
+```go
+type SameSite int
+
+const (
+    SameSiteDefaultMode SameSite = iota + 1
+    SameSiteLaxMode
+    SameSiteStrictMode
+    SameSiteNoneMode
+)
+
+type ClientAuthType int
+
+const (
+    NoClientCert ClientAuthType = iota
+    RequestClientCert
+    RequireAnyClientCert
+    VerifyClientCertIfGiven
+    RequireAndVerifyClientCert
+)
+```
+
+## 三个点 `...`
+
+
+用作展开：
+```go
+x := []int{1,2,3}
+y := []int{4,5,6}
+
+x = append(x, y...) //而不是for循环
+x = append(x, 4, 5, 6) //等价于上面的
+```
+
+用作可变参数列表：
+```go
+// Println prints to the standard logger in the manner of fmt.Println.
+func Println(v ...interface{}) {
+    std.Output(2, fmt.Sprintln(v...))  // Output takes parameters (int, string)
+}
+```
+
+用作简化数组声明：
+```go
+var _ = [...]language{
+        {"C", 1972},
+        {"Python", 1991},
+        {"Go", 2009},
+}
+
+var b = [...]string{0: "foo", 2: "foo"}        // [3]string{"foo", "", "foo"}
+```
+
+## 深拷贝
+
+```go
+s1 := []int{1,2,3}
+s2 := append([]int{}, s1...)
+
+// 效率更高的复制
+s1 := []int{1,2,3}
+s2 := make([]int, len(s1))
+copy(s2, s1)
+```
+
+更复杂的类型，可以使用反射：
+```go
+age := 22
+p := &Person{"Bob", &age}
+v := reflect.ValueOf(p).Elem()
+vp2 := reflect.New(v.Type())
+vp2.Elem().Set(v)
+```
+
+## error
+
+可以使用`errors.New("abc")`创建错误, 或者用`fmt.Errorf`以包含格式化文本。
+
+`fmt.Errorf("reading srcfiles list: %w", err)`使用`: %w`把错误包含到错误链中。
+
+`error.Unwrap`可以提取error的错误链的上一个error。
+
+`error.Is`可以检测错误链上是否存在目标错误；`==`的话只能判断当前错误是否是目标错误（不推荐）。
+
+`error.As`可以把一个错误提取到目标错误里面去，所提取的原错误链上与目标错误类型相同的错误。
+
+### 自定义error
+
+```go
+// /src/os/error.go
+// PathError records an error and the operation and file
+// path that caused it.
+type PathError struct {
+    Op   string
+    Path string
+    Err  error
+}
+
+func (e *PathError) Error() string {
+    return e.Op + " " + e.Path + ": " + e.Err.Error()
+}
+
+func (e *PathError) Unwrap() error {
+    return e.Err
+}
+```
+
+## recover
+
+写在defer里面（**只能写在defer**），可以接到函数内的panic。
+
+```go
+func server(workChan <-chan *Work) {
+    for work := range workChan {
+        go safelyDo(work)
+    }
+}
+
+func safelyDo(work *Work) {
+    defer func() {
+        if err := recover(); err != nil {
+            log.Println("work failed:", err)
+        }
+    }()
+    do(work)
+}
+```
 
 ## 临时文件
 
@@ -429,6 +608,101 @@ type aaaSal struct {
 	AaaSalr
 }
 ```
+
+## 数据库
+
+使用`gorm.io/gorm`作为ORM层。
+
+对每个数据库，定义一个结构体以包含数据库一个接口`db`并给出创建函数；然后定义一些条件生成函数。定义对应的接口，里面写上各种自定义的复杂数据库操作。在其他文件里面实现这些复杂数据库操作。
+```go
+// my.go
+type MyStorer interface {
+	GetNameByAssetId(xxx)
+}
+
+type myStore struct {  
+    db *gorm.DB  
+}  
+  
+func NewMyStore(db *gorm.DB) MyStorer {  
+    return &myStore{db: db}  
+}
+
+func inAaaIds(aaaIds []int64) dbs.Option {  
+    return func(db *gorm.DB) *gorm.DB {  
+       return db.Where("aaa_id in (?)", aaaIds)  
+    }  
+}
+
+func equalBbbId(bbbId int64) dbs.Option {  
+    return func(db *gorm.DB) *gorm.DB {  
+       return db.Where("bbb_id = ?", bbbId)  
+    }  
+}
+
+func moreThanCccId(cccId int64) dbs.Option {  
+    return func(db *gorm.DB) *gorm.DB {  
+       return db.Where("ccc_id > ?", cccId)  
+    }  
+}
+
+// some_name.go
+func (m *myStore) GetNameByAssetId(xxx) {
+	xxx
+}
+```
+
+# 库
+
+## strings
+
+前后处理：
+```go
+var s = "abaay森z众xbbab"
+o := fmt.Println
+o(strings.TrimPrefix(s, "ab")) // aay森z众xbbab
+o(strings.TrimSuffix(s, "ab")) // abaay森z众xbb
+o(strings.TrimLeft(s, "ab"))   // y森z众xbbab
+o(strings.TrimRight(s, "ab"))  // abaay森z众x
+o(strings.Trim(s, "ab"))       // y森z众x
+o(strings.TrimFunc(s, func(r rune) bool {
+        return r < 128 // trim all ascii chars
+})) // 森z众
+```
+
+分割与合并：
+```go
+// "1 2 3" -> ["1","2","3"]
+func Fields(s string) []string     // 用空白字符分割字符串
+
+// "1|2|3" -> ["1","2","3"]
+func Split(s, sep string) []string // 用sep分割字符串，sep会被去掉
+
+// ["1","2","3"] -> "1,2,3"
+func Join(a []string, sep string) string // 将一系列字符串连接为一个字符串，之间用sep来分隔
+
+// Note:
+// "1||3" -> ["1","","3"]
+```
+
+# 技巧
+
+## 不要引用大数组
+
+对大数组的小切片也会导致整个大数组无法被释放。因此，有时候总体上拷贝比引用更高性能。
+
+# 特殊工具
+
+## go generate
+
+在任意位置使用`//go:generate`记录一个命令，之后运行`go generate`的时候就会运行此命令。 用于统一触发代码生成。
+```go
+//go:generate goyacc -o gopher.go -p parser gopher.y
+```
+
+> [!notice]
+> `//`和`go`之间不要有空格！
+
 
 # Arena
 
