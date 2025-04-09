@@ -609,9 +609,39 @@ type aaaSal struct {
 }
 ```
 
-## 数据库
+## handler
 
-使用`gorm.io/gorm`作为ORM层。
+在`handler.go`（和`handlers`文件夹同级）里面，给所有接口都再套一个wrap函数以处理错误和生成标准响应格式。
+
+一种wrap函数方案，其中所有响应类型都实现了SetBaseResp，以存储数据以外的信息：
+```go
+// 所有完整响应类型都要实现（比如kitex自动生成的）
+type respWithSetBaseResp interface {  
+    SetBaseResp(val *base.BaseResp)  
+}  
+
+// 请求包装器
+func wrapHandler[T respWithSetBaseResp](resp T, err error) (T, error) {  
+    if err != nil && !reflect.ValueOf(resp).IsZero() {  
+       resp.SetBaseResp(rpcHandlers.BuildErrBaseResp(err))  
+    }  
+    return resp, nil  
+}
+
+// 把所有嵌套出来的服务函数都塞给AaaServiceImpl以统一管理
+type AaaServiceImpl struct{}
+
+// AdRelatedChange 商品上下线联动更新计划dependency_status
+func (s *Aaa) AaaDoSomething(ctx context.Context, request *aaa_type.AaaOneRequest) (resp *aaa_type.AaaOneResponse, err error) {
+	return wrapHandler(rpcHandlers.AaaDoSomething(ctx, request))
+}
+```
+
+## DAL
+
+DAL（Data Access Layer）数据访问层。放在stores文件夹中。
+
+使用`gorm.io/gorm`作为ORM。
 
 对每个数据库，定义一个结构体以包含数据库一个接口`db`并给出创建函数；然后定义一些条件生成函数。定义对应的接口，里面写上各种自定义的复杂数据库操作。在其他文件里面实现这些复杂数据库操作。
 ```go
