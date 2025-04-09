@@ -631,7 +631,7 @@ func wrapHandler[T respWithSetBaseResp](resp T, err error) (T, error) {
 // 把所有嵌套出来的服务函数都塞给AaaServiceImpl以统一管理
 type AaaServiceImpl struct{}
 
-// AdRelatedChange 商品上下线联动更新计划dependency_status
+// 一个handler
 func (s *Aaa) AaaDoSomething(ctx context.Context, request *aaa_type.AaaOneRequest) (resp *aaa_type.AaaOneResponse, err error) {
 	return wrapHandler(rpcHandlers.AaaDoSomething(ctx, request))
 }
