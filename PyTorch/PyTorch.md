@@ -1,4 +1,11 @@
 
+# 安装
+
+conda里面默认的pytorch是cpu-only的, 想要安装GPU版本的需要再次手动安装. torchvision 和 torchaudio 都是可选的.
+
+```shell
+conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+```
 
 # 使用
 
