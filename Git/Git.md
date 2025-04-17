@@ -135,7 +135,29 @@ def load_reference(name_or_id):
 就上面介绍的快照系统来说，您也许会期望它的实现里包括一个 “创建快照” 的命令，该命令能够基于当前工作目录的当前状态创建一个全新的快照。有些版本控制系统确实是这样工作的，但 Git 不是。我们希望简洁的快照，而且每次从当前状态创建快照可能效果并不理想。例如，考虑如下场景，您开发了两个独立的特性，然后您希望创建两个独立的提交，其中第一个提交仅包含第一个特性，而第二个提交仅包含第二个特性。或者，假设您在调试代码时添加了很多打印语句，然后您仅仅希望提交和修复 bug 相关的代码而丢弃所有的打印语句。
 
 Git 处理这些场景的方法是使用一种叫做 “暂存区（staging area）”的机制，它允许您指定下次快照中要包括那些**改动**（而非整体的复制）。
+
+## merge & rebase
+
+```shell
+git checkout feature
+git merge main
+```
+或者：
+```shell
+git merge feature main
+```
+会在feature分支生成新的commit，专门记录merge信息。
+![](assets/Pasted%20image%2020250416203838.png)
+
+```shell
+git checkout feature
+git rebase main
+```
+会让main插入它与feature的分支点上，由于二者没有交集，因此这种操作是合法的，相当于在完成main的所有操作后再重新提交feature的所有commit（这些commit的hash等都是新的）。形象地说，是把feature的新commit都挪到main的后面（不过main在原位没动）。
+![](assets/Pasted%20image%2020250416203944.png)
+
 # 使用
+
 ## 各种命令行接口
 
 [Pro Git 中文版](https://git-scm.com/book/zh/v2)
