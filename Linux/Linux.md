@@ -365,6 +365,10 @@ www-data   954   794  0  2020 ?        00:24:29 php-fpm: pool www
 find . -name "*.[ch]" | xargs grep "#include" | sort | uniq
 ```
 
+递归统计指定文件名的所有文件的行数，还能排除路径中包含指定字符的文件:
+```shell
+find . "(" -name "*.py" -or -name "*.m" ")" -print | grep -v "node_modules" | xargs wc -l
+```
 
 # 工具
 

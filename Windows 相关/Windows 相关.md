@@ -27,6 +27,7 @@ certutil -hashfile file_name MD5
 
 `%~dp0`表示bat所在目录的路径, 在bat文件开头写这个表示此bat与调用它的位置无关.
 
+简单的调用python：
 ```bash
 @echo off
 cd /d %~dp0
@@ -39,7 +40,24 @@ set SCRIPT_PATH=.\173Pyqt\main.py
 pause
 ```
 
+把所有`.m`后缀的文件内容全部展开放到一个txt里面，文件之间使用空行分隔，但是本来就有空行的就不会另加空行了。
+```shell
+@echo off
+setlocal enabledelayedexpansion
+set "first=1"
 
+for /f "delims=" %%f in ('dir /b *.m') do (
+    if !first! equ 1 (
+        type "%%f" > combined.txt
+        set "first=0"
+    ) else (
+        echo. >> combined.txt
+        echo. >> combined.txt
+        type "%%f" >> combined.txt
+    )
+)
+endlocal
+```
 
 
 
