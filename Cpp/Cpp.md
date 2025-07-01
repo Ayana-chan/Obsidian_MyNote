@@ -500,11 +500,8 @@ Each C++ [expression](https://en.cppreference.com/w/cpp/language/expressions "c
 - **xvalue** (“eXpiring” value) (**将亡值**): 是一个 <u>glvalue</u>，可以提供出一个对象，该对象的资源可重复使用（通常是因为它接近其生存期的末尾）。
 - **lvalue** (**左值**): 是*非 xvalue* 的 <u>glvalue</u>。
 - **rvalue** (**右值**): 是一个 <u>prvalue</u> 或 <u>xvalue</u>。要么是prvalue 要么是xvalue。
-
+``
 ![400](assets/value_categories.png)
-
-> [!tip]
-> glvalue是有名字的东西，prvalue是没名字的东西，xvalue是有名字但其名字即将消失的东西。
 
 xvalue的情况:
 - 把一个变量(lvalue)套move, 或者说`static_cast<T&&>`; 或函数返回的右值引用. 即未具名的右值引用.
@@ -519,7 +516,7 @@ xvalue的情况:
 - 右值引用 (rvalue reference)，`T&&`，只能绑定右值
 - 常量左值引用，`const T&`,既可以绑定左值，又可以绑定右值，但是不能对其进行修改
 
-左值表达式的类型是左值引用, 所以当把左值变量`a`赋值给左值引用的时候, 相当于把*整个*左值表达式都赋值了, 因此`int& v = a`会保证v与a的修改同步. 而普通的`int v = a`则相当于拿a作为构造参数去创建v对象, 决定v内容的值.
+萧老师の言, 不确定正确性: **左值表达式的类型是左值引用**, 所以当把左值变量`a`赋值给左值引用的时候, 相当于把*整个*左值表达式都赋值了, 因此`int& v = a`会保证v与a的修改同步. 而普通的`int v = a`则相当于拿a作为构造参数去创建v对象, 决定v内容的值.
 
 在`int a = std::move(b)`中, `std::move(b)`这个函数调用语句是一个**xvalue**, 但左边的`a`(**具名右值引用**)是个**lvalue**.
 
