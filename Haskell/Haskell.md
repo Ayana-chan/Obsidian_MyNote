@@ -497,6 +497,24 @@ class (Eq a) => Num a where
 
 typeclass内提供的函数的定义是其提供的**默认实现**. 如`Eq`, 其中`==`默认使用`/=`实现, `/=`默认使用`==`实现. 这要求使用者要提供其中一个函数的新实现, 从而为其自动实现另一个函数 (否则就会出现死递归).
 
+### HKT（High-Kind Type）理论
+
+- **零阶类型**：Value，如`114514`。
+- **一阶类型**：如`i32`，`List<i32>`。`List`是类型构造器，可以通过传入`i32`构造出`List<i32>`。OOP的接口、Rust的Trait，都是**对一阶类型的抽象**。
+- **高阶类型（HKT）**：类型的类型，是**对类型构造器的抽象**。例如，`class Functor f`这个typeclass，其内部函数定义为`fmap :: (a -> b) -> f a -> f b`，可见它要求f是一个类型构造器。
+
+Rust的trait不是HKT，因为只有具体的类型（一阶类型）可以实现trait。注意，trait的定义方式就注定了它只能让一阶类型去impl；即使让带泛型的类型进行impl，也只不过是自动为多个具体类型实现trait。例如，在Rust尝试定义Monad trait，很快就发现不得不要求Self可以传入泛型参数T，然而编译器不允许。
+```rust
+trait Monad {  
+    fn pure<T>(v: T) -> Self<T>;  
+    fn bind<T>(p: impl FnOnce(T) -> Self<T>) -> Self<T>;  
+}
+// 编译器输出：type arguments are not allowed on self type
+```
+
+> [!note]
+> OOP 抽象问的是“你是什么东西？你能做什么？”，而 HKT 问的是“你是哪种容器？你能对你的内容做什么操作？
+
 
 ## kind
 
