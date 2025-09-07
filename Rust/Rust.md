@@ -2209,6 +2209,25 @@ trait object可以看做一个非Sized的类型。如果给trait的某个函数�
 
 [trait object - 知乎](https://zhuanlan.zhihu.com/p/23791817)
 
+### impl trait in trait（RPITIT）
+
+Rust1.75后，支持在trait里面使用impl trait：
+```rust
+trait MyTrait {
+    fn method(&self) -> impl Debug;
+}
+```
+
+这会被处理为类似这样的形式：
+```rust
+trait MyTrait {
+    type method<‘a>: Debug; // 一个泛型关联类型（GAT）
+    fn method(&self) -> Self::method<‘_>;
+}
+```
+
+由于impl trait的具体类型的大小是不一致的，因此包含了impl trait的trait永远都不是object safe的，也因此无法进行动态分发。
+
 ## 具体trait
 ### Deref Trait
 
@@ -3070,7 +3089,7 @@ impl CostAsyncTrait for ImplCostAsyncTraitStruct {
 
 ##### 特性介绍
 
-新版本的Rust（应该是1.75）中，同时支持了**trait中的impl**和**原生的、无代价的Async Trait**。
+Rust1.75中，同时支持了**trait中的impl**（[impl trait in trait](Rust/Rust.md#impl%20trait%20in%20trait（RPITIT）)）和基于它的**原生的、无代价的Async Trait**。
 
 新版本的Async Trait是这样写的：
 ```rust
@@ -3130,10 +3149,9 @@ async fn main() {
 error[E0038]: the trait `NoCostAsyncTrait` cannot be made into an object
 ```
 
-因为使用了`impl`，因此`example_func`的大小是由其具体实现类型决定的，而trait object是没有办法得知其尺寸的，也就无法将其加入虚表。然而这种需求很常见，比如一个库定义了一个trait，库使用者就可以给一个struct实现此trait，然后将struct的实例存到库中的某个类型的成员变量里面去；库就可以自由调用这个实例的方法。因此，想要实现这种需求，可能就不得不用`async-trait` crate，也就不得不注意额外的性能消耗。
+因为使用了`impl`，因此`example_func`的大小是由其具体实现类型决定的，使得trait object无法固定其尺寸，也就无法将其抽象为虚表。这是[impl trait in trait](Rust/Rust.md#impl%20trait%20in%20trait（RPITIT）)固有的问题。因此，想要实现动态分发，可能就不得不用`async-trait` crate，也就不得不注意额外的性能消耗。
 
 注意，下面这个魔改版是无法通过编译的，理由见`async-trait` crate相关说明：
-
 ```rust
 trait RealCostAsyncTrait {
     async fn example_func(&self) -> Pin<impl Future<Output=usize>>;
