@@ -121,9 +121,14 @@ docker load -i 压缩文件名称
 
 [换源](https://blog.csdn.net/sunyuhua_keyboard/article/details/131256771)
 
-如果出现“Docker Engine Stopped”，则可以在任务栏里面找到Docker Desktop的图标，右键、switch to Windows containers，然后Docker Desktop就会被关闭，再打开就正常了。
+安装之后，windows的cmd也能直接用docker命令了。但是，在wsl里面运行docker带执行的命令的时候，会报错：
+```shell
+ayana@DESKTOP-2LR3H8Q:/mnt/c/Users/DeathWind$ docker run hello-world
+docker: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+```
+这就需要在Docker Desktop里面打开这个选项：
+![](assets/Pasted%20image%2020250928220952.png)
 
-安装之后，windows的cmd也能直接用docker命令了。
 # DockerFile
 
 使用一系列命令来构建一个Docker Image。
