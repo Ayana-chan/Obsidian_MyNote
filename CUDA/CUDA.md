@@ -47,7 +47,7 @@ wsl会使用Windows的CUDA driver，而一般的CUDA toolkit会自带CUDA driver
 
 使用saxpy介绍CUDA中与GPU的交互的基本写法：[An Easy Introduction to CUDA C and C++ | NVIDIA Technical Blog](https://developer.nvidia.com/blog/easy-introduction-cuda-c-and-c/)
 
-核函数定义的时候，在最前面加上`__global__`即可。核函数内部可以直接访问`blockIdx`、`blockDim`、`threadIdx`等变量，它们都与具体的线程有关。
+核函数定义的时候，在最前面加上`__global__`（可被CPU调用）或`__device__`（只能被其他核函数调用）即可。核函数内部可以直接访问`blockIdx`、`blockDim`、`threadIdx`等变量，它们都与具体的线程有关。
 ```cpp
 __global__ void  
 judge_repeat_kernel(int* data, const int length, int* result) {  
@@ -86,7 +86,20 @@ exclusive_scan_upsweep_kernel<<<blocks, THREADS_PER_BLOCK>>>(result, two_d, iter
 cudaDeviceSynchronize();  
 CHECK(cudaGetLastError());
 ```
-
+进一步封装：
+```cpp
+// turn on/off debug output  
+#define SYNC_CHECK_DEBUG_ON 0  
+  
+#if SYNC_CHECK_DEBUG_ON == 1  
+#define SYNC_CHECK_DEBUG() do { \  
+cudaDeviceSynchronize(); \  
+CHECK(cudaGetLastError()); \  
+} while (0)  
+#else  
+#define SYNC_CHECK_DEBUG() do {} while (0)  
+#endif
+```
 
 # 算法
 
