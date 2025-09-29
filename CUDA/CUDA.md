@@ -18,11 +18,11 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 ```
 cuda cuda-12 cuda-12.9 cuda-13 cuda-13.0
 ```
-它们是通过软链接来表达“默认”语义。
+它们互相通过软链接来表达“默认”语义。
 - 例如，一些程序的makefile指定的链接：`-L/usr/local/cuda/lib64/ -lcudart`，表示链接当前系统内配置的默认cuda版本，例如可能是13.0。
 - 配置nvcc环境变量的时候，使用的是`/usr/local/cuda/bin`，表示使用当前系统的默认cuda版本下的nvcc。
 
-使用update-alternatives来切换cuda版本：
+直接使用update-alternatives来切换默认cuda版本：
 ```bash
 /usr/local$ sudo update-alternatives --config cuda
 There are 2 choices for the alternative cuda (providing /usr/local/cuda).
