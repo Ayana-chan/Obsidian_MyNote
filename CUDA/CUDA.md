@@ -69,36 +69,40 @@ kernel的装载是异步的，可以使用`cudaDeviceSynchronize()`来等待所�
 - 多个CUDA任务之间按照调用顺序完成任务。
 因此，大部分情况下不需要特地同步。
 
-debug的时候使用的宏，可以包裹在cudaGetLastError或cudaMemcpy的外面：
+使用`__constant__`可以把只读数据定义在GPU的常量区。
+
+debug的时候使用的宏，可以包裹在各个CUDA API调用的外面:
 ```cpp
-#define CHECK(call) \  
-    do { \  
-        cudaError_t err = call; \  
-        if (err != cudaSuccess) { \  
-            std::cerr << "Error: " << cudaGetErrorString(err) << " in file " << __FILE__ << " at line " << __LINE__ << std::endl; \  
-            exit(EXIT_FAILURE); \  
-        } \  
-    } while (0)
-```
-使用示例：
-```cpp
-exclusive_scan_upsweep_kernel<<<blocks, THREADS_PER_BLOCK>>>(result, two_d, iter_time);  
-cudaDeviceSynchronize();  
-CHECK(cudaGetLastError());
-```
-进一步封装：
-```cpp
-// turn on/off debug output  
-#define SYNC_CHECK_DEBUG_ON 0  
+#define CUDA_DEBUG  
   
-#if SYNC_CHECK_DEBUG_ON == 1  
-#define SYNC_CHECK_DEBUG() do { \  
-cudaDeviceSynchronize(); \  
-CHECK(cudaGetLastError()); \  
-} while (0)  
+#ifdef CUDA_DEBUG  
+#define cudaCheckError(ans) { cudaAssert((ans), __FILE__, __LINE__); }  
+#define cudaCheckLastError() { cudaAssert((cudaGetLastError()), __FILE__, __LINE__); }  
+inline void cudaAssert(cudaError_t code, const char *file, int line, bool abort=true)  
+{  
+    if (code != cudaSuccess)  
+    {  
+        fprintf(stderr, "CUDA Error: %s at %s:%d\n",  
+          cudaGetErrorString(code), file, line);  
+        if (abort) exit(code);  
+    }  
+}  
 #else  
-#define SYNC_CHECK_DEBUG() do {} while (0)  
+#define cudaCheckError(ans) ans  
+#define cudaCheckLastError(ans) do{}while(0)  
 #endif
+```
+示例：
+```cpp
+cudaCheckError( cudaMalloc(&a, size*sizeof(int)) );
+kernelRenderPixels<<<gridDim, blockDim>>>();  
+cudaCheckLastError()  
+cudaCheckError(cudaDeviceSynchronize());
+```
+不能直接包裹在kernel launch外面。一般包裹在紧接着的cudaDeviceSynchronize外面。
+```cpp
+kernel<<<1,1>>>(a); // suppose kernel causes an error!
+cudaCheckError( cudaDeviceSynchronize() ); // error is printed on this line
 ```
 
 # 算法
