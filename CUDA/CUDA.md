@@ -71,6 +71,10 @@ kernel的装载是异步的，可以使用`cudaDeviceSynchronize()`来等待所�
 
 使用`__constant__`可以把只读数据定义在GPU的常量区。
 
+使用`__shared__`定义变量的时候，block一启动它就初始化完毕了，因此这种变量自带static，定义在函数内的时候也不会重复申请资源。
+
+## debug
+
 debug的时候使用的宏，可以包裹在各个CUDA API调用的外面:
 ```cpp
 #define CUDA_DEBUG  
@@ -103,6 +107,11 @@ cudaCheckError(cudaDeviceSynchronize());
 ```cpp
 kernel<<<1,1>>>(a); // suppose kernel causes an error!
 cudaCheckError( cudaDeviceSynchronize() ); // error is printed on this line
+```
+
+在调用程序的shell命令前加上`compute-sanitizer`，即可探测执行错误位置。为了显示行号，需要在编译的时候在`nvcc`命令里面添加选项`-g -G`。
+```bash
+compute-sanitizer ./myexe
 ```
 
 # 算法
