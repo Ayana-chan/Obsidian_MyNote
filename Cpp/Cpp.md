@@ -2138,11 +2138,11 @@ std::ranges::sort(vec, std::greater());
 
 ### 管道运算符 `|` & Range Adaptors
 
-[范围适配器闭包对象 (Range Adaptor Closure Object) ](https://zh.cppreference.com/w/cpp/named_req/RangeAdaptorClosureObject)才能被用于管道运算符右侧用于接收参数, 例如, 若`C`是范围适配器闭包对象, 且`R`是`ranges`的话, 则`C(R)`等价于`R | C`.
+[范围适配器闭包对象 (Range Adaptor Closure Object) ](https://zh.cppreference.com/w/cpp/named_req/RangeAdaptorClosureObject)才能被用于管道运算符右侧用于接收参数, 例如, 若`C`是*范围适配器闭包对象*, 且`R`是`ranges`的话, 则`C(R)`等价于`R | C`.
 
 而**范围适配器闭包对象**的来源, 要么是一元的[范围适配器对象 (Range Adaptor Object) ](https://zh.cppreference.com/w/cpp/named_req/RangeAdaptorObject), 要么直接继承[std::ranges::range\_adaptor\_closure](https://zh.cppreference.com/w/cpp/ranges/range_adaptor_closure).
 
-**范围适配器对象**被定义为: 第一个参数为[std::ranges::viewable_range](https://zh.cppreference.com/w/cpp/ranges/viewable_range), 返回值为[std::ranges::view](https://zh.cppreference.com/w/cpp/ranges/view). 因此范围适配器闭包对象就是`f(viewable_range) -> view`的形式.
+**范围适配器对象**被定义为: 第一个参数为[std::ranges::viewable_range](https://zh.cppreference.com/w/cpp/ranges/viewable_range), 返回值为[std::ranges::view](https://zh.cppreference.com/w/cpp/ranges/view). *范围适配器对象*接收足够多的参数从而被变成一元后，就变成了*范围适配器闭包对象*。
 
 自己实现管道运算符:
 ```cpp
@@ -2214,13 +2214,16 @@ range adaptors 是**懒求值**的, 或者说取的都是引用(`xxx_view`).
 
 一般来说, 要么对view直接进行迭代, 要么使用`to`来把view变回容器.
 
+view下的这些适配器是全局对象：
+- 通过模板`operator()`来适配不同的输入（自动推导），返回范围适配器闭包对象。当然，无需额外参数的适配器（例如enumerate）本身就是个范围适配器闭包对象。
+- 得到的范围适配器闭包对象通过模板`operator|`来适配不同的输入view。由于输入的view被作为`operator|`的参数，因此也可以自动推导模板。
+而`std::ranges::to`必须显式指定模板参数（cpp无法根据所需返回值自动推导模板），因此被设计成了模板函数的形式，要使用`std::ranges::to<T>()`来获得对应的范围适配器闭包对象。
 
 ### ranges 库函数使用
 
 `std::ranges`下的有些函数需要导入`#include <algorithm>`才有.
 
 `view`可以看做引用, 交给`std::ranges`的函数来对容器进行原地操作; 而`std::views`的函数仅仅是把`view`再变换为新的`view`(例如`ranges::reverse`和`views::reverse`).
-
 
 #### 适配的旧函数
 
@@ -2236,19 +2239,18 @@ ranges::sort(intervals, ranges::less{},
 	[](auto&& v){return v[0];});
 ```
 
-
 #### 使用to, 在views操作后依然输出容器
 
 [std::ranges::to - cppreference.com](https://en.cppreference.com/w/cpp/ranges/to)
 
 一般用于不同类型的容器之间的转换. 注意一般情况下会发生复制. 使用`views::as_rvalue`可以把所有权传入`to`的目标容器, 从而<u>去除不必要的拷贝</u>.
 
-`std::ranges::to<std::unordered_map>()`会生成一个 可以让某视图转变成`unordered_map` 的适配器, 该适配器可以被管道运算符调用.
+`std::ranges::to<std::unordered_map>()`会生成一个 可以让某视图转变成`unordered_map`的适配器, 该适配器可以被管道运算符调用.
 
 ```cpp
 std::vector<int> nums = {10, 20, 30, 20, 40};
 
-auto m = nums | std::views::enumerate // 生成 [index, value]
+auto m = nums | std::views::enumerate // 生成 [(index, value)]
 		 | std::views::transform([](auto &&t) {
 			   auto &&[idx, v] = t;
 			   return std::make_pair(v, idx);
@@ -2259,7 +2261,7 @@ auto m = nums | std::views::enumerate // 生成 [index, value]
 ```
 
 > [!notice]
-> 一定要写括号`()`!
+> `std::ranges::to`一定要写括号`()`!
 
 
 #### 查找容器最后一个目标值的位置
@@ -2274,13 +2276,16 @@ int aim_idx = std::ranges::distance(vec.begin(), aim_rit.begin());
 assert(aim_idx == 4);
 ```
 
-更高效的方式是从后往前查询. 使用`ranges::find`查找第一个满足要求的东西. 这两个`find`都支持传入迭代器(满足`forward_iterator`的东西). 传入目标的**反向迭代器**, 就能实现**反向查询**. 最后计算下标时, 使用`base()`把反向迭代器转成正向迭代器以简单求得下标.
+根据情况，可能更高效的方式是从后往前查询. 使用`ranges::find`查找第一个满足要求的东西. 传入目标的**反向迭代器**, 就能实现**反向查询**. 最后计算下标时, 使用`base()`把反向迭代器转成正向迭代器以简单求得下标.
 ```cpp
 std::vector<int> vec = {0, 0, 1, 0, 1, 0};
 auto aim_rit = std::ranges::find(vec.rbegin(), vec.rend(), 1);
 int aim_idx = std::ranges::distance(vec.begin(), aim_rit.base()) - 1;
 assert(aim_idx == 4);
 ```
+
+> [!info]
+> 这两种`find`都是支持传入满足`forward_iterator`的东西.
 
 #### 截取容器进行操作
 
@@ -2381,7 +2386,7 @@ auto out =
 
 #### 元组式值操作
 
-`enumerate`把`value`变成`[index, value]`.
+[std::views::enumerate](https://en.cppreference.com/w/cpp/ranges/enumerate_view.html)把`value`变成`[index, value]`.
 
 [std::views::elements](https://zh.cppreference.com/w/cpp/ranges/elements_view)可以取出元组式值的某一项, 例如`std::views::elements<2>`可以取出`[6, 7, 8, 9]`的`8`.
 
@@ -2392,10 +2397,6 @@ for (auto const& value : std::views::values(map))
     std::cout << value << ' ';
 // 打印: alpha beta
 ```
-
-
-
-
 
 #### 使用串算法
 
