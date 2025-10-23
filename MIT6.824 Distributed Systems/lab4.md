@@ -141,7 +141,7 @@ Challenge1：成功迁移后，将对应的shard设为gcing状态，再对其进
 
 对于Follower来说，会直接从push变成offline，因为它的gc是被leader直接指示的。若是没GC完就更换了leader的话, 由于push已经完成了, 而push成功后再次调用迁移函数时返回success, 那么就又进入GC。
 
-由于只有leader可以进行迁移，因此状态机的变化可能只有leader可以发现，因此状态转移需要用raft来同步。由于leader是可换的，因此状态的同步非常重要。GC状态确实是个很特殊的例外.
+由于只有leader可以进行迁移，因此状态机的变化可能只有leader可以发现，因此状态转移需要用raft来同步。由于leader是可换的，因此状态的同步非常重要。状态机的状态迁移，都要依靠那些被同步到raft里面的日志；显然，gc前后没有天然的日志，于是需要手动把gc操作同步到raft当中。
 
 TestChallenge2Partial也自然得到满足, 因为状态机使得每个shard解耦了.
 

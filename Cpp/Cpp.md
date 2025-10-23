@@ -70,7 +70,7 @@ void fun(Base b) {
 
 只有**指针或引用**可以表现出多态性, 如通过`b`指针访问虚函数的时候, 不得不通过查询虚表来完成正确的函数定位.
 ```cpp
-void fun(Base * b) {
+void fun(Base *b) {
     b->virtualFun(); 
 }
 ```
@@ -164,7 +164,6 @@ b->vfunc(); // Outputs "Derived::vfunc" 由对象类型决定
 ### override & final
 
 写在函数末尾, `override`声明当前函数为重写, 使编译器去检查这是否真的发生了重写. 而`final`声明当前虚函数不可被重写.
-
 
 ### 纯虚函数 & 抽象基类
 

@@ -1092,6 +1092,8 @@ fn main() {
 Rust中，泛型T实际上是正经类型+生命周期的组合。因此泛型函数其实都会隐含生命周期标记。另外，下面表格的T也要看做带有生命周期标记a，然后按照前两个的规则进行整个的型变。
 
 若A是B的父类，B是C的父类，则`fn A => C`是`fn B => B`的父类，因为参数为A的函数必然能处理参数B，而返回值为C的函数必然也能返回B（即`fn A => C`无论是入参还是返回值都可以直接在外部视为`fn B => B`）。因此fn类型对参数类型是逆变的，对返回值类型是协变的。
+- `fn() -> T`可以看做一个只读类型，因此协变。
+- `fn(T) -> ()`可以看做一个只写类型，因此逆变。
 
 | Type                          | Variance in `'a` | Variance in `T`   |
 | ----------------------------- | ---------------- | ----------------- |
@@ -1187,7 +1189,6 @@ fn bar<'short, 'long: 'short>(
 ```
 
 下面是一个比较典型的例子，使用`Manager`来包裹`text`数据，而`Manager`被存储在`List`中。外部不能直接访问`Manager`，而是让`List`使用`Interface`去包装`Manager`以提供接口。
-
 ```rust
 //Manager和List都比较清晰，只规定自己管理的资源的生命周期下限。
 struct Manager<'val>{  
@@ -1287,7 +1288,6 @@ fn main() {
 ```
 
 正确的例子直接看没啥，但看看平时很可能写出的错误代码。下面的代码将Interface的两个生命周期标注合并为一个：
-
 ```rust
 //错误的Interface写法
 struct Interface<'a>
@@ -1315,7 +1315,6 @@ pub fn get_interface(&mut self) -> Interface<'val> {
 实际上，给self标上val确实可以跑（难绷），但这就导致只能用一次get_interface，因为多次使用后，编译器不允许任何一个引用消亡，因为&mut T不变，所以若self引用消亡了的话，就说明List对象已经无法保证引用完全可用了。
 
 另外，上面的错误代码将mut全部删去，使得a保持协变，那么代码是可以完全正常使用的。注意此时`get_interface`返回的Interface的生命周期是和self借用生命周期等同的，而manager指向的数据是val生命周期，被协变成self的生命周期。甚至给self和Interface都标上val也不会报错，毕竟都是只读借用，数据生命周期内借完不还也不会有事情。
-
 ```rust
 //错误代码去掉mut后
 struct Manager<'val> {  
