@@ -424,7 +424,7 @@ hasDMA & hasDMA::operator=(const hasDMA & hs) {
 
 使用前向声明可以解决一部分问题，因为声明是廉价的，声明之后就可以得知存在另一个类，即使不知道它有什么内容。
 
-但是，一个类编译完成时，其大小是确定的。但是此时不知道另一个类的内容，也就不知道另一个类的大小，使得总大小不确定。将类型换成指针即可，因为指针虽然可以指向各种不同类型，但其本身的大小是固定的（如64bit）。
+虽然一个类编译完成时，其大小是确定的；但是此时不知道另一个类的内容，也就不知道另一个类的大小，使得总大小不确定。将类型换成指针即可，因为指针虽然可以指向各种不同类型，但其本身的大小是固定的（如64bit）。
 
 ```cpp
 class ClassB; // Forward declaration
@@ -515,7 +515,8 @@ xvalue的情况:
 - 右值引用 (rvalue reference)，`T&&`，只能绑定右值
 - 常量左值引用，`const T&`,既可以绑定左值，又可以绑定右值，但是不能对其进行修改
 
-萧老师の言, 不确定正确性: **左值表达式的类型是左值引用**, 所以当把左值变量`a`赋值给左值引用的时候, 相当于把*整个*左值表达式都赋值了, 因此`int& v = a`会保证v与a的修改同步. 而普通的`int v = a`则相当于拿a作为构造参数去创建v对象, 决定v内容的值.
+> [!info]
+> 萧叶轩の言, 不确定正确性: **左值表达式的类型是左值引用**, 所以当把左值变量`a`赋值给左值引用的时候, 相当于把*整个*左值表达式都赋值了, 因此`int& v = a`会保证v与a的修改同步. 而普通的`int v = a`则相当于拿a作为构造参数去创建v对象, 决定v内容的值.
 
 在`int a = std::move(b)`中, `std::move(b)`这个函数调用语句是一个**xvalue**, 但左边的`a`(**具名右值引用**)是个**lvalue**.
 
@@ -540,8 +541,6 @@ int &&k1 = i; //编译失败
 int &&k2 = static_cast<int&&>(i); //编译成功
 ```
 
-
-
 ## std::move
 
 [【Modern C++】深入理解移动语义](https://mp.weixin.qq.com/s/GYn7g073itjFVg0OupWbVw)
@@ -560,9 +559,10 @@ typename remove_reference<T>::type&& move(T&& param) {
 static_cast<std::remove_reference<decltype(arg)>::type&&>(arg)
 ```
 
+> [!info]
 >std::move is used to indicate that an object t may be "moved from", i.e. allowing the efficient transfer of resources from t to another object. In particular, std::move produces an **xvalue** expression that identifies its argument t. It is exactly equivalent to a static_cast to an rvalue reference type.
 
-转换的过程不存在复制，也不存在数据剥夺，在运行时什么都没做，只是个单纯的数据转换。
+转换的过程不存在复制，也不存在数据剥夺，在运行时什么都没做，只是个单纯的类型转换。
 
 若将move结果赋值给一个变量（左值），则会调用其移动赋值函数。
 
@@ -677,11 +677,9 @@ int main() {
     int y = 20;
     const int* p = &y;
     legacyFunction(const_cast<int*>(p)); // 合法：y 本身不是 const
-    // legacyFunction(const_cast<int*>(&x)); // UB：x 是真正的 const
+    // legacyFunction(const_cast<int*>(&x)); // UB：x 是 const
 }
 ```
-
-
 
 # 类与对象
 
@@ -752,6 +750,9 @@ class X {
 Student S1(22); // 显式构造 
 Student S2 = 23; // 隐式构造
 ```
+
+> [!info]
+> 因此，等号赋值也可能是触发了构造函数，这在查cppref的时候要注意。
 
 在这种**单参数的构造函数**的<u>前面</u>加上explicit可以防止在等号表达式中调用此构造函数:
 ```cpp
@@ -1289,7 +1290,7 @@ cpp20对常量表达式要求的放松:
 
 用于修饰成员变量, 使得每次访问此变量的时候都**从内存读取**, 而不能进行<u>寄存器</u>寄存的优化. 
 
-- 当变量可能在编译器未知的情况下发生改变的时候使用, 如中断或多线程; 
+- 当变量可能在编译器未知的情况下发生改变的时候使用, 如中断（异步回调等）; 
 - 对此内存的读写不能跳过的时候使用, 如 Memory Mapped IO.
 
 使用`volatile`修饰成员函数的话, 表示其对本对象的volatile情况的兼容. 就像const一样, 用于对volatile对象的操作, 也只能访问到volatile的成员函数.
@@ -1343,8 +1344,9 @@ struct X3 {
 };
 ```
 
-在函数或闭包内定义**静态局部变量**, 就可以让这些变量(被放在全局存储)仅仅在此上下文被使用, 每次调用函数都能访问此变量, 且永远不会被释放或重置. 它只会在第一次执行该函数时被初始化，而且这种初始化在 C++11 标准之后是线程安全的。因此, 使用magic static即可实现单例模式:
+在函数或闭包内定义**静态局部变量**, 就可以让这些变量(被放在全局存储)仅仅在此上下文被使用, 每次调用函数都能访问此变量, 且永远不会被释放或重置. **它只会在第一次执行该函数时被初始化，而且这种初始化在 C++11 标准之后是线程安全的（magic static）**。因此, 使用magic static即可实现单例模式:
 ```cpp
+// 这里的代码仅保证了“单例”功能是安全的，具体的访问控制应该另做。
 class Singleton {
 public:
     static Singleton& getInstance() {
@@ -1478,7 +1480,7 @@ for (T thing = foo(); auto &x: thing.items()) {}
 
 ## 带初始化语句的 if/switch
 
-在判断语句的前面声明的变量的**生命周期会一直往下持续到整个if-else结束**, 因此`b1`在下面的`elseif`语句块中也能使用.
+在判断语句的前面声明的变量的**生命周期会一直往下持续到整个if-else结束**, 因此`b1`在下面的`else if`语句块中也能使用.
 
 ```cpp
 if(bool b1 = foo1(); b1) {
@@ -1554,7 +1556,7 @@ std::shared_ptr<T>(std::move(ptr))
 
 ### make_unique新建对象
 
-泛型为类，参数会被传入类的构造函数。
+泛型为目标类。参数会被传入类的构造函数作为参数。
 
 ```cpp
 std::make_unique<TrieNodeWithValue<T>>(children_, value_)
@@ -1591,41 +1593,6 @@ int main() {
 
 > [!example] 类的结构化绑定不一定要public的例子
 > 一个类的友元函数中对该类的对象进行结构化绑定时, 编译器会判断把private的变量也给提出来, 因为此时作用域内是可以访问private的.
-
-
-## std::string_view
-
-[std::basic\_string\_view - cppreference.com](https://zh.cppreference.com/w/cpp/string/basic_string_view)
-
-对string的一个引用，不发生拷贝。TODO
-
-```cpp
-#include <iostream>
-#include <string>
-#include <string_view>
-#include <unordered_map>
-
-int main() {
-    // 原始字符串
-    std::string original = "hello world, welcome to C++ programming";
-
-    // 创建一个哈希表，键为 std::string_view，值为 int
-    std::unordered_map<std::string_view, int> hashTable;
-
-    // 存储若干子串到哈希表中
-    hashTable[std::string_view(original.c_str(), 5)] = 1; // "hello"
-    hashTable[std::string_view(original.c_str() + 6, 5)] = 2; // "world"
-    hashTable[std::string_view(original.c_str() + 18, 7)] = 3; // "welcome"
-    hashTable[std::string_view(original.c_str() + 26, 2)] = 4; // "to"
-
-    // 打印哈希表的内容
-    for (const auto& [key, value] : hashTable) {
-        std::cout << "Key: " << key << ", Value: " << value << std::endl;
-    }
-
-    return 0;
-}
-```
 
 ## 函数（谓词）
 ### 仿函数（闭包）
@@ -1676,8 +1643,7 @@ auto foo = [r = x + 1]{ return r; }
 
 #### 泛型lambda表达式
 
-参数中使用auto来定义泛型lambda表达式, 从而兼容多种类型. 
-
+参数中使用auto来定义泛型lambda表达式, 从而兼容多种类型：
 ```cpp
 auto foo = [](auto a){ return a; }
 int three = foo(3);
@@ -1700,9 +1666,6 @@ auto foo = []<typename T>(std::vector<T> vec) {...}
 
 #### 可构造和可赋值的无状态lambda表达式
 
-> [!warning]
-> GCC 14.2.0 都尚不支持此特性. (待核验)
-
 cpp20中, 允许无状态(无捕获)的lambda表达式可以被构造和赋值(拷贝), 即为其保留默认构造函数和拷贝构造函数. cpp20前, 闭包类型不是默认可构造的.
 
 例如下面的代码中, 想要用模板类型参数来指定`cmp`, 并且不希望通过传值来传递`cmp`闭包的话, 就要在`std::map`的构造函数内部对`decltype(greater)`这个无状态闭包类型进行构造. 这是cpp20才支持的, 以前还要给`mymap`额外传`greater`参数.
@@ -1720,7 +1683,7 @@ mymap1 = mymap2;
 
 ### std::function （包装器）
 
-`function<int(int, int)>`可以统一所有的函数类型，它可以是函数指针、仿函数和Lambda表达式。
+`function<int(int, int)>`可以统一所有的对应出入参的函数类型，它可以是函数指针、仿函数和Lambda表达式。
 
 使用样例：作为map的键的类型，这样就可以用Lambda表达式来传值。
 
@@ -1790,13 +1753,27 @@ sort(arr, arr+len, cmp);
 
 ## less greater 比较类
 
-在头文件`functional`中。
+在头文件`functional`中。是个仿函数，因此`greater<T>`表示一种类型。如int的比较类就是`greater<int>`，表示取大（`>`）。
 
-如int的比较类就是`greater<int>`，表示取大（`>`）。将其对象传入sort就是从大到小排序：
+直接比较：
+```cpp
+template <class T>
+struct greater {
+    bool operator()(const T& a, const T& b) const {
+        return a > b; // 返回 a 是否大于 b
+    }
+};
+```
+
+使用空参数创建对象，传入sort，就能指定其从大到小排序：
 ```cpp
 sort(arr, arr+len, greater<int>());
 ```
 
+或者把类作为模板参数：
+```cpp
+priority_queue<int,vector<int>,less<int>> big_heap;
+```
 ## priority_queue 优先级队列
 
 就是个堆。
@@ -1854,17 +1831,14 @@ priority_queue<node>q;
 | empty()   | 验证队列是否为空                 |
 |   swap()        | 交换两个优先级队列的内容                                 |
 
-
 ## 数学函数
 
 - `std::gcd`: 最大公约数
 - `std::lcm`: 最小公倍数
 - `std::floor`: 不比参数大的最近(最大)整数
 - `std::ceil`: 不比参数小的最近(最小)整数
-- `std::trunc`: 比参数更接近0的最近整数
+- `std::trunc`: 绝对值不比参数大的最近整数（即截断小数）
 - `std::round`: 四舍五入(绝对值意义上)
-
-
 
 ## 二分查找
 
@@ -1894,12 +1868,17 @@ auto col_it = ranges::upper_bound(matrix, target,
 		ranges::less{}, [](auto&& v){return v[0];});
 ```
 
-### equel_range
+### equal_range
 
-`equel_range`寻找等于目标的范围. 具体来说返回的是:
+`equel_range`寻找等于目标的范围. 具体来说返回的是这样一个pair:
 - 左边是第一个不小于目标值的元素.
 - 右边是第一个大于目标值的元素.
 因此, 如果<u>不存在目标值</u>, 则**左右相等**, 都是第一个大于目标值的元素.
+
+```cpp
+template <class ForwardIt, class T>
+std::pair<ForwardIt, ForwardIt> equal_range(ForwardIt first, ForwardIt last, const T& value);
+```
 
 ### binary_search
 
@@ -2015,8 +1994,11 @@ true true
 
 ### string_view
 
-对`string`的引用，不进行拷贝。直接使用`string_view(s)`即可创建字符串`s`的引用.
+[std::basic\_string\_view - cppreference.com](https://zh.cppreference.com/w/cpp/string/basic_string_view)
 
+对`string`的引用，不进行拷贝。要手动管理生命周期，保证被引用的string有效。
+
+直接使用`string_view sv = string_view(s)`或者`string_view sv = s`即可创建字符串`s`的引用，因为标准库定义了string到string_view的隐式转换：[std::basic\_string\<CharT,Traits,Allocator\>::operator basic\_string\_view - cppreference.com](https://en.cppreference.com/w/cpp/string/basic_string/operator_basic_string_view.html)。
 ```cpp
 #include <iostream>
 #include <string_view>
@@ -2029,7 +2011,10 @@ void printSubstring(std::string_view str)
 int main()
 {
     std::string fullString = "Hello, World!";
-    std::string_view substring = fullString.substr(7, 5); // 获取子串 "World"
+    std::string_view substring(fullString.data() + 7, 5); // 获取子串 "World"
+    
+    // UB，悬空指针，指向了临时对象
+    // std::string_view substring = fullString.substr(7, 5);
 
     printSubstring(substring);
 
@@ -2083,7 +2068,6 @@ int main() {
 ```
 
 输出：
-
 ```txt
 distance() = 10
 ```
