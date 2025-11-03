@@ -264,6 +264,7 @@ docker system prune -a
 ```
 
 [如何删除所有 Docker 镜像——Docker 清理指南](https://www.freecodecamp.org/chinese/news/how-to-remove-all-docker-images-a-docker-cleanup-guide/)
+
 # 具体部署
 ## 问题
 数据卷的宿主机路径都使用了`$PSW`，因此创建容器前一定要注意终端当前目录是什么！

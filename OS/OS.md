@@ -73,6 +73,63 @@ int execvp(const char *file, char *const argv[]);
 - 如果成功，则不会返回。
 - 如果失败，则返回 -1，并设置 errno 变量来表明错误类型。
 
+# 内核
+
+用户态的ioctl可以将文件描述符+操作码+参数传给内核模块；
+
+内核模块可以自定义文件操作结构体以自定义设备的read, write, ioctl的行为。
+```C++
+static int shyper_service_init(void) {
+    // ...
+
+    /*初始化cdev结构*/
+    cdev_init(&shyper_dev.cdev, &shyper_fops);
+    /* 注册字符设备 */
+    ret = alloc_chrdev_region(&devno, 0, 2, "shyper");
+
+    if (ret < 0) {
+        WARNING("%s: alloc dev fail, errno %d", __func__, ret);
+    } else {
+        INFO("major %d minor %d", MAJOR(devno), MINOR(devno));
+    }
+    cdev_add(&shyper_dev.cdev, devno, 2);
+    
+    #ifdef CONFIG_RISCV
+        #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 0, 0)
+            shyper_class = class_create("shyper");
+        #else
+            shyper_class = class_create(THIS_MODULE, "shyper");
+        #endif
+    #else
+        shyper_class = class_create(THIS_MODULE, "shyper");
+    #endif
+    
+    device_create(shyper_class, NULL, devno, NULL, "shyper");
+    
+    // ...
+}
+
+/*文件操作结构体*/
+static const struct file_operations shyper_fops = {
+    .open = shyper_open,
+    .release = shyper_release,
+    .compat_ioctl = shyper_ioctl,
+    .unlocked_ioctl = shyper_ioctl,
+    .read = shyper_read,
+};
+
+static ssize_t shyper_read(struct file *filp, char __user *buffer, size_t count,
+                           loff_t *ppos) {
+    void *addr = queue_pop(shyper_dev.usr_arg_queue);
+    if (addr == 0) {
+        return 0;
+    }
+    if (copy_to_user(buffer, addr, count))
+        return -EFAULT;
+    return count;
+}
+```
+
 # 虚拟化
 
 虚拟化架构模式

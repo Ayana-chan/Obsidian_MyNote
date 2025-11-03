@@ -78,7 +78,6 @@ stack exec my-project-exe
 	- $\theta$是**左零元**, 如果$\forall a \in S, \theta * a = \theta$.
 	- $\theta$是**右零元**, 如果$\forall a \in S, a * \theta = \theta$.
 
-
 若集合$G \neq \varnothing$, 在$G$上的二元运算 $\cdot : G \times G \rightarrow G$ (称为群的乘法, 结果称为积) 构成的代数结构$G(G, \cdot)$, 满足:
 1. **封闭性 (Closure)**: 运算结果依然在集合内. $\forall a, b \in G, a \cdot b \in G$.
 2. **结合律 (Associativity)**: 运算有结合律. $\forall a,b,c\in G, (a\cdot b)\cdot c=a\cdot(b\cdot c)$.
@@ -92,7 +91,6 @@ stack exec my-project-exe
 若群$G$满足**交换律**, 即$\forall a,b \in G, a \cdot b = b \cdot a$, 则称为**阿贝尔群 (Abelian Group)** 或**交换群**或**加群**.
 
 若对于两个群$\left(G,\cdot\right)$ 和$\left(H,\times\right)$,有映射$f:G\to H$ 满足以下条件：$\forall a,b \in G, f(a\cdot b)=f(a)\times f(b)$, 则称<u>映射</u>$f$为群$(G,\cdot)$<u>到</u>群$(H,\times)$的**同态**。
-
 - 如果映射$f$为<u>单射</u>，则称$f$为**单同态**。
 - 如果映射$f$为<u>双射</u>，则称$f$为**同构**。
 
@@ -130,7 +128,7 @@ lengthCompare x y = let a = length x `compare` length y
 
 `id`函数(`id :: a -> a`)只是非常单纯地把输入原封不动扔出来(`\x -> x`).
 
-`undefined`被使用时, 会报`Exception: Prelude.undefined`. 可以用来当assert来防止程序使用了不该使用的地方. 但由于Haskell非常Lazy所以可能比较玄学.
+`undefined`被使用时, 会报`Exception: Prelude.undefined`. 可以用来当assert来防止程序使用了不该使用的地方. 但由于Haskell非常Lazy所以写了也不一定会触发到.
 ```haskell
 ghci> head [3,4,5,undefined,2,undefined] 3
 ```
