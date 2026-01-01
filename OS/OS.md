@@ -137,7 +137,22 @@ static ssize_t shyper_read(struct file *filp, char __user *buffer, size_t count,
 - **Type II（宿主型）**：Hypervisor 运行在 **宿主操作系统（如 Linux、Windows）** 之上，依赖宿主 OS 管理硬件资源，部署更灵活，但性能和隔离性易受宿主系统影响。
 
 
+# 构建rootfs
 
+## buildroot
+
+[Buildroot根文件系统的构建 — \[野火\]嵌入式Linux镜像构建与部署——基于LubanCat-i.MX6ULL开发板 文档](https://doc.embedfire.com/lubancat/build_and_deploy/zh/latest/building_image/buildroot/buildroot.html)
+
+```shell
+# 配置
+make menuconfig
+
+# 编译
+sudo make -j12
+
+# 清空编译结果（不删除配置）
+sudo make clean
+```
 
 
 
