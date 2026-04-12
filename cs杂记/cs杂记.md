@@ -77,7 +77,6 @@ taskkill /pid 31601 /f
 关闭exploit protection里的所有东西，卡顿大幅减少。
 
 
-
 # 安装wsl
 
 [安装 WSL | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/wsl/install)
@@ -85,7 +84,12 @@ taskkill /pid 31601 /f
 [旧版 WSL 的手动安装步骤 | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/wsl/install-manual)
 
 
+# 其他
 
+使用虚拟机的时候，经常会出现文件时间戳混乱的问题，跑以下命令刷新时间戳：
+```sh
+find . -exec touch {} \; make
+```
 
 
 

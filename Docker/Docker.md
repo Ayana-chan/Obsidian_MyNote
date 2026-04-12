@@ -129,6 +129,18 @@ docker: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is t
 这就需要在Docker Desktop里面打开这个选项：
 ![](assets/Pasted%20image%2020250928220952.png)
 
+## 启动没反应
+
+可能是启动出bug了，沙掉后台进程重新尝试：
+
+```sh
+# 强制杀死所有 Docker 相关进程
+taskkill /f /im docker* 
+taskkill /f /im com.docker* 
+# 关闭所有 WSL 实例 
+wsl --shutdown
+```
+
 # DockerFile
 
 使用一系列命令来构建一个Docker Image。
