@@ -423,6 +423,38 @@ func safelyDo(work *Work) {
 
 [Go 语言创建临时文件 ioutil.TempFile() - 简单教程，简单编程](https://www.twle.cn/t/383)
 
+## context
+
+Context的key可以区分不同类型，因此想要存储一个功能的kv到Context的时候，可以新定义一个基于int的类型，然后使用itoa定义各个key值。
+```go
+package main  
+  
+import (  
+    "context"  
+    "fmt")  
+  
+// 定义自定义类型 Tk（底层是 int，但属于独立类型）  
+type Tk int  
+  
+func main() {  
+    // 1. 创建根 context，分别存入两个 key：Tk(42) 和 int(42)    ctx := context.Background()  
+    ctx = context.WithValue(ctx, Tk(42), "value for Tk(42)")  
+    ctx = context.WithValue(ctx, int(42), "value for int(42)")  
+  
+    // 2. 分别通过两个 key 取值  
+    val1 := ctx.Value(Tk(42))  // 类型 Tk，值 42    val2 := ctx.Value(int(42)) // 类型 int，值 42    val3 := ctx.Value(42)      // 42 默认是 int 类型，等价于 int(42)  
+    // 3. 打印结果（验证区分效果）  
+    fmt.Printf("key=Tk(42) → value: %v\n", val1)    // 输出：value for Tk(42)  
+    fmt.Printf("key=int(42) → value: %v\n", val2)   // 输出：value for int(42)  
+    fmt.Printf("key=42（默认int） → value: %v\n", val3) // 输出：value for int(42)  
+  
+    // 4. 验证两个 key 是否相等（== 比较）  
+    //fmt.Printf("Tk(42) == int(42) ? %v\n", Tk(42) == int(42)) // 编译报错！类型不匹配，无法比较  
+    fmt.Printf("Tk(42) == Tk(42) ? %v\n", Tk(42) == Tk(42))     // true（类型+值都相同）  
+    fmt.Printf("int(42) == int(42) ? %v\n", int(42) == int(42)) // true（类型+值都相同）  
+}
+```
+
 # 并行
 
 ## GoRoutine
