@@ -19,7 +19,7 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
-/* global Reflect, Promise, SuppressedError, Symbol */
+/* global Reflect, Promise, SuppressedError, Symbol, Iterator */
 
 
 function __awaiter(thisArg, _arguments, P, generator) {
@@ -1296,9 +1296,9 @@ class DragAndDropState {
     calculateNearestDropVariant(x, y) {
         const { view, editor } = this;
         const dropVariants = this.getDropVariants();
+        const possibleDropVariants = [];
         for (const v of dropVariants) {
             const { placeToMove } = v;
-            v.left = this.leftPadding + (v.level - 1) * this.tabWidth;
             const positionAfterList = v.whereToMove === "after" || v.whereToMove === "inside";
             const line = positionAfterList
                 ? placeToMove.getContentEndIncludingChildren().line
@@ -1307,17 +1307,23 @@ class DragAndDropState {
                 line,
                 ch: 0,
             });
-            v.top = view.coordsAtPos(linePos, -1).top;
+            const coords = view.coordsAtPos(linePos, -1);
+            if (!coords) {
+                continue;
+            }
+            v.left = this.leftPadding + (v.level - 1) * this.tabWidth;
+            v.top = coords.top;
             if (positionAfterList) {
                 v.top += view.lineBlockAt(linePos).height;
             }
             // Better vertical alignment
             v.top -= 8;
+            possibleDropVariants.push(v);
         }
-        const nearestLineTop = dropVariants
+        const nearestLineTop = possibleDropVariants
             .sort((a, b) => Math.abs(y - a.top) - Math.abs(y - b.top))
             .first().top;
-        const variansOnNearestLine = dropVariants.filter((v) => Math.abs(v.top - nearestLineTop) <= 4);
+        const variansOnNearestLine = possibleDropVariants.filter((v) => Math.abs(v.top - nearestLineTop) <= 4);
         this.dropVariant = variansOnNearestLine
             .sort((a, b) => Math.abs(x - a.left) - Math.abs(x - b.left))
             .first();
@@ -1368,16 +1374,28 @@ class DragAndDropState {
         visit(this.root.getChildren());
     }
     calculateLeftPadding() {
-        this.leftPadding = this.view.coordsAtPos(0, -1).left;
+        const cmLine = this.view.dom.querySelector("div.cm-line");
+        this.leftPadding = cmLine.getBoundingClientRect().left;
     }
     calculateTabWidth() {
         const { view } = this;
+        const indentDom = view.dom.querySelector(".cm-indent");
+        if (indentDom) {
+            this.tabWidth = indentDom.offsetWidth;
+            return;
+        }
         const singleIndent = language.indentString(view.state, language.getIndentUnit(view.state));
         for (let i = 1; i <= view.state.doc.lines; i++) {
             const line = view.state.doc.line(i);
             if (line.text.startsWith(singleIndent)) {
                 const a = view.coordsAtPos(line.from, -1);
+                if (!a) {
+                    continue;
+                }
                 const b = view.coordsAtPos(line.from + singleIndent.length, -1);
+                if (!b) {
+                    continue;
+                }
                 this.tabWidth = b.left - a.left;
                 return;
             }
@@ -1581,10 +1599,11 @@ function isEmptyLineOrEmptyCheckbox(line) {
 }
 
 class CreateNewItem {
-    constructor(root, defaultIndentChars, getZoomRange) {
+    constructor(root, defaultIndentChars, getZoomRange, after = true) {
         this.root = root;
         this.defaultIndentChars = defaultIndentChars;
         this.getZoomRange = getZoomRange;
+        this.after = after;
         this.stopPropagation = false;
         this.updated = false;
     }
@@ -1646,7 +1665,8 @@ class CreateNewItem {
         const childIsFolded = list.isFoldRoot();
         const endPos = list.getLastLineContentEnd();
         const endOfLine = cursor.line === endPos.line && cursor.ch === endPos.ch;
-        const onChildLevel = listIsZoomingRoot || (hasChildren && !childIsFolded && endOfLine);
+        const onChildLevel = this.after &&
+            (listIsZoomingRoot || (hasChildren && !childIsFolded && endOfLine));
         const indent = onChildLevel
             ? hasChildren
                 ? list.getChildren()[0].getFirstLineIndent()
@@ -1670,14 +1690,19 @@ class CreateNewItem {
             list.addBeforeAll(newList);
         }
         else {
-            if (!childIsFolded || !endOfLine) {
+            if (this.after && (!childIsFolded || !endOfLine)) {
                 const children = list.getChildren();
                 for (const child of children) {
                     list.removeChild(child);
                     newList.addAfterAll(child);
                 }
             }
-            list.getParent().addAfter(list, newList);
+            if (this.after) {
+                list.getParent().addAfter(list, newList);
+            }
+            else {
+                list.getParent().addBefore(list, newList);
+            }
         }
         list.replaceLines(oldLines);
         const newListStart = newList.getFirstLineContentStart();
@@ -2223,6 +2248,17 @@ class ObsidianOutlinerPluginSettingTab extends obsidian.PluginSettingTab {
             }));
         });
         new obsidian.Setting(containerEl)
+            .setName("Vim-mode o/O inserts bullets")
+            .setDesc("Create a bullet when pressing o or O in Vim mode.")
+            .addToggle((toggle) => {
+            toggle
+                .setValue(this.settings.overrideVimOBehaviour)
+                .onChange((value) => __awaiter(this, void 0, void 0, function* () {
+                this.settings.overrideVimOBehaviour = value;
+                yield this.settings.save();
+            }));
+        });
+        new obsidian.Setting(containerEl)
             .setName("Enhance the Ctrl+A or Cmd+A behavior")
             .setDesc("Press the hotkey once to select the current list item. Press the hotkey twice to select the entire list.")
             .addToggle((toggle) => {
@@ -2707,6 +2743,116 @@ class VerticalLines {
     }
 }
 
+class VimOBehaviourOverride {
+    constructor(plugin, settings, obsidianSettings, parser, operationPerformer) {
+        this.plugin = plugin;
+        this.settings = settings;
+        this.obsidianSettings = obsidianSettings;
+        this.parser = parser;
+        this.operationPerformer = operationPerformer;
+        this.inited = false;
+        this.handleSettingsChange = () => {
+            if (this.inited || !this.settings.overrideVimOBehaviour) {
+                return;
+            }
+            if (!window.CodeMirrorAdapter || !window.CodeMirrorAdapter.Vim) {
+                console.error("Vim adapter not found");
+                return;
+            }
+            const vim = window.CodeMirrorAdapter.Vim;
+            const plugin = this.plugin;
+            const parser = this.parser;
+            const obsidianSettings = this.obsidianSettings;
+            const operationPerformer = this.operationPerformer;
+            const settings = this.settings;
+            vim.defineAction("insertLineAfterBullet", (cm, operatorArgs) => {
+                const view = plugin.app.workspace.getActiveViewOfType(obsidian.MarkdownView);
+                const obsidianEditor = view === null || view === void 0 ? void 0 : view.editor;
+                if (!obsidianEditor) {
+                    vim.enterInsertMode(cm);
+                    return;
+                }
+                this.moveCursorToLineEnd(obsidianEditor);
+                if (!settings.overrideVimOBehaviour) {
+                    this.openPlainLine(obsidianEditor, operatorArgs.after);
+                    vim.enterInsertMode(cm);
+                    return;
+                }
+                const editor = new MyEditor(obsidianEditor);
+                const root = parser.parse(editor);
+                if (!root) {
+                    this.openPlainLine(obsidianEditor, operatorArgs.after);
+                    vim.enterInsertMode(cm);
+                    return;
+                }
+                const defaultIndentChars = obsidianSettings.getDefaultIndentChars();
+                const zoomRange = editor.getZoomRange();
+                const getZoomRange = {
+                    getZoomRange: () => zoomRange,
+                };
+                const res = operationPerformer.eval(root, new CreateNewItem(root, defaultIndentChars, getZoomRange, operatorArgs.after), editor);
+                if (res.shouldUpdate && zoomRange) {
+                    editor.tryRefreshZoom(zoomRange.from.line);
+                }
+                // Ensure the editor is always left in insert mode
+                vim.enterInsertMode(cm);
+            });
+            vim.mapCommand("o", "action", "insertLineAfterBullet", {}, {
+                isEdit: true,
+                context: "normal",
+                interlaceInsertRepeat: true,
+                actionArgs: { after: true },
+            });
+            vim.mapCommand("O", "action", "insertLineAfterBullet", {}, {
+                isEdit: true,
+                context: "normal",
+                interlaceInsertRepeat: true,
+                actionArgs: { after: false },
+            });
+            this.inited = true;
+        };
+    }
+    load() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.settings.onChange(this.handleSettingsChange);
+            this.handleSettingsChange();
+        });
+    }
+    moveCursorToLineEnd(editor) {
+        const cursor = editor.getCursor();
+        editor.setCursor({
+            line: cursor.line,
+            ch: editor.getLine(cursor.line).length,
+        });
+    }
+    getLineIndent(line) {
+        return line.match(/^[ \t]*/)[0];
+    }
+    openPlainLine(editor, after) {
+        const cursor = editor.getCursor();
+        const line = editor.getLine(cursor.line);
+        const indent = this.getLineIndent(line);
+        if (after) {
+            const insertAt = { line: cursor.line, ch: line.length };
+            editor.replaceRange(`\n${indent}`, insertAt, insertAt);
+            editor.setCursor({ line: cursor.line + 1, ch: indent.length });
+        }
+        else {
+            const insertAt = { line: cursor.line, ch: 0 };
+            editor.replaceRange(`${indent}\n`, insertAt, insertAt);
+            editor.setCursor({ line: cursor.line, ch: indent.length });
+        }
+    }
+    unload() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.inited) {
+                return;
+            }
+            new obsidian.Notice(`To fully unload obsidian-outliner plugin, please restart the app`, 5000);
+        });
+    }
+}
+
 class ChangesApplicator {
     apply(editor, prevRoot, newRoot) {
         const changes = this.calculateChanges(editor, prevRoot, newRoot);
@@ -3104,6 +3250,7 @@ const DEFAULT_SETTINGS = {
     debug: false,
     stickCursor: "bullet-and-checkbox",
     betterEnter: true,
+    betterVimO: true,
     betterTab: true,
     selectAll: true,
     listLines: false,
@@ -3140,6 +3287,12 @@ class Settings {
     }
     set overrideEnterBehaviour(value) {
         this.set("betterEnter", value);
+    }
+    get overrideVimOBehaviour() {
+        return this.values.betterVimO;
+    }
+    set overrideVimOBehaviour(value) {
+        this.set("betterVimO", value);
     }
     get overrideSelectAllBehaviour() {
         return this.values.selectAll;
@@ -3246,6 +3399,8 @@ class ObsidianOutlinerPlugin extends obsidian.Plugin {
                 new ShiftTabBehaviourOverride(this, this.imeDetector, this.settings, this.operationPerformer),
                 // features based on settings.overrideEnterBehaviour
                 new EnterBehaviourOverride(this, this.settings, this.imeDetector, this.obsidianSettings, this.parser, this.operationPerformer),
+                // features based on settings.overrideVimOBehaviour
+                new VimOBehaviourOverride(this, this.settings, this.obsidianSettings, this.parser, this.operationPerformer),
                 // features based on settings.overrideSelectAllBehaviour
                 new CtrlAAndCmdABehaviourOverride(this, this.settings, this.imeDetector, this.operationPerformer),
                 // features based on settings.betterListsStyles

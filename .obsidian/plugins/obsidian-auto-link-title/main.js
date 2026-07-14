@@ -49,6 +49,8 @@ const DEFAULT_SETTINGS = {
     websiteBlacklist: "",
     maximumTitleLength: 0,
     useNewScraper: false,
+    linkPreviewApiKey: "",
+    useBetterPasteId: false,
 };
 class AutoLinkTitleSettingTab extends obsidian.PluginSettingTab {
     constructor(app, plugin) {
@@ -84,8 +86,9 @@ class AutoLinkTitleSettingTab extends obsidian.PluginSettingTab {
             .addText((val) => val
             .setValue(this.plugin.settings.maximumTitleLength.toString(10))
             .onChange((value) => __awaiter(this, void 0, void 0, function* () {
-            const titleLength = (Number(value));
-            this.plugin.settings.maximumTitleLength = isNaN(titleLength) || titleLength < 0 ? 0 : titleLength;
+            const titleLength = Number(value);
+            this.plugin.settings.maximumTitleLength =
+                isNaN(titleLength) || titleLength < 0 ? 0 : titleLength;
             yield this.plugin.saveSettings();
         })));
         new obsidian.Setting(containerEl)
@@ -116,6 +119,32 @@ class AutoLinkTitleSettingTab extends obsidian.PluginSettingTab {
             .onChange((value) => __awaiter(this, void 0, void 0, function* () {
             console.log(value);
             this.plugin.settings.useNewScraper = value;
+            yield this.plugin.saveSettings();
+        })));
+        new obsidian.Setting(containerEl)
+            .setName("Use Better Fetching Placeholder")
+            .setDesc("Use a more readable placeholder when fetching the title of a link.")
+            .addToggle((val) => val
+            .setValue(this.plugin.settings.useBetterPasteId)
+            .onChange((value) => __awaiter(this, void 0, void 0, function* () {
+            console.log(value);
+            this.plugin.settings.useBetterPasteId = value;
+            yield this.plugin.saveSettings();
+        })));
+        new obsidian.Setting(containerEl)
+            .setName("LinkPreview API Key")
+            .setDesc("API key for the LinkPreview.net service. Get one at https://my.linkpreview.net/access_keys")
+            .addText((text) => text
+            .setValue(this.plugin.settings.linkPreviewApiKey || "")
+            .onChange((value) => __awaiter(this, void 0, void 0, function* () {
+            const trimmedValue = value.trim();
+            if (trimmedValue.length > 0 && trimmedValue.length !== 32) {
+                new obsidian.Notice("LinkPreview API key must be 32 characters long");
+                this.plugin.settings.linkPreviewApiKey = "";
+            }
+            else {
+                this.plugin.settings.linkPreviewApiKey = trimmedValue;
+            }
             yield this.plugin.saveSettings();
         })));
     }
@@ -233,7 +262,7 @@ function scrape(url) {
         }
         catch (ex) {
             console.error(ex);
-            return 'Site Unreachable';
+            return '';
         }
     });
 }
@@ -289,6 +318,10 @@ function electronGetPageTitle(url) {
                 show: false,
             });
             window.webContents.setAudioMuted(true);
+            window.webContents.on("will-navigate", (event, newUrl) => {
+                event.preventDefault();
+                window.loadURL(newUrl);
+            });
             yield load(window, url);
             try {
                 const title = window.webContents.getTitle();
@@ -307,7 +340,7 @@ function electronGetPageTitle(url) {
         }
         catch (ex) {
             console.error(ex);
-            return "Site Unreachable";
+            return "";
         }
     });
 }
@@ -330,7 +363,7 @@ function nonElectronGetPageTitle(url) {
         }
         catch (ex) {
             console.error(ex);
-            return "Site Unreachable";
+            return "";
         }
     });
 }
@@ -403,7 +436,10 @@ class AutoLinkTitle extends obsidian.Plugin {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("loading obsidian-auto-link-title");
             yield this.loadSettings();
-            this.blacklist = this.settings.websiteBlacklist.split(",").map(s => s.trim()).filter(s => s.length > 0);
+            this.blacklist = this.settings.websiteBlacklist
+                .split(",")
+                .map((s) => s.trim())
+                .filter((s) => s.length > 0);
             // Listen to paste event
             this.pasteFunction = this.pasteUrlWithTitle.bind(this);
             // Listen to drop event
@@ -473,7 +509,7 @@ class AutoLinkTitle extends obsidian.Plugin {
                 editor.replaceSelection(clipboardText);
                 return;
             }
-            if (clipboardText == null || clipboardText == '')
+            if (clipboardText == null || clipboardText == "")
                 return;
             // If its not a URL, we return false to allow the default paste handler to take care of it.
             // Similarly, image urls don't have a meaningful <title> attribute so downloading it
@@ -489,7 +525,7 @@ class AutoLinkTitle extends obsidian.Plugin {
                 editor.replaceSelection(clipboardText);
                 return;
             }
-            // If url is pasted over selected text and setting is enabled, no need to fetch title, 
+            // If url is pasted over selected text and setting is enabled, no need to fetch title,
             // just insert a link
             let selectedText = (EditorExtensions.getSelectedText(editor) || "").trim();
             if (selectedText && this.settings.shouldPreserveSelectionAsTitle) {
@@ -530,7 +566,7 @@ class AutoLinkTitle extends obsidian.Plugin {
                 editor.replaceSelection(clipboardText);
                 return;
             }
-            // If url is pasted over selected text and setting is enabled, no need to fetch title, 
+            // If url is pasted over selected text and setting is enabled, no need to fetch title,
             // just insert a link
             let selectedText = (EditorExtensions.getSelectedText(editor) || "").trim();
             if (selectedText && this.settings.shouldPreserveSelectionAsTitle) {
@@ -552,7 +588,7 @@ class AutoLinkTitle extends obsidian.Plugin {
             // Only attempt fetch if online
             if (!navigator.onLine)
                 return;
-            let dropText = dropEvent.dataTransfer.getData('text/plain');
+            let dropText = dropEvent.dataTransfer.getData("text/plain");
             if (dropText === null || dropText === "")
                 return;
             // If its not a URL, we return false to allow the default paste handler to take care of it.
@@ -571,7 +607,7 @@ class AutoLinkTitle extends obsidian.Plugin {
                 editor.replaceSelection(dropText);
                 return;
             }
-            // If url is pasted over selected text and setting is enabled, no need to fetch title, 
+            // If url is pasted over selected text and setting is enabled, no need to fetch title,
             // just insert a link
             let selectedText = (EditorExtensions.getSelectedText(editor) || "").trim();
             if (selectedText && this.settings.shouldPreserveSelectionAsTitle) {
@@ -586,8 +622,11 @@ class AutoLinkTitle extends obsidian.Plugin {
     isBlacklisted(url) {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.loadSettings();
-            this.blacklist = this.settings.websiteBlacklist.split(/,|\n/).map(s => s.trim()).filter(s => s.length > 0);
-            return this.blacklist.some(site => url.includes(site));
+            this.blacklist = this.settings.websiteBlacklist
+                .split(/,|\n/)
+                .map((s) => s.trim())
+                .filter((s) => s.length > 0);
+            return this.blacklist.some((site) => url.includes(site));
         });
     }
     convertUrlToTitledLink(editor, url) {
@@ -598,7 +637,7 @@ class AutoLinkTitle extends obsidian.Plugin {
                 return;
             }
             // Generate a unique id for find/replace operations for the title.
-            const pasteId = `Fetching Title#${this.createBlockHash()}`;
+            const pasteId = this.getPasteId();
             // Instantly paste so you don't wonder if paste is broken
             editor.replaceSelection(`[${pasteId}](${url})`);
             // Fetch title from site, replace Fetching Title with actual title
@@ -619,31 +658,87 @@ class AutoLinkTitle extends obsidian.Plugin {
         });
     }
     escapeMarkdown(text) {
-        var unescaped = text.replace(/\\(\*|_|`|~|\\|\[|\])/g, '$1'); // unescape any "backslashed" character
-        var escaped = unescaped.replace(/(\*|_|`|<|>|~|\\|\[|\])/g, '\\$1'); // escape *, _, `, ~, \, [, ], <, and >
+        var unescaped = text.replace(/\\(\*|_|`|~|\\|\[|\])/g, "$1"); // unescape any "backslashed" character
+        var escaped = unescaped.replace(/(\*|_|`|<|>|~|\\|\[|\])/g, "\\$1"); // escape *, _, `, ~, \, [, ], <, and >
+        var escaped = unescaped.replace(/(\*|_|`|\||<|>|~|\\|\[|\])/g, "\\$1"); // escape *, _, `, ~, \, |, [, ], <, and >
         return escaped;
+    }
+    fetchUrlTitleViaLinkPreview(url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.settings.linkPreviewApiKey.length !== 32) {
+                console.error("LinkPreview API key is not 32 characters long, please check your settings");
+                return "";
+            }
+            try {
+                const apiEndpoint = `https://api.linkpreview.net/?q=${encodeURIComponent(url)}`;
+                const response = yield fetch(apiEndpoint, {
+                    headers: {
+                        "X-Linkpreview-Api-Key": this.settings.linkPreviewApiKey,
+                    },
+                });
+                const data = yield response.json();
+                return data.title;
+            }
+            catch (error) {
+                console.error(error);
+                return "";
+            }
+        });
     }
     fetchUrlTitle(url) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let title = "";
-                if (this.settings.useNewScraper) {
-                    title = yield getPageTitle$1(url);
+                title = yield this.fetchUrlTitleViaLinkPreview(url);
+                console.log(`Title via Link Preview: ${title}`);
+                if (title === "") {
+                    console.log("Title via Link Preview failed, falling back to scraper");
+                    if (this.settings.useNewScraper) {
+                        console.log("Using new scraper");
+                        title = yield getPageTitle$1(url);
+                    }
+                    else {
+                        console.log("Using old scraper");
+                        title = yield getPageTitle(url);
+                    }
                 }
-                else {
-                    title = yield getPageTitle(url);
-                }
-                return title.replace(/(\r\n|\n|\r)/gm, "").trim();
+                console.log(`Title: ${title}`);
+                title =
+                    title.replace(/(\r\n|\n|\r)/gm, "").trim() ||
+                        "Title Unavailable | Site Unreachable";
+                return title;
             }
             catch (error) {
                 console.error(error);
-                return 'Error fetching title';
+                return "Error fetching title";
             }
         });
     }
     getUrlFromLink(link) {
         let urlRegex = new RegExp(DEFAULT_SETTINGS.linkRegex);
         return urlRegex.exec(link)[2];
+    }
+    getPasteId() {
+        var base = "Fetching Title";
+        if (this.settings.useBetterPasteId) {
+            return this.getBetterPasteId(base);
+        }
+        else {
+            return `${base}#${this.createBlockHash()}`;
+        }
+    }
+    getBetterPasteId(base) {
+        // After every character, add 0, 1 or 2 invisible characters
+        // so that to the user it looks just like the base string.
+        // The number of combinations is 3^14 = 4782969
+        let result = "";
+        var invisibleCharacter = "\u200B";
+        var maxInvisibleCharacters = 2;
+        for (var i = 0; i < base.length; i++) {
+            var count = Math.floor(Math.random() * (maxInvisibleCharacters + 1));
+            result += base.charAt(i) + invisibleCharacter.repeat(count);
+        }
+        return result;
     }
     // Custom hashid by @shabegom
     createBlockHash() {
