@@ -88,7 +88,7 @@ taskkill /pid 31601 /f
 
 使用虚拟机的时候，经常会出现文件时间戳混乱的问题，跑以下命令刷新时间戳：
 ```sh
-find . -exec touch {} \; make
+find . -exec touch {} \;
 ```
 
 

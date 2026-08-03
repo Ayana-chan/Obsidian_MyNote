@@ -2353,7 +2353,7 @@ vector<int> numSmallerByFrequency(vector<string>& queries, vector<string>& words
 [std::ranges::fold\_left - cppreference.com](https://zh.cppreference.com/w/cpp/algorithm/ranges/fold_left)
 
 ```cpp
-int sum = ranges::fold_left(v.begin(), v.end(), 0, std::plus<int>());
+int sum = ranges::fold_left(nums, 0, std::plus<int>());
 
 int sum = ranges::fold_left_first(nums, plus<int>()).value();
 ```
