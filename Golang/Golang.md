@@ -115,10 +115,10 @@ for range出来的值都是拷贝，因此对数组进行遍历拿到的都是�
 
 **指针**，指向值，且可以直接使用`a.member`访问成员，不需要解引用。可以是nil
 
-**不透明引用**，对其的拷贝不会发生深拷贝。除字符串外，都可以是nil。
+下面是当时用于理解共享底层数据的“不透明引用”助记分类，**不是 Go 规范的类型分类**。Go 赋值都是值拷贝，但拷贝后的值可能共享底层存储；所列 runtime 结构名也不是稳定 API。
 - 字符串 `string`：底层的数据结构为 `stringStruct` ，里面有一个指针指向实际存放数据的字节数组，另外还记录着字符串的长度。不过由于 `string` 是只读类型（所有看起来对 `string` 变量的修改，实际上都是生成了新的实例），在使用上常常把它当做值类型看待。由于做了特殊处理，它甚至可以作为常量。`string` 也是唯一零值不为 `nil` 的引用类型。
 - 切片（slice）：底层数据结构为 `slice` 结构体 ，整体结构跟 `stringStruct` 接近，只是多了一个容量（capacity）字段。数据存放在指针指向的底层数组里。
-- 映射（map）：底层数据结构为 `hmap` ，数据存放在数据桶（buckets）中，桶对应的数据结构为 `bmap` 。
+- 映射（map）：旧版 runtime 使用 `hmap/bmap` 桶结构；Go 1.24 改用基于 Swiss Table 的实现。保留旧名是为了读旧源码，勿当当前布局保证。[Go 1.24](https://go.dev/doc/go1.24)。
 - 函数（func）：底层数据结构为 `funcval` ，有一个指向真正函数的指针，指向另外的 `_func` 或者 `funcinl` 结构体（`funcinl` 代表被行内优化之后的函数）。
 - 接口（interface）：底层数据结构为 `iface` 或 `eface` （专门为空接口优化的结构体），里面持有动态值和值对应的真实类型。
 - 通道（chan）：底层数据结构为 `hchan`，分别持有一个数据缓冲区，一个发送者队列和一个接收者队列。
@@ -425,7 +425,7 @@ func safelyDo(work *Work) {
 
 ## context
 
-Context的key可以区分不同类型，因此想要存储一个功能的kv到Context的时候，可以新定义一个基于int的类型，然后使用itoa定义各个key值。
+Context的key可以区分不同类型，因此想要存储一个功能的kv到Context的时候，可以新定义一个基于int的类型，然后使用 iota 定义各个 key 值。
 ```go
 package main  
   
@@ -437,12 +437,15 @@ import (
 type Tk int  
   
 func main() {  
-    // 1. 创建根 context，分别存入两个 key：Tk(42) 和 int(42)    ctx := context.Background()  
+    // 1. 创建根 context，分别存入两个 key：Tk(42) 和 int(42)
+    ctx := context.Background()
     ctx = context.WithValue(ctx, Tk(42), "value for Tk(42)")  
     ctx = context.WithValue(ctx, int(42), "value for int(42)")  
   
     // 2. 分别通过两个 key 取值  
-    val1 := ctx.Value(Tk(42))  // 类型 Tk，值 42    val2 := ctx.Value(int(42)) // 类型 int，值 42    val3 := ctx.Value(42)      // 42 默认是 int 类型，等价于 int(42)  
+    val1 := ctx.Value(Tk(42))  // 类型 Tk，值 42
+    val2 := ctx.Value(int(42)) // 类型 int，值 42
+    val3 := ctx.Value(42)      // 默认 int，等价于 int(42)
     // 3. 打印结果（验证区分效果）  
     fmt.Printf("key=Tk(42) → value: %v\n", val1)    // 输出：value for Tk(42)  
     fmt.Printf("key=int(42) → value: %v\n", val2)   // 输出：value for int(42)  
@@ -471,27 +474,27 @@ GoRoutine是Go自己的协程/轻量级线程/用户级线程，由Go来调度�
 
 ## 保证WaitGroup.Done()必须执行
 
-一开始就用`defer waitGroup.Done()`，使得接下来无论发生什么都会在最后执行Done。
+goroutine 开头用 `defer waitGroup.Done()`，在它正常返回或 panic 展开时递减计数；不包括 os.Exit 等直接结束进程的情况。正数 Add 通常应在启动 goroutine 前完成，避免 Wait 提前返回。
 
-[Defer概念](Golang.md#^a9re2i)
+[Defer概念](Golang.md#defer)
 
 ## 对匿名函数使用go语句相关问题
 ### 变量改变
 
-匿名函数是可以使用外部变量的，但若外部改变了变量的话，匿名函数也会受影响。这种情况只在使用go来运行匿名函数的时候会出现。
+闭包捕获变量，外部后续修改可能影响它，**不只 goroutine 才有这个问题**；并发无同步访问共享变量还可能产生 data race。
 
 经典的例子是for循环里面匿名函数配上go：
 ```go
 for i:=0;i<5;i++{
 	go func(){
 		fmt.Println(i)
-	}
+	}()
 }
 ```
 
-这段代码不会达到我们的预期。假设第一次go语句执行，然后在开始打印前先进入了第二次for循环，此时第一次go会打印出1而非0。
+**历史版本提醒**：Go 1.22 之前，该循环复用 i，goroutine 可能读到后续迭代的值；使用 Go 1.22+ 语言语义（例如 go.mod 声明 go 1.22+）时，循环中用 `:=` 声明的变量每轮独立。若变量在循环外声明、循环内用 `=` 赋值，仍是共享变量。输出顺序仍不保证，main 也要等待任务结束。[Go 1.22](https://go.dev/doc/go1.22)。
 
-解决方法是设置一个拷贝：
+显式传参拷贝在新旧语义下都清楚：
 ```go
 for i:=0;i<5;i++{
 	go func(i int){
@@ -506,21 +509,21 @@ for i:=0;i<5;i++{
 
 内部函数还在异步执行时，外部函数结束了，但此时内部函数使用的外部函数变量不会被销毁。
 
-因为编译器会检测变量是否被某内部函数使用。若是，则把变量分配到堆内存上而不是栈内存上，使内部函数能在外部函数结束后继续运行。
+捕获变量会保持所需生命周期；是否实际分配到堆上由逃逸分析等决定，不是“只要被闭包使用就上堆”。
 
 因此不用担心变量被销毁的问题，只需要注意变量是否改变。
 
->注意，主线程结束的话，GoRoutine也会被关闭！
+> 注意：main 函数返回就会结束程序，不会自动等待其他 goroutine。
 
 ## 条件变量 `sync.Cond`
 
 条件变量可以看成一种中断源，可以取代轮询、忙等待。
 
-`cond.Wait`: 释放自己获得的锁，并进行等待。当满足结束等待的条件时，会先去尝试获取锁，获取到后继续执行。
+`cond.Wait`：调用前须持有 cond.L；等待时释放锁，返回前重新获取。唤醒不代表条件仍成立，因此用 `for !condition { cond.Wait() }` 在锁内重复检查条件。
 
 `cond.Broadcast`: 让所有使用了`cond.Wait`等待的GoRoutine继续执行。
 
-而`cond.Signal`则仅让一个GoRoutine被唤醒。FIFO顺序。
+`cond.Signal` 唤醒一个等待者；API 不保证 FIFO 调度或它优先取得锁。[sync.Cond](https://pkg.go.dev/sync#Cond)。
 
 ## 未上锁却依旧正常执行（隐藏race）
 
@@ -528,7 +531,7 @@ for i:=0;i<5;i++{
 
 ### race检测器
 
-Go内置了race检测器，只需要在运行时加个参数，就能在运行时（不是静态检测，且占用内存）检测内存的访问是否存在race逻辑（而不是真的发生race）：
+Go内置了race检测器，只需要在运行时加个参数，就能在运行时（不是静态检测，且占用内存）检测**本次执行路径**上实际发生的数据竞争；未报告不表示未执行的路径也安全：
 
 ```bash
 go run -race hello.go
@@ -550,7 +553,7 @@ go run -race hello.go
 
 虽然本质也是有互斥锁逻辑在channel里面，但不要这么理解，而是仅仅将其看成传递消息的通道。
 
-对chanel的range遍历会在空时阻塞等待直到有新值进入。
+对 channel 的 range 会在未关闭且无值时等待，关闭并读完缓冲后结束。向已关闭的 channel 发送会 panic；对 nil channel 收发会永久阻塞。
 
 异步对channel传入初始值是因为写入也会被阻塞直到被读取，不异步的话可能会导致主线程阻塞。
 

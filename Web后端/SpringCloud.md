@@ -67,15 +67,15 @@ spring.application.name=gulimall-coupon
 spring.cloud.nacos.config.server-addr=192.168.177.114:8848
 ```
 
-SpringCloud2.4以上的版本都需要导入`spring-cloud-starter-bootstrap`依赖才能启用对`bootstrap.properties`的扫描（它的优先级太高了，无法用`application`通知spring去扫描它，只能通过安装依赖解决）。
+这里记录的是旧项目的 bootstrap 配置方式。原文“SpringCloud 2.4”混淆了 Spring Boot 与 Spring Cloud 的版本；bootstrap 是否默认启用及启用办法需看项目对应版本，不能断言只能加依赖。还要区分远程 bootstrap 属性源与本地 bootstrap.properties：后者并不天然高于 application.properties。[Spring Cloud Context](https://docs.spring.io/spring-cloud-commons/reference/spring-cloud-commons/application-context-services.html)。
 
 而在nacos网页上我们可以创建配置，默认会读取的配置名是`应用名.properties`，选好文件格式后编辑配置文件。
 
 此时，在nacos网页上发布的配置就能被程序用`@Value`直接获取到，和获取本地配置的方式一模一样。
 
-加上`@RefrashScope`来使获取对应配置前进行刷新以应用配置的更改。
+`@RefreshScope` 标记可刷新的 bean；配置变更仍需由相应机制触发刷新，不能理解为每次读取都自动拉取最新配置。
 
-配置中心的配置优先级更高。
+远程配置与本地配置的优先级受具体客户端、配置导入方式及覆盖选项影响，按项目版本确认。
 
 ### 命名空间
 作用：配置隔离。

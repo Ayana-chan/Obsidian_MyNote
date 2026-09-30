@@ -55,11 +55,11 @@ start go run run_router.go localhost:5001 localhost:5002 localhost:5003 -5999 -5
 
 示例：
 
-![500](assets/Pasted%20image%2020230605215042.png)
+![500](../assets/Pasted%20image%2020230605215042.png)
 
-![500](assets/Pasted%20image%2020230605215116.png)
+![500](../assets/Pasted%20image%2020230605215116.png)
 
-![500](assets/Pasted%20image%2020230605215134.png)
+![500](../assets/Pasted%20image%2020230605215134.png)
 
 
 # 具体设计

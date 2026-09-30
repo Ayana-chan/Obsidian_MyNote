@@ -1,7 +1,9 @@
 
 # 安装
 
-conda里面默认的pytorch是cpu-only的, 想要安装GPU版本的需要再次手动安装. torchvision 和 torchaudio 都是可选的.
+安装命令取决于系统、Python、硬件及所选版本；torchvision、torchaudio 按需要安装。PyTorch 自 2.6 起不再发布官方 Conda 包；新环境按[官方安装选择器](https://pytorch.org/get-started/locally/)生成命令。[2.6 发布说明](https://pytorch.org/blog/pytorch2-6/)（核验：2026-09-30）。
+
+下面保留曾用的 CUDA 12.1 / Conda 历史环境命令：
 
 ```shell
 conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
@@ -22,6 +24,7 @@ conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvi
 
 ```python
 # 让自变量进行追踪
+import torch
 x = torch.tensor(2., requires_grad=True)
 # x = torch.tensor(2.).requires_grad_()
 
@@ -39,22 +42,24 @@ print(x.grad)
 
 ### 向量间变换关系求导
 
-假如$y_i = g(x_i)$，求标量函数$g$相对其自变量的梯度，但是代码里面往往只存了向量$\vec{x}$和$\vec{y}$，无法进行标量函数的求导；又或者，此时要求的就是偏导数之和。此时（用偏导数表示）应当计算：
+对向量输出，backward 计算的是给定上游向量的 **VJP**。令 $h(\vec x)=\sum_j y_j$，则：
 
-$$\sum\frac{\partial y_i}{\partial x_i} = \frac{\partial \sum y_i}{\partial x_i}$$
+$$\frac{\partial h}{\partial x_i}=\sum_j\frac{\partial y_j}{\partial x_i}.$$
 
-即，令$h(\vec x) = \sum y_i$，求$\nabla h(\vec{x})$。
+这是一个梯度向量，不能把它写成把所有对角偏导相加的标量。逐元素关系 $y_i=g(x_i)$ 是特例，此时第 $i$ 个分量就是 $g'(x_i)$。
 
 ```python
-# 对非标量调用backward需要传入一个gradient参数，该参数指定微分函数关于self的梯度。
-# 本例只想求偏导数的和，所以传递一个1的梯度是合适的
-x.grad.zero_()
+import torch
+x = torch.arange(4., requires_grad=True)
 y = x * x
-# 等价于y.backward(torch.ones(len(x)))
+# 等价于 y.backward(torch.ones_like(y))
 y.sum().backward()
-x.grad
-# Output: tensor([0., 2., 4., 6.])
+print(x.grad)
+# tensor([0., 2., 4., 6.])
 ```
+
+梯度会累积；重复训练步骤需清空 .grad。下面 detach 例子接着使用这里的 x。
+[核对：autograd](https://docs.pytorch.org/tutorials/beginner/basics/autograd_tutorial.html)。
 
 ### 分离求导
 
